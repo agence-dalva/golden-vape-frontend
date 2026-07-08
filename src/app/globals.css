@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+:root {
+  /* Palette provisoire inspirée du logo Golden Vape — à affiner avec la charte définitive */
+  --background: #faf8f5;
+  --foreground: #2a211c;
+  --brand-chocolate: #44362e;
+  --brand-gold: #f2c26b;
+  --brand-gold-dark: #d9a84e;
+  --brand-cream: #faf8f5;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand-chocolate: var(--brand-chocolate);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-gold-dark: var(--brand-gold-dark);
+  --color-brand-cream: var(--brand-cream);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
