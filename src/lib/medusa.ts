@@ -69,6 +69,12 @@ export type MedusaAttributeValue = {
   attribute_type: MedusaAttributeType
 }
 
+export type MedusaBrand = {
+  value: string
+  image_url: string
+  attribute_type_id: string
+}
+
 export type MedusaCategoryRef = { id: string; name: string; handle: string }
 
 export type MedusaCategory = MedusaCategoryRef & {
@@ -174,6 +180,59 @@ export async function listProductsByCategory(categoryId: string, limit = 24, off
       offset: String(offset),
     }
   )
+  return { products, count }
+}
+
+export async function listBrands() {
+  const url = new URL(`${MEDUSA_BACKEND_URL}/store/brands`)
+  const res = await fetch(url, {
+    headers: { "x-publishable-api-key": MEDUSA_PUBLISHABLE_KEY },
+    next: { revalidate: 60 },
+  })
+
+  if (!res.ok) {
+    throw new Error(`Medusa store API a répondu ${res.status} sur /store/brands`)
+  }
+
+  const { brands } = (await res.json()) as { brands: MedusaBrand[] }
+  return brands
+}
+
+export async function listProductsByBrand(value: string, attributeTypeId: string, limit = 24, offset = 0) {
+  const brandProductsUrl = new URL(`${MEDUSA_BACKEND_URL}/store/brands/${encodeURIComponent(value)}/products`)
+  brandProductsUrl.searchParams.set("attribute_type_id", attributeTypeId)
+
+  const idsRes = await fetch(brandProductsUrl, {
+    headers: { "x-publishable-api-key": MEDUSA_PUBLISHABLE_KEY },
+    next: { revalidate: 60 },
+  })
+  if (!idsRes.ok) {
+    throw new Error(`Medusa store API a répondu ${idsRes.status} sur /store/brands/${value}/products`)
+  }
+  const { product_ids } = (await idsRes.json()) as { product_ids: string[] }
+
+  if (product_ids.length === 0) {
+    return { products: [] as MedusaProduct[], count: 0 }
+  }
+
+  // Réutilise /store/products?id[]=... pour bénéficier du calcul de prix standard —
+  // medusaFetch ne supporte pas les paramètres tableau, d'où la construction manuelle de l'URL.
+  const url = new URL(`${MEDUSA_BACKEND_URL}/store/products`)
+  product_ids.forEach((id) => url.searchParams.append("id[]", id))
+  url.searchParams.set("region_id", DEFAULT_REGION_ID)
+  url.searchParams.set("country_code", DEFAULT_COUNTRY_CODE)
+  url.searchParams.set("fields", PRODUCT_LIST_FIELDS)
+  url.searchParams.set("limit", String(limit))
+  url.searchParams.set("offset", String(offset))
+
+  const res = await fetch(url, {
+    headers: { "x-publishable-api-key": MEDUSA_PUBLISHABLE_KEY },
+    next: { revalidate: 60 },
+  })
+  if (!res.ok) {
+    throw new Error(`Medusa store API a répondu ${res.status} sur /store/products (par marque)`)
+  }
+  const { products, count } = (await res.json()) as { products: MedusaProduct[]; count: number }
   return { products, count }
 }
 

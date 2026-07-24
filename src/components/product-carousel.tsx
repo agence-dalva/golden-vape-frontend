@@ -14,9 +14,9 @@ export default function ProductCarousel({ products }: { products: MedusaProduct[
     <div className="bg-brand-cream">
       <div className="mx-auto max-w-6xl overflow-hidden px-6 py-10" ref={emblaRef}>
         <div className="flex">
-          {products.map((product) => (
+          {products.map((product, index) => (
             <div key={product.id} className="min-w-0 flex-[0_0_50%] px-3 sm:flex-[0_0_33.333%] lg:flex-[0_0_25%]">
-              <ProductCard product={product} />
+              <ProductCard product={product} priority={index === 0} />
             </div>
           ))}
         </div>

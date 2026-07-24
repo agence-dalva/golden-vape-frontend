@@ -5,7 +5,7 @@ import { Toaster } from "sonner";
 import CategoryNav from "@/components/category-nav";
 import MobileCategoryMenu from "@/components/mobile-category-menu";
 import CartIcon from "@/components/cart-icon";
-import { listCategories } from "@/lib/medusa";
+import { listCategories, listBrands } from "@/lib/medusa";
 import { getCurrentCart } from "@/lib/cart-actions";
 import "./globals.css";
 
@@ -29,8 +29,11 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const categories = await listCategories();
-  const cart = await getCurrentCart();
+  const [categories, brands, cart] = await Promise.all([
+    listCategories(),
+    listBrands(),
+    getCurrentCart(),
+  ]);
   // Le badge compte le nombre d'articles DISTINCTS dans le panier, pas la somme des quantités
   // (2x le même produit = toujours "1" article au panier, pas "2").
   const itemCount = cart?.items.length ?? 0;
@@ -48,11 +51,11 @@ export default async function RootLayout({
             </Link>
             <div className="flex items-center gap-2">
               <CartIcon itemCount={itemCount} />
-              <MobileCategoryMenu categories={categories} />
+              <MobileCategoryMenu categories={categories} brands={brands} />
             </div>
           </div>
         </header>
-        <CategoryNav categories={categories} />
+        <CategoryNav categories={categories} brands={brands} />
         <main className="flex-1">{children}</main>
         <Toaster
           position="top-right"
