@@ -5,8 +5,10 @@ import { Toaster } from "sonner";
 import CategoryNav from "@/components/category-nav";
 import MobileCategoryMenu from "@/components/mobile-category-menu";
 import CartIcon from "@/components/cart-icon";
+import AccountMenu from "@/components/account-menu";
 import { listCategories, listBrands } from "@/lib/medusa";
 import { getCurrentCart } from "@/lib/cart-actions";
+import { getCurrentCustomer } from "@/lib/customer-actions";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,10 +31,11 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [categories, brands, cart] = await Promise.all([
+  const [categories, brands, cart, customer] = await Promise.all([
     listCategories(),
     listBrands(),
     getCurrentCart(),
+    getCurrentCustomer(),
   ]);
   // Le badge compte le nombre d'articles DISTINCTS dans le panier, pas la somme des quantités
   // (2x le même produit = toujours "1" article au panier, pas "2").
@@ -50,6 +53,7 @@ export default async function RootLayout({
               Golden Vape
             </Link>
             <div className="flex items-center gap-2">
+              <AccountMenu customer={customer} />
               <CartIcon itemCount={itemCount} />
               <MobileCategoryMenu categories={categories} brands={brands} />
             </div>

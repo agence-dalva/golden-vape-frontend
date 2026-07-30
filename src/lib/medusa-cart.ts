@@ -21,21 +21,64 @@ export function getLineItemImage(item: MedusaCartLineItem): string | null {
   return item.variant?.images[0]?.url ?? item.product?.images[0]?.url ?? item.thumbnail ?? null;
 }
 
+export type MedusaAddress = {
+  id?: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  phone?: string | null;
+  company?: string | null;
+  address_1?: string | null;
+  address_2?: string | null;
+  city?: string | null;
+  country_code?: string | null;
+  province?: string | null;
+  postal_code?: string | null;
+};
+
+export type MedusaShippingMethod = {
+  id: string;
+  name: string;
+  amount: number;
+  shipping_option_id: string;
+};
+
+export type MedusaPaymentSession = {
+  id: string;
+  provider_id: string;
+  status: string;
+};
+
+export type MedusaPaymentCollection = {
+  id: string;
+  amount: number;
+  payment_sessions: MedusaPaymentSession[] | null;
+};
+
 export type MedusaCart = {
   id: string;
   currency_code: string;
   region_id: string;
+  customer_id: string | null;
+  email: string | null;
+  completed_at: string | null;
   items: MedusaCartLineItem[];
   item_total: number;
+  shipping_total: number;
   total: number;
+  shipping_address: MedusaAddress | null;
+  billing_address: MedusaAddress | null;
+  shipping_methods: MedusaShippingMethod[];
+  payment_collection: MedusaPaymentCollection | null;
 };
 
 // Champs demandés explicitement : par défaut, le store API ne renvoie PAS item.total/subtotal
 // (juste unit_price/quantity bruts) — sans ce paramètre, le prix par ligne affiché est NaN.
 // Idem pour les images : item.thumbnail est toujours vide sur ce catalogue, il faut remonter
 // l'image de la variante puis celle du produit (même priorité que la fiche produit).
+// Champs checkout (adresses, shipping_methods, payment_collection) inclus systématiquement :
+// le panier est relu à chaque étape du checkout, plus simple qu'un second jeu de champs dédié.
 const CART_FIELDS =
-  "id,currency_code,region_id,total,item_total,*items,*items.total,*items.subtotal,*items.thumbnail,*items.variant.images.url,*items.product.images.url"
+  "id,currency_code,region_id,customer_id,email,completed_at,total,item_total,shipping_total,*items,*items.total,*items.subtotal,*items.thumbnail,*items.variant.images.url,*items.product.images.url,*shipping_address,*billing_address,*shipping_methods,*shipping_methods.shipping_option,*payment_collection.payment_sessions"
 
 async function cartFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${MEDUSA_BACKEND_URL}${path}`, {
