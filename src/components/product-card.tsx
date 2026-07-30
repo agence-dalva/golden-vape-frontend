@@ -3,7 +3,13 @@ import Image from "next/image";
 import type { MedusaProduct } from "@/lib/medusa";
 import { formatPrice, getDisplayAmount } from "@/lib/medusa";
 
-export default function ProductCard({ product }: { product: MedusaProduct }) {
+export default function ProductCard({
+  product,
+  priority = false,
+}: {
+  product: MedusaProduct;
+  priority?: boolean;
+}) {
   const price = product.variants[0]?.calculated_price;
   const imageUrl = product.images[0]?.url ?? product.thumbnail;
 
@@ -22,6 +28,7 @@ export default function ProductCard({ product }: { product: MedusaProduct }) {
             width={400}
             height={400}
             className="h-full w-full object-cover transition-transform group-hover:scale-105"
+            priority={priority}
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center text-sm text-brand-chocolate/40">

@@ -85,12 +85,12 @@ export default async function CartPage() {
         </span>
       </div>
 
-      <button
-        disabled
-        className="mt-6 w-full cursor-not-allowed rounded-lg bg-brand-chocolate py-3 text-sm font-medium text-brand-cream opacity-50"
+      <Link
+        href="/checkout"
+        className="mt-6 block w-full rounded-lg bg-brand-chocolate py-3 text-center text-sm font-medium text-brand-cream transition-opacity hover:opacity-90"
       >
-        Commander (bientôt disponible)
-      </button>
+        Commander
+      </Link>
     </div>
   );
 }
