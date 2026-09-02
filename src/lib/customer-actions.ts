@@ -5,12 +5,15 @@ import { revalidatePath } from "next/cache";
 import {
   registerAuthIdentity,
   createCustomer,
+  createCustomerAddress,
   loginCustomer,
   getCustomerByToken,
   attachCartToCustomer,
   type MedusaCustomer,
 } from "./medusa-customer";
+import { listCustomerOrders, type MedusaOrderSummary } from "./medusa-orders";
 import { getCurrentCart } from "./cart-actions";
+import type { MedusaAddress } from "./medusa-cart";
 
 // Contrairement à cart_id (identifiant opaque, non sensible), ce cookie porte un JWT de session
 // — httpOnly pour ne jamais être exposé au JS client.
@@ -28,12 +31,23 @@ export async function registerAction(
   email: string,
   password: string,
   firstName: string,
-  lastName: string
+  lastName: string,
+  address?: MedusaAddress
 ): Promise<{ error?: string }> {
   try {
     const actorlessToken = await registerAuthIdentity(email, password);
     await createCustomer(actorlessToken, { email, first_name: firstName, last_name: lastName });
     const token = await loginCustomer(email, password);
+
+    if (address?.address_1) {
+      // L'échec de l'enregistrement de l'adresse ne doit pas faire échouer l'inscription :
+      // le compte existe déjà, le client la ressaisira au moment de commander.
+      await createCustomerAddress(token, {
+        ...address,
+        is_default_shipping: true,
+        is_default_billing: true,
+      }).catch(() => {});
+    }
 
     const cookieStore = await cookies();
     cookieStore.set(CUSTOMER_COOKIE, token, COOKIE_OPTIONS);
@@ -74,4 +88,10 @@ export async function getCurrentCustomer(): Promise<MedusaCustomer | null> {
 export async function getCurrentCustomerToken(): Promise<string | null> {
   const cookieStore = await cookies();
   return cookieStore.get(CUSTOMER_COOKIE)?.value ?? null;
+}
+
+export async function getMyOrders(): Promise<MedusaOrderSummary[]> {
+  const token = await getCurrentCustomerToken();
+  if (!token) return [];
+  return listCustomerOrders(token);
 }

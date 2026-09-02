@@ -10,6 +10,7 @@ import { formatPrice } from "@/lib/medusa";
 import { setAddressesAction, setShippingMethodAction, startMoneticoPaymentAction } from "@/lib/checkout-actions";
 import AddressForm from "@/components/address-form";
 import MoneticoPaymentForm from "@/components/monetico-payment-form";
+import CheckoutGate from "./checkout-gate";
 
 const EMPTY_ADDRESS: MedusaAddress = {
   first_name: "",
@@ -34,13 +35,32 @@ export default function CheckoutForm({
   const [isPending, startTransition] = useTransition();
   const [moneticoForm, setMoneticoForm] = useState<MoneticoForm | null>(null);
 
+  // Un visiteur non connecté choisit d'abord entre commander avec un compte ou en invité.
+  // Un panier déjà renseigné signale un tunnel repris en cours : on ne redemande pas.
+  const [asGuest, setAsGuest] = useState(Boolean(cart.shipping_address && cart.email));
+
+  const savedAddress =
+    customer?.addresses?.find((a) => a.is_default_shipping) ?? customer?.addresses?.[0];
+
   const [email, setEmail] = useState(cart.email ?? customer?.email ?? "");
   const [shippingAddress, setShippingAddress] = useState<MedusaAddress>(
-    cart.shipping_address ?? {
-      ...EMPTY_ADDRESS,
-      first_name: customer?.first_name ?? "",
-      last_name: customer?.last_name ?? "",
-    }
+    cart.shipping_address ??
+      (savedAddress
+        ? {
+            first_name: savedAddress.first_name ?? "",
+            last_name: savedAddress.last_name ?? "",
+            address_1: savedAddress.address_1 ?? "",
+            address_2: savedAddress.address_2 ?? "",
+            postal_code: savedAddress.postal_code ?? "",
+            city: savedAddress.city ?? "",
+            phone: savedAddress.phone ?? "",
+            country_code: savedAddress.country_code ?? "fr",
+          }
+        : {
+            ...EMPTY_ADDRESS,
+            first_name: customer?.first_name ?? "",
+            last_name: customer?.last_name ?? "",
+          })
   );
   const [sameAsBilling, setSameAsBilling] = useState(true);
   const [billingAddress, setBillingAddress] = useState<MedusaAddress>(
@@ -89,6 +109,10 @@ export default function CheckoutForm({
   };
 
   const canPay = addressesSaved && shippingSelected;
+
+  if (!customer && !asGuest) {
+    return <CheckoutGate onGuest={() => setAsGuest(true)} />;
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -226,10 +250,14 @@ export default function CheckoutForm({
 
         {!customer && (
           <p className="mt-3 text-center text-sm text-brand-chocolate/60">
-            <Link href="/compte/connexion?redirect=/checkout" className="text-brand-gold-dark hover:underline">
-              Se connecter
+            Vous commandez en tant qu&apos;invité.{" "}
+            <Link
+              href="/compte/inscription?redirect=/checkout"
+              className="text-brand-gold-dark hover:underline"
+            >
+              Créer un compte
             </Link>{" "}
-            pour retrouver cette commande plus tard, ou continue en invité.
+            pour retrouver cette commande plus tard.
           </p>
         )}
       </section>

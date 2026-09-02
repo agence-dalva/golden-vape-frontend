@@ -45,6 +45,13 @@ export default function AccountMenu({ customer }: { customer: MedusaCustomer | n
           <p className="truncate px-4 py-2 text-sm text-brand-chocolate/60">
             {customer.first_name ? `Bonjour ${customer.first_name}` : customer.email}
           </p>
+          <Link
+            href="/compte"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2 text-sm text-brand-chocolate hover:bg-brand-cream"
+          >
+            Mon compte
+          </Link>
           <button
             onClick={handleLogout}
             className="block w-full cursor-pointer px-4 py-2 text-left text-sm text-brand-chocolate hover:bg-brand-cream"

@@ -1,13 +1,22 @@
 import { MEDUSA_BACKEND_URL, MEDUSA_PUBLISHABLE_KEY } from "./medusa";
+import type { MedusaAddress } from "./medusa-cart";
+
+export type MedusaCustomerAddress = MedusaAddress & {
+  id: string;
+  is_default_shipping?: boolean;
+  is_default_billing?: boolean;
+};
 
 export type MedusaCustomer = {
   id: string;
   email: string;
   first_name: string | null;
   last_name: string | null;
+  phone: string | null;
+  addresses: MedusaCustomerAddress[];
 };
 
-const CUSTOMER_FIELDS = "id,email,first_name,last_name";
+const CUSTOMER_FIELDS = "id,email,first_name,last_name,phone,*addresses";
 
 async function authFetch<T>(
   path: string,
@@ -75,6 +84,19 @@ export async function getCustomerByToken(token: string): Promise<MedusaCustomer 
   } catch {
     return null;
   }
+}
+
+// Enregistre une adresse sur le compte. La première est marquée par défaut : elle sert
+// ensuite à préremplir le tunnel de commande.
+export async function createCustomerAddress(
+  token: string,
+  address: MedusaAddress & { is_default_shipping?: boolean; is_default_billing?: boolean }
+): Promise<void> {
+  await authFetch("/store/customers/me/addresses", {
+    method: "POST",
+    body: JSON.stringify(address),
+    token,
+  });
 }
 
 // Associe un panier existant au customer connecté (transferCartCustomerWorkflow côté backend).
