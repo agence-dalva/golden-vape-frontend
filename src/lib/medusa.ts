@@ -111,7 +111,18 @@ export type MedusaCategory = MedusaCategoryRef & {
   category_children: MedusaCategoryRef[]
 }
 
-async function medusaFetch<T>(path: string, searchParams: Record<string, string>): Promise<T> {
+// Le catalogue tolère une minute de retard, pas le stock : une fiche produit qui annonce
+// « en stock » alors que la dernière unité vient de partir fait échouer la commande. Les
+// appels qui portent une information transactionnelle passent donc en `fresh`.
+//
+// Attention en développement : un rechargement forcé du navigateur envoie
+// `cache-control: no-cache`, ce qui fait ignorer `revalidate` par Next. Un problème de
+// fraîcheur peut donc être invisible en local et bien réel en production.
+async function medusaFetch<T>(
+  path: string,
+  searchParams: Record<string, string>,
+  { fresh = false }: { fresh?: boolean } = {}
+): Promise<T> {
   const url = new URL(`${MEDUSA_BACKEND_URL}${path}`)
   for (const [key, value] of Object.entries(searchParams)) {
     url.searchParams.set(key, value)
@@ -121,7 +132,7 @@ async function medusaFetch<T>(path: string, searchParams: Record<string, string>
     headers: {
       "x-publishable-api-key": MEDUSA_PUBLISHABLE_KEY,
     },
-    next: { revalidate: 60 },
+    ...(fresh ? { cache: "no-store" as const } : { next: { revalidate: 60 } }),
   })
 
   if (!res.ok) {
@@ -164,12 +175,17 @@ export async function listFeaturedProducts(limit = 8) {
 }
 
 export async function getProductByHandle(handle: string) {
-  const { products } = await medusaFetch<{ products: MedusaProduct[] }>("/store/products", {
-    handle,
-    region_id: await getDefaultRegionId(),
-    country_code: DEFAULT_COUNTRY_CODE,
-    fields: PRODUCT_DETAIL_FIELDS,
-  })
+  const { products } = await medusaFetch<{ products: MedusaProduct[] }>(
+    "/store/products",
+    {
+      handle,
+      region_id: await getDefaultRegionId(),
+      country_code: DEFAULT_COUNTRY_CODE,
+      fields: PRODUCT_DETAIL_FIELDS,
+    },
+    // La fiche produit affiche le stock et pilote le bouton d'ajout au panier.
+    { fresh: true }
+  )
   return products[0] ?? null
 }
 
