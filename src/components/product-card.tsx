@@ -3,7 +3,7 @@ import Image from "next/image";
 import { ImageOff } from "lucide-react";
 import type { MedusaProduct } from "@/lib/medusa";
 import { formatPrice, getDisplayAmount } from "@/lib/medusa";
-import AddToCartButton from "./add-to-cart-button";
+import AddToCartButton, { type CartCandidate } from "./add-to-cart-button";
 
 const NEW_PRODUCT_DAYS = 30;
 
@@ -32,9 +32,11 @@ export default function ProductCard({
       )
     : null;
 
-  // Une variante au stock inconnu reste vendable : seule une rupture avérée bloque l'achat.
-  const known = variants.filter((variant) => variant.inventory_quantity !== null);
-  const soldOut = known.length > 0 && known.every((variant) => (variant.inventory_quantity ?? 0) <= 0);
+  const candidates: CartCandidate[] = variants.map((variant) => ({
+    id: variant.id,
+    label: variant.options?.[0]?.value ?? variant.title ?? null,
+    stock: variant.inventory_quantity,
+  }));
 
   return (
     <article className="group relative flex min-w-0 flex-col overflow-hidden rounded-xl border border-gv-border bg-gv-card shadow-gv-xs transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-[3px] hover:border-gv-border-strong hover:shadow-gv-md">
@@ -87,13 +89,7 @@ export default function ProductCard({
       </Link>
 
       <div className="flex px-4 pb-4 pt-2">
-        <AddToCartButton
-          variantId={variants[0]?.id ?? null}
-          productTitle={product.title}
-          productHandle={product.handle}
-          soldOut={soldOut}
-          needsChoice={variants.length > 1}
-        />
+        <AddToCartButton variants={candidates} productTitle={product.title} />
       </div>
     </article>
   );
