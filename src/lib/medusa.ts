@@ -279,12 +279,21 @@ export type DiscoveryCategory = {
   name: string
   handle: string
   imageUrl: string | null
+  isBackground: boolean
 }
 
 // Univers mis en avant sur l'accueil. Le rapprochement se fait sur le nom et non sur le
 // handle : celui-ci porte un suffixe numérique issu de l'import Hiboutik, qui diffère d'une
 // base à l'autre. À défaut de correspondance, on retombe sur les premières racines.
 const DISCOVERY_PREFERENCES = ["liquides", "kits", "diy"]
+
+// Visuels dédiés aux univers mis en avant. À défaut, la carte retombe sur une photo d'un
+// vrai produit de la catégorie — aucune image décorative à maintenir en plus.
+const DISCOVERY_BACKGROUNDS: Record<string, string> = {
+  liquides: "/categories/e-lequides.png",
+  kits: "/categories/kits-pods.png",
+  diy: "/categories/diy.png",
+}
 
 function simplify(value: string): string {
   return value
@@ -316,11 +325,16 @@ export async function listDiscoveryCategories(count = 3): Promise<DiscoveryCateg
       }))
       const product = products[0]
 
+      const background = DISCOVERY_BACKGROUNDS[simplify(category.name)]
+
       return {
         id: category.id,
         name: category.name,
         handle: category.handle,
-        imageUrl: product?.images?.[0]?.url ?? product?.thumbnail ?? null,
+        imageUrl: background ?? product?.images?.[0]?.url ?? product?.thumbnail ?? null,
+        // Un visuel dédié couvre toute la carte ; une photo de produit détourée doit au
+        // contraire rester entière et cadrée à droite.
+        isBackground: Boolean(background),
       }
     })
   )

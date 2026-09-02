@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import AnnouncementBar from "@/components/announcement-bar";
 import MainHeader from "@/components/main-header";
 import CategoryNav from "@/components/category-nav";
+import SiteFooter from "@/components/site-footer";
 import { listCategories, listBrands } from "@/lib/medusa";
 import { getCurrentCart } from "@/lib/cart-actions";
 import { getCurrentCustomer } from "@/lib/customer-actions";
@@ -58,6 +59,7 @@ export default async function RootLayout({
         />
         <CategoryNav categories={categories} brands={brands} />
         <main className="flex-1">{children}</main>
+        <SiteFooter />
         <Toaster
           position="top-right"
           toastOptions={{

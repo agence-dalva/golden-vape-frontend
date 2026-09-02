@@ -17,7 +17,9 @@ export default function CategoryCard({ category }: { category: DiscoveryCategory
           alt=""
           fill
           sizes="(min-width: 1100px) 424px, (min-width: 768px) 45vw, 90vw"
-          className="-z-20 object-contain object-right p-6 transition-transform duration-200 group-hover:scale-[1.03]"
+          className={`-z-20 transition-transform duration-200 group-hover:scale-[1.03] ${
+            category.isBackground ? "object-cover" : "object-contain object-right p-6"
+          }`}
         />
       )}
 
@@ -26,8 +28,10 @@ export default function CategoryCard({ category }: { category: DiscoveryCategory
         aria-hidden
         className="absolute inset-0 -z-10"
         style={{
-          background:
-            "linear-gradient(90deg, rgb(255 255 255 / 0.97) 0%, rgb(255 255 255 / 0.85) 48%, rgb(255 255 255 / 0) 78%)",
+          // Un visuel pleine carte demande un voile plus soutenu pour que le titre tienne.
+          background: category.isBackground
+            ? "linear-gradient(90deg, rgb(251 250 248 / 0.94) 0%, rgb(251 250 248 / 0.74) 52%, rgb(251 250 248 / 0.1) 100%)"
+            : "linear-gradient(90deg, rgb(255 255 255 / 0.97) 0%, rgb(255 255 255 / 0.85) 48%, rgb(255 255 255 / 0) 78%)",
         }}
       />
 
