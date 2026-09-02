@@ -189,6 +189,33 @@ export async function getProductByHandle(handle: string) {
   return products[0] ?? null
 }
 
+export type SearchResultProduct = {
+  id: string
+  title: string
+  handle: string
+  image_url: string | null
+}
+
+export type SearchResultBrand = {
+  value: string
+  image_url: string
+}
+
+export type SearchResults = {
+  products: SearchResultProduct[]
+  brands: SearchResultBrand[]
+}
+
+// Chaque frappe produit une requête différente : les mettre en cache remplirait le cache de
+// données pour rien, d'où `fresh`. Le backend répond en une vingtaine de millisecondes.
+export async function searchCatalog(term: string): Promise<SearchResults> {
+  if (term.trim().length < 2) {
+    return { products: [], brands: [] }
+  }
+
+  return medusaFetch<SearchResults>("/store/search", { q: term.trim() }, { fresh: true })
+}
+
 export async function listCategories() {
   const { product_categories } = await medusaFetch<{ product_categories: MedusaCategory[] }>(
     "/store/product-categories",

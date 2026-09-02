@@ -1,4 +1,5 @@
 import HeroSlider from "@/components/hero-slider";
+import SearchBar from "@/components/search-bar";
 import ProductCarousel from "@/components/product-carousel";
 import ProductCard from "@/components/product-card";
 import { listLatestProducts, listFeaturedProducts } from "@/lib/medusa";
@@ -12,6 +13,10 @@ export default async function Home() {
   return (
     <div>
       <HeroSlider />
+
+      <section className="mx-auto max-w-6xl px-6 pt-10">
+        <SearchBar />
+      </section>
 
       <section id="nouveautes" className="py-12">
         <h2 className="mx-auto max-w-6xl px-6 text-xl font-semibold tracking-tight text-brand-chocolate mb-6">
