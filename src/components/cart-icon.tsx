@@ -1,15 +1,24 @@
 import Link from "next/link";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 
 export default function CartIcon({ itemCount }: { itemCount: number }) {
   return (
-    <Link href="/cart" className="relative flex items-center justify-center p-2 text-brand-chocolate">
-      <ShoppingCart size={22} />
-      {itemCount > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-gold px-1 text-[10px] font-semibold text-brand-chocolate">
-          {itemCount}
-        </span>
-      )}
+    <Link
+      href="/cart"
+      className="group relative flex min-h-11 min-w-11 flex-col items-center justify-center gap-1 text-gv-text transition-[color,transform] duration-200 hover:-translate-y-px hover:text-gv-800"
+    >
+      <span className="relative">
+        <ShoppingBag size={24} strokeWidth={1.6} aria-hidden />
+        {itemCount > 0 && (
+          <span className="absolute -right-2 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gv-800 px-1 text-[10px] font-semibold text-white">
+            {itemCount}
+          </span>
+        )}
+      </span>
+      <span className="hidden text-xs sm:block">Panier</span>
+      <span className="sr-only">
+        Panier{itemCount > 0 ? ` — ${itemCount} article${itemCount > 1 ? "s" : ""}` : " vide"}
+      </span>
     </Link>
   );
 }

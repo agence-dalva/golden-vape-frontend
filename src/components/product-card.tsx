@@ -1,7 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
+import { ImageOff } from "lucide-react";
 import type { MedusaProduct } from "@/lib/medusa";
 import { formatPrice, getDisplayAmount } from "@/lib/medusa";
+import AddToCartButton from "./add-to-cart-button";
+
+const NEW_PRODUCT_DAYS = 30;
+
+function isNew(createdAt: string | null): boolean {
+  if (!createdAt) return false;
+  const age = Date.now() - new Date(createdAt).getTime();
+  return age < NEW_PRODUCT_DAYS * 24 * 60 * 60 * 1000;
+}
 
 export default function ProductCard({
   product,
@@ -10,33 +20,81 @@ export default function ProductCard({
   product: MedusaProduct;
   priority?: boolean;
 }) {
-  const price = product.variants[0]?.calculated_price;
   const imageUrl = product.images[0]?.url ?? product.thumbnail;
+  const variants = product.variants ?? [];
+
+  const prices = variants
+    .map((variant) => variant.calculated_price)
+    .filter((price): price is NonNullable<typeof price> => Boolean(price));
+  const lowest = prices.length
+    ? prices.reduce((min, price) =>
+        getDisplayAmount(price) < getDisplayAmount(min) ? price : min
+      )
+    : null;
+
+  // Une variante au stock inconnu reste vendable : seule une rupture avérée bloque l'achat.
+  const known = variants.filter((variant) => variant.inventory_quantity !== null);
+  const soldOut = known.length > 0 && known.every((variant) => (variant.inventory_quantity ?? 0) <= 0);
 
   return (
-    <Link href={`/products/${product.handle}`} className="group flex shrink-0 flex-col">
-      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-brand-cream border border-brand-chocolate/10">
-        {price && (
-          <span className="absolute left-2 top-2 z-10 rounded-full bg-brand-gold px-3 py-1 text-xs font-semibold text-brand-chocolate shadow-sm">
-            {formatPrice(getDisplayAmount(price), price.currency_code)}
-          </span>
-        )}
-        {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt={product.title}
-            width={400}
-            height={400}
-            className="h-full w-full object-cover transition-transform group-hover:scale-105"
-            priority={priority}
-          />
-        ) : (
-          <div className="h-full w-full flex items-center justify-center text-sm text-brand-chocolate/40">
-            Pas d&apos;image
-          </div>
-        )}
+    <article className="group relative flex min-w-0 flex-col overflow-hidden rounded-xl border border-gv-border bg-gv-card shadow-gv-xs transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-[3px] hover:border-gv-border-strong hover:shadow-gv-md">
+      <Link href={`/products/${product.handle}`} className="flex flex-1 flex-col">
+        {/* Fond blanc plutôt que teinté : les photos du catalogue sont détourées sur blanc,
+            une teinte ferait apparaître un rectangle clair derrière chaque produit. */}
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-white">
+          {isNew(product.created_at) && (
+            <span className="absolute left-3 top-3 z-10 inline-flex h-6 items-center rounded-[5px] border border-gv-800/25 bg-gv-800/[0.08] px-2 text-[10px] font-bold uppercase tracking-wide text-gv-800">
+              Nouveau
+            </span>
+          )}
+
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={product.title}
+              fill
+              sizes="(min-width: 1100px) 312px, (min-width: 768px) 45vw, 90vw"
+              priority={priority}
+              className="object-contain p-[18px] transition-transform duration-200 group-hover:scale-[1.025]"
+            />
+          ) : (
+            <span className="flex h-full w-full flex-col items-center justify-center gap-2 text-gv-text-muted">
+              <ImageOff size={22} aria-hidden />
+              <span className="text-xs">Image indisponible</span>
+            </span>
+          )}
+        </div>
+
+        <div className="flex flex-1 flex-col px-4 pb-2 pt-3.5">
+          {/* Hauteur réservée sur deux lignes : les prix et boutons restent alignés d'une carte à l'autre. */}
+          <h3 className="line-clamp-2 min-h-[2.7em] text-[15px] font-semibold leading-[1.35] text-gv-text">
+            {product.title}
+          </h3>
+
+          <p className="mt-2 text-[17px] font-bold tracking-[-0.01em] text-gv-text">
+            {lowest ? (
+              <>
+                {prices.length > 1 && (
+                  <span className="mr-1 text-xs font-medium text-gv-text-soft">dès</span>
+                )}
+                {formatPrice(getDisplayAmount(lowest), lowest.currency_code)}
+              </>
+            ) : (
+              <span className="text-sm font-medium text-gv-text-muted">Prix sur demande</span>
+            )}
+          </p>
+        </div>
+      </Link>
+
+      <div className="flex px-4 pb-4 pt-2">
+        <AddToCartButton
+          variantId={variants[0]?.id ?? null}
+          productTitle={product.title}
+          productHandle={product.handle}
+          soldOut={soldOut}
+          needsChoice={variants.length > 1}
+        />
       </div>
-      <p className="mt-3 text-sm font-medium text-brand-chocolate">{product.title}</p>
-    </Link>
+    </article>
   );
 }

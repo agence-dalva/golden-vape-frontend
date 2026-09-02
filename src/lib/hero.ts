@@ -1,16 +1,10 @@
-export type Hero = {
-  title: string;
-  subtitle: string;
-  /**
-   * Image de fond de la bannière. Dépose le fichier dans `public/` et mets son chemin ici
-   * (par exemple `/banniere.jpg`). Tant que la valeur est `null`, la bannière reste sur le
-   * brun uni — aucune image cassée ne s'affiche.
-   */
-  imageUrl: string | null;
-};
-
-export const HERO: Hero = {
-  title: "Golden Vape, votre boutique de vape en ligne",
-  subtitle: "Liquides, matériel et accessoires sélectionnés pour vous.",
-  imageUrl: null,
-};
+export const HERO = {
+  eyebrow: "La sélection Golden Vape",
+  title: "Votre vape, simplement mieux.",
+  description:
+    "Produits fiables, conseils d'experts et marques reconnues pour une expérience au quotidien.",
+  primaryCta: { label: "Découvrir la sélection", href: "#selection" },
+  secondaryCta: { label: "Voir les nouveautés", href: "#nouveautes" },
+  // La photographie ne porte aucun texte : titre et boutons sont superposés en HTML.
+  imageUrl: "/banner/banner-golden-vape.png",
+} as const;

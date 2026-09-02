@@ -1,28 +1,141 @@
 @import "tailwindcss";
 
 :root {
-  /* Palette provisoire inspirée du logo Golden Vape — à affiner avec la charte définitive */
-  --background: #faf8f5;
-  --foreground: #2a211c;
-  --brand-chocolate: #44362e;
-  --brand-gold: #f2c26b;
-  --brand-gold-dark: #d9a84e;
-  --brand-cream: #faf8f5;
+  /* Déclinaison de la couleur de marque #44362e — aucun autre accent chromatique fort. */
+  --gv-brand-950: #2c231f;
+  --gv-brand-900: #352a25;
+  --gv-brand-800: #44362e;
+  --gv-brand-700: #58473d;
+  --gv-brand-600: #6c594e;
+  --gv-brand-500: #816d61;
+  --gv-brand-300: #b9aaa1;
+  --gv-brand-200: #d3c7c0;
+  --gv-brand-100: #ebe5e1;
+  --gv-brand-50: #f6f2ef;
+
+  --gv-bg-page: #fbfaf8;
+  --gv-bg-soft: #f6f2ee;
+  --gv-bg-card: #ffffff;
+  --gv-bg-image: #f7f4f1;
+
+  --gv-text: #2c2521;
+  --gv-text-soft: #706761;
+  --gv-text-muted: #9a918b;
+  --gv-border: #e7e0db;
+  --gv-border-strong: #d8cec7;
+
+  --gv-success: #486a54;
+  --gv-danger: #9c4b45;
+
+  --gv-shadow-xs: 0 1px 2px rgb(44 35 31 / 0.04);
+  --gv-shadow-sm: 0 8px 24px rgb(68 54 46 / 0.07);
+  --gv-shadow-md: 0 18px 50px rgb(68 54 46 / 0.11);
+
+  --gv-hero-overlay: linear-gradient(
+    90deg,
+    rgb(251 249 246 / 0.98) 0%,
+    rgb(251 249 246 / 0.93) 34%,
+    rgb(251 249 246 / 0.56) 49%,
+    rgb(251 249 246 / 0) 68%
+  );
+
+  /* Alias conservés : le reste du site les utilise encore, ils pointent sur la nouvelle palette. */
+  --background: var(--gv-bg-page);
+  --foreground: var(--gv-text);
+  --brand-chocolate: var(--gv-brand-800);
+  --brand-cream: var(--gv-bg-soft);
+  --brand-gold: var(--gv-brand-600);
+  --brand-gold-dark: var(--gv-brand-800);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-gv-950: var(--gv-brand-950);
+  --color-gv-900: var(--gv-brand-900);
+  --color-gv-800: var(--gv-brand-800);
+  --color-gv-700: var(--gv-brand-700);
+  --color-gv-600: var(--gv-brand-600);
+  --color-gv-500: var(--gv-brand-500);
+  --color-gv-300: var(--gv-brand-300);
+  --color-gv-200: var(--gv-brand-200);
+  --color-gv-100: var(--gv-brand-100);
+  --color-gv-50: var(--gv-brand-50);
+
+  --color-gv-page: var(--gv-bg-page);
+  --color-gv-soft: var(--gv-bg-soft);
+  --color-gv-card: var(--gv-bg-card);
+  --color-gv-image: var(--gv-bg-image);
+
+  --color-gv-text: var(--gv-text);
+  --color-gv-text-soft: var(--gv-text-soft);
+  --color-gv-text-muted: var(--gv-text-muted);
+  --color-gv-border: var(--gv-border);
+  --color-gv-border-strong: var(--gv-border-strong);
+  --color-gv-danger: var(--gv-danger);
+
+  /* Alias hérités */
   --color-brand-chocolate: var(--brand-chocolate);
   --color-brand-gold: var(--brand-gold);
   --color-brand-gold-dark: var(--brand-gold-dark);
   --color-brand-cream: var(--brand-cream);
-  --font-sans: var(--font-geist-sans);
+
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-cormorant);
   --font-mono: var(--font-geist-mono);
+
+  --shadow-gv-xs: var(--gv-shadow-xs);
+  --shadow-gv-sm: var(--gv-shadow-sm);
+  --shadow-gv-md: var(--gv-shadow-md);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-manrope), Arial, Helvetica, sans-serif;
+}
+
+/* Largeur de page unique : 1320px, marges dégressives jusqu'à 16px sur mobile. */
+.gv-container {
+  width: min(100% - 32px, 1320px);
+  margin-inline: auto;
+}
+
+@media (min-width: 768px) {
+  .gv-container {
+    width: min(100% - 48px, 1320px);
+  }
+}
+
+@media (min-width: 1100px) {
+  .gv-container {
+    width: min(100% - 96px, 1320px);
+  }
+}
+
+/* Sur-titre de section : petites capitales espacées, couleur de marque. */
+.gv-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gv-brand-800);
+}
+
+:focus-visible {
+  outline: 2px solid var(--gv-brand-800);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

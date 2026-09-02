@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User } from "lucide-react";
+import { UserRound } from "lucide-react";
 import { logoutAction } from "@/lib/customer-actions";
 import type { MedusaCustomer } from "@/lib/medusa-customer";
 
@@ -15,10 +15,11 @@ export default function AccountMenu({ customer }: { customer: MedusaCustomer | n
     return (
       <Link
         href="/compte/connexion"
-        className="flex cursor-pointer items-center justify-center p-2 text-brand-chocolate"
-        aria-label="Connexion"
+        className="flex min-h-11 min-w-11 cursor-pointer flex-col items-center justify-center gap-1 text-gv-text transition-[color,transform] duration-200 hover:-translate-y-px hover:text-gv-800"
       >
-        <User size={22} />
+        <UserRound size={24} strokeWidth={1.6} aria-hidden />
+        <span className="hidden text-xs sm:block">Compte</span>
+        <span className="sr-only">Connexion</span>
       </Link>
     );
   }
@@ -35,26 +36,27 @@ export default function AccountMenu({ customer }: { customer: MedusaCustomer | n
         onClick={() => setOpen((v) => !v)}
         aria-label="Mon compte"
         aria-expanded={open}
-        className="flex cursor-pointer items-center justify-center p-2 text-brand-chocolate"
+        className="flex min-h-11 min-w-11 cursor-pointer flex-col items-center justify-center gap-1 text-gv-text transition-[color,transform] duration-200 hover:-translate-y-px hover:text-gv-800"
       >
-        <User size={22} />
+        <UserRound size={24} strokeWidth={1.6} aria-hidden />
+        <span className="hidden text-xs sm:block">Compte</span>
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-30 min-w-48 rounded-lg border border-brand-chocolate/10 bg-white py-2 shadow-lg">
-          <p className="truncate px-4 py-2 text-sm text-brand-chocolate/60">
+        <div className="absolute right-0 top-full z-40 mt-1 min-w-48 rounded-[10px] border border-gv-border bg-white py-2 shadow-gv-sm">
+          <p className="truncate px-4 py-2 text-sm text-gv-text-soft">
             {customer.first_name ? `Bonjour ${customer.first_name}` : customer.email}
           </p>
           <Link
             href="/compte"
             onClick={() => setOpen(false)}
-            className="block px-4 py-2 text-sm text-brand-chocolate hover:bg-brand-cream"
+            className="block px-4 py-2 text-sm text-gv-text hover:bg-gv-soft"
           >
             Mon compte
           </Link>
           <button
             onClick={handleLogout}
-            className="block w-full cursor-pointer px-4 py-2 text-left text-sm text-brand-chocolate hover:bg-brand-cream"
+            className="block w-full cursor-pointer px-4 py-2 text-left text-sm text-gv-text hover:bg-gv-soft"
           >
             Se déconnecter
           </button>

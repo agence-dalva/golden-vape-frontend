@@ -70,6 +70,7 @@ export type MedusaProductOption = {
 export type MedusaProduct = {
   id: string
   title: string
+  created_at: string | null
   description: string | null
   handle: string
   // thumbnail n'est jamais renseigné sur le catalogue migré — utiliser images[0]?.url pour l'affichage
@@ -142,7 +143,9 @@ async function medusaFetch<T>(
   return res.json()
 }
 
-const PRODUCT_LIST_FIELDS = "id,title,handle,thumbnail,*images,*variants.calculated_price"
+// created_at date le badge « Nouveau », inventory_quantity conditionne le bouton panier.
+const PRODUCT_LIST_FIELDS =
+  "id,title,handle,thumbnail,created_at,*images,*variants,*variants.calculated_price,*variants.inventory_quantity"
 const PRODUCT_DETAIL_FIELDS =
   "id,title,description,handle,thumbnail,*images,*options,*options.values,*variants,*variants.calculated_price,*variants.options,*variants.inventory_quantity,*variants.images,height,width,length,weight,origin_country,*categories"
 
@@ -262,6 +265,58 @@ export async function listProductsByCategory(categoryId: string, limit = 24, off
     }
   )
   return { products, count }
+}
+
+export type DiscoveryCategory = {
+  id: string
+  name: string
+  handle: string
+  imageUrl: string | null
+}
+
+// Univers mis en avant sur l'accueil. Le rapprochement se fait sur le nom et non sur le
+// handle : celui-ci porte un suffixe numérique issu de l'import Hiboutik, qui diffère d'une
+// base à l'autre. À défaut de correspondance, on retombe sur les premières racines.
+const DISCOVERY_PREFERENCES = ["liquides", "kits", "diy"]
+
+function simplify(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+}
+
+export async function listDiscoveryCategories(count = 3): Promise<DiscoveryCategory[]> {
+  const categories = await listCategories()
+
+  const preferred = DISCOVERY_PREFERENCES.map((wanted) =>
+    categories.find((category) => simplify(category.name) === wanted)
+  ).filter((category): category is MedusaCategory => Boolean(category))
+
+  const selection = [
+    ...preferred,
+    ...categories.filter((category) => !preferred.includes(category)),
+  ].slice(0, count)
+
+  // L'illustration de chaque univers vient d'un vrai produit du catalogue : aucune image
+  // décorative à maintenir en plus.
+  return Promise.all(
+    selection.map(async (category) => {
+      const { products } = await listProductsByCategory(category.id, 1, 0).catch(() => ({
+        products: [] as MedusaProduct[],
+        count: 0,
+      }))
+      const product = products[0]
+
+      return {
+        id: category.id,
+        name: category.name,
+        handle: category.handle,
+        imageUrl: product?.images?.[0]?.url ?? product?.thumbnail ?? null,
+      }
+    })
+  )
 }
 
 export async function listBrands() {

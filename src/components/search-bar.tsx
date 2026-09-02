@@ -63,9 +63,9 @@ function variantLabel(product: SearchResultProduct): string | null {
 }
 
 const BADGE_CLASSES: Record<"in" | "low" | "out", string> = {
-  in: "bg-brand-cream text-brand-chocolate/70",
-  low: "bg-brand-gold/25 text-brand-chocolate",
-  out: "bg-brand-chocolate/10 text-brand-chocolate/50",
+  in: "bg-gv-soft text-gv-text-soft",
+  low: "border border-gv-800/25 bg-gv-800/[0.08] text-gv-800",
+  out: "bg-gv-image text-gv-text-muted",
 };
 
 export default function SearchBar() {
@@ -185,12 +185,12 @@ export default function SearchBar() {
   const noResults = !loading && !suggestions.length;
 
   return (
-    <div ref={containerRef} className="relative mx-auto w-full max-w-2xl">
+    <div ref={containerRef} className="relative w-full max-w-[650px]">
       <div className="relative">
         <Search
           size={20}
           aria-hidden
-          className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-brand-chocolate/40"
+          className="pointer-events-none absolute left-[18px] top-1/2 -translate-y-1/2 text-gv-text-muted"
         />
         <input
           type="search"
@@ -201,7 +201,7 @@ export default function SearchBar() {
           }}
           onFocus={() => setOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Rechercher un produit ou une marque…"
+          placeholder="Rechercher un produit, une marque…"
           aria-label="Rechercher un produit ou une marque"
           role="combobox"
           aria-expanded={showPanel}
@@ -210,26 +210,26 @@ export default function SearchBar() {
           aria-activedescendant={
             activeIndex >= 0 ? `${listboxId}-${suggestions[activeIndex]?.key}` : undefined
           }
-          className="w-full rounded-full border border-brand-chocolate/15 bg-white py-4 pl-14 pr-12 text-sm text-brand-chocolate shadow-sm outline-none transition-colors placeholder:text-brand-chocolate/40 focus:border-brand-gold-dark [&::-webkit-search-cancel-button]:appearance-none"
+          className="h-[54px] w-full rounded-[10px] border border-gv-border-strong bg-white pl-[50px] pr-11 text-sm text-gv-text outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-gv-text-muted focus:border-gv-800 focus:shadow-[0_0_0_3px_rgb(68_54_46/0.10)] [&::-webkit-search-cancel-button]:appearance-none"
         />
         {loading && (
           <Loader2
             size={18}
             aria-hidden
-            className="absolute right-5 top-1/2 -translate-y-1/2 animate-spin text-brand-chocolate/40"
+            className="absolute right-[18px] top-1/2 -translate-y-1/2 animate-spin text-gv-text-muted"
           />
         )}
       </div>
 
       {showPanel && (
-        <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-brand-chocolate/10 bg-white shadow-lg">
+        <div className="absolute left-0 right-0 top-full z-40 mt-2 overflow-hidden rounded-[10px] border border-gv-border bg-white shadow-gv-md">
           {loading && !suggestions.length ? (
-            <p className="flex items-center justify-center gap-2 px-5 py-6 text-sm text-brand-chocolate/50">
+            <p className="flex items-center justify-center gap-2 px-5 py-6 text-sm text-gv-text-muted">
               <Loader2 size={16} aria-hidden className="animate-spin" />
               Recherche en cours…
             </p>
           ) : noResults ? (
-            <p className="px-5 py-6 text-center text-sm text-brand-chocolate/60">
+            <p className="px-5 py-6 text-center text-sm text-gv-text-soft">
               Aucun résultat pour « {term.trim()} »
             </p>
           ) : (
@@ -241,7 +241,7 @@ export default function SearchBar() {
                 return (
                   <li key={suggestion.key}>
                     {startsSection && (
-                      <p className="px-5 pb-1 pt-3 text-xs font-semibold uppercase tracking-wide text-brand-chocolate/40">
+                      <p className="px-5 pb-1 pt-3 text-[11px] font-bold uppercase tracking-[0.08em] text-gv-text-muted">
                         {suggestion.kind === "brand" ? "Marques" : "Produits"}
                       </p>
                     )}
@@ -252,10 +252,10 @@ export default function SearchBar() {
                       onMouseEnter={() => setHighlighted(index)}
                       onClick={() => go(suggestion.href)}
                       className={`flex w-full cursor-pointer items-center gap-3 px-5 py-2.5 text-left transition-colors ${
-                        activeIndex === index ? "bg-brand-cream" : ""
+                        activeIndex === index ? "bg-gv-soft" : ""
                       }`}
                     >
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-brand-cream">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gv-image">
                         {suggestion.imageUrl ? (
                           <Image
                             src={suggestion.imageUrl}
@@ -269,15 +269,15 @@ export default function SearchBar() {
                             }
                           />
                         ) : (
-                          <Tag size={16} aria-hidden className="text-brand-chocolate/30" />
+                          <Tag size={16} aria-hidden className="text-gv-text-muted" />
                         )}
                       </span>
                       <span className="flex min-w-0 flex-1 flex-col">
-                        <span className="truncate text-sm text-brand-chocolate">
+                        <span className="truncate text-sm text-gv-text">
                           {suggestion.label}
                         </span>
                         {suggestion.detail && (
-                          <span className="truncate text-xs text-brand-chocolate/55">
+                          <span className="truncate text-xs text-gv-text-soft">
                             {suggestion.detail}
                           </span>
                         )}

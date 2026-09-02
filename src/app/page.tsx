@@ -1,35 +1,44 @@
-import HeroBanner from "@/components/hero-banner";
-import ProductCarousel from "@/components/product-carousel";
+import HeroSection from "@/components/hero-section";
+import TrustBar from "@/components/trust-bar";
+import SectionHeading from "@/components/section-heading";
 import ProductCard from "@/components/product-card";
-import { listLatestProducts, listFeaturedProducts } from "@/lib/medusa";
+import CategoryCard from "@/components/category-card";
+import { listLatestProducts, listDiscoveryCategories } from "@/lib/medusa";
 
 export default async function Home() {
-  const [latestProducts, featuredProducts] = await Promise.all([
-    listLatestProducts(10),
-    listFeaturedProducts(8),
+  const [latestProducts, universes] = await Promise.all([
+    listLatestProducts(8),
+    listDiscoveryCategories(3),
   ]);
 
   return (
-    <div>
-      <HeroBanner />
+    <>
+      <HeroSection />
+      <TrustBar />
 
-      <section id="nouveautes" className="py-12">
-        <h2 className="mx-auto max-w-6xl px-6 text-xl font-semibold tracking-tight text-brand-chocolate mb-6">
-          Nouveautés
-        </h2>
-        <ProductCarousel products={latestProducts} />
-      </section>
-
-      <section className="mx-auto max-w-6xl px-6 py-12">
-        <h2 className="text-xl font-semibold tracking-tight text-brand-chocolate mb-6">
-          Nos incontournables
-        </h2>
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
-          {featuredProducts.map((product, index) => (
+      <section id="selection" className="gv-container scroll-mt-24 pt-16 sm:pt-20">
+        <SectionHeading
+          eyebrow="À découvrir"
+          title="La sélection du moment"
+          link={{ label: "Parcourir le catalogue", href: "/categories" }}
+        />
+        <div id="nouveautes" className="grid grid-cols-1 gap-6 scroll-mt-24 sm:grid-cols-2 lg:grid-cols-4">
+          {latestProducts.map((product, index) => (
             <ProductCard key={product.id} product={product} priority={index === 0} />
           ))}
         </div>
       </section>
-    </div>
+
+      {universes.length > 0 && (
+        <section className="gv-container py-16 sm:py-20">
+          <SectionHeading title="Achetez par univers" />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {universes.map((category) => (
+              <CategoryCard key={category.id} category={category} />
+            ))}
+          </div>
+        </section>
+      )}
+    </>
   );
 }

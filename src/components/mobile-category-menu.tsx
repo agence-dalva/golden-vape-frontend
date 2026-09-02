@@ -17,9 +17,17 @@ export default function MobileCategoryMenu({
   brands: MedusaBrand[];
 }) {
   const [open, setOpen] = useState(false);
-  // Reste monté pendant l'animation de sortie (fade), démonté seulement une fois le fade terminé.
-  const [mounted, setMounted] = useState(false);
+  // Le panneau survit à la fermeture le temps du fondu de sortie, puis se démonte. Cet état
+  // n'est jamais posé depuis le corps d'un effet : il se déduit de l'ouverture, et seul le
+  // minuteur de sortie le remet à zéro.
+  const [lingering, setLingering] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const mounted = open || lingering;
+
+  const toggle = () => {
+    setOpen((wasOpen) => !wasOpen);
+    setLingering(true);
+  };
 
   const close = () => {
     setOpen(false);
@@ -27,28 +35,27 @@ export default function MobileCategoryMenu({
   };
 
   useEffect(() => {
-    if (open) {
-      setMounted(true);
-      return;
-    }
-    const timeout = setTimeout(() => setMounted(false), FADE_DURATION_MS);
+    if (open || !lingering) return;
+
+    const timeout = setTimeout(() => setLingering(false), FADE_DURATION_MS);
     return () => clearTimeout(timeout);
-  }, [open]);
+  }, [open, lingering]);
 
   return (
     <div className="contents lg:hidden">
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggle}
         aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
         aria-expanded={open}
-        className="flex cursor-pointer items-center justify-center p-2 text-brand-chocolate"
+        className="flex min-h-11 min-w-11 cursor-pointer flex-col items-center justify-center gap-1 text-gv-text transition-colors hover:text-gv-800"
       >
-        {open ? <X size={22} /> : <Menu size={22} />}
+        {open ? <X size={24} strokeWidth={1.6} /> : <Menu size={24} strokeWidth={1.6} />}
+        <span className="hidden text-xs sm:block">Menu</span>
       </button>
 
       {mounted && (
         <div
-          className={`absolute left-0 right-0 top-full z-30 border-t border-brand-chocolate/10 bg-brand-cream transition-opacity duration-150 ${open ? "opacity-100" : "opacity-0"}`}
+          className={`absolute left-0 right-0 top-full z-30 border-t border-gv-border bg-gv-card shadow-gv-sm transition-opacity duration-150 ${open ? "opacity-100" : "opacity-0"}`}
         >
           {categories.map((category) => {
             const hasChildren = category.category_children.length > 0;

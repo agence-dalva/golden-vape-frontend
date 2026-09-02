@@ -1,24 +1,26 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import Link from "next/link";
+import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { Toaster } from "sonner";
+import AnnouncementBar from "@/components/announcement-bar";
+import MainHeader from "@/components/main-header";
 import CategoryNav from "@/components/category-nav";
-import MobileCategoryMenu from "@/components/mobile-category-menu";
-import CartIcon from "@/components/cart-icon";
-import AccountMenu from "@/components/account-menu";
 import { listCategories, listBrands } from "@/lib/medusa";
 import { getCurrentCart } from "@/lib/cart-actions";
 import { getCurrentCustomer } from "@/lib/customer-actions";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Serif éditoriale pour les titres, sans-serif pour l'interface — deux familles, pas plus.
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -44,31 +46,26 @@ export default async function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${manrope.variable} ${cormorant.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
-        <header className="relative border-b border-brand-chocolate/10">
-          <div className="mx-auto max-w-6xl px-6 py-5 flex items-center justify-between">
-            <Link href="/" className="text-lg font-semibold tracking-tight text-brand-chocolate">
-              Golden Vape
-            </Link>
-            <div className="flex items-center gap-2">
-              <AccountMenu customer={customer} />
-              <CartIcon itemCount={itemCount} />
-              <MobileCategoryMenu categories={categories} brands={brands} />
-            </div>
-          </div>
-        </header>
+      <body className="flex min-h-full flex-col bg-background text-foreground">
+        <AnnouncementBar />
+        <MainHeader
+          categories={categories}
+          brands={brands}
+          customer={customer}
+          itemCount={itemCount}
+        />
         <CategoryNav categories={categories} brands={brands} />
         <main className="flex-1">{children}</main>
         <Toaster
           position="top-right"
           toastOptions={{
             classNames: {
-              toast: "!bg-brand-chocolate !border-brand-chocolate !text-white",
+              toast: "!bg-gv-800 !border-gv-800 !text-white",
               title: "!text-white",
               description: "!text-white/80",
-              icon: "!text-brand-gold",
+              icon: "!text-white",
             },
           }}
         />
