@@ -58,22 +58,37 @@ export default function BrandsIndex({ brands }: { brands: MedusaBrand[] }) {
 
   return (
     <>
-      {/*
-        Une seule ligne qui défile horizontalement. La barre reste visible sur mobile et
-        tablette, où elle sert de repère au doigt. À partir de `xl` elle est masquée : à
-        cette largeur l'alphabet tient en entier, resserré, donc rien n'est hors d'atteinte.
-      */}
-      <div className="mb-8 flex items-center gap-1.5 overflow-x-auto rounded-[10px] border border-gv-border bg-gv-card p-2 xl:gap-1 xl:[-ms-overflow-style:none] xl:[scrollbar-width:none] xl:[&::-webkit-scrollbar]:hidden">
-        <span className="shrink-0 px-2 text-[13px] text-gv-text-soft">Filtrer par initiale</span>
-        {[ALL, DIGITS, ...LETTERS].map((key) => (
-          <InitialButton
-            key={key}
-            label={key}
-            active={key === active}
-            available={key === ALL || (groups.get(key)?.length ?? 0) > 0}
-            onSelect={() => setActive(key)}
-          />
-        ))}
+      <div className="mb-8 rounded-[10px] border border-gv-border bg-gv-card p-2">
+        <div className="mb-2 flex items-center gap-1.5 border-b border-gv-border pb-2">
+          <span className="shrink-0 px-2 text-[13px] text-gv-text-soft">Filtrer par initiale</span>
+          {[ALL, DIGITS].map((key) => (
+            <InitialButton
+              key={key}
+              label={key}
+              active={key === active}
+              available={key === ALL || (groups.get(key)?.length ?? 0) > 0}
+              onSelect={() => setActive(key)}
+            />
+          ))}
+        </div>
+
+        {/*
+          Les lettres défilent horizontalement, barre visible sur mobile et tablette où elle
+          sert de repère. À partir de `xl` elles tiennent en entier et se répartissent sur
+          toute la largeur, sans barre. Le seuil est `xl` et non `lg` : à 1024px, largeur
+          d'un iPad en paysage, les vingt-six lettres ne tiennent pas.
+        */}
+        <div className="flex items-center gap-1.5 overflow-x-auto xl:justify-between xl:gap-0 xl:[-ms-overflow-style:none] xl:[scrollbar-width:none] xl:[&::-webkit-scrollbar]:hidden">
+          {LETTERS.map((letter) => (
+            <InitialButton
+              key={letter}
+              label={letter}
+              active={letter === active}
+              available={(groups.get(letter)?.length ?? 0) > 0}
+              onSelect={() => setActive(letter)}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
