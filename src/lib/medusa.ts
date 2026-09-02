@@ -189,11 +189,21 @@ export async function getProductByHandle(handle: string) {
   return products[0] ?? null
 }
 
+export type SearchResultVariant = {
+  id: string
+  title: string | null
+  price: { amount: number; currency_code: string } | null
+  // `null` signale une variante sans niveau d'inventaire : une information absente, pas une rupture.
+  stock: number | null
+  allow_backorder: boolean
+}
+
 export type SearchResultProduct = {
   id: string
   title: string
   handle: string
   image_url: string | null
+  variants: SearchResultVariant[]
 }
 
 export type SearchResultBrand = {

@@ -4,16 +4,69 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, Loader2, Tag } from "lucide-react";
-import type { SearchResults } from "@/lib/medusa";
+import type { SearchResultProduct, SearchResults } from "@/lib/medusa";
+import { formatPrice } from "@/lib/medusa";
 
 const DEBOUNCE_MS = 250;
 const MIN_TERM_LENGTH = 2;
 
 const EMPTY: SearchResults = { products: [], brands: [] };
 
-type Suggestion =
-  | { kind: "brand"; key: string; label: string; imageUrl: string | null; href: string }
-  | { kind: "product"; key: string; label: string; imageUrl: string | null; href: string };
+type Suggestion = {
+  kind: "brand" | "product";
+  key: string;
+  label: string;
+  detail: string | null;
+  badge: { label: string; tone: "in" | "low" | "out" } | null;
+  imageUrl: string | null;
+  href: string;
+};
+
+/** Prix affiché : le plus bas des variantes, préfixé « dès » si elles diffèrent. */
+function priceLabel(product: SearchResultProduct): string | null {
+  const prices = product.variants
+    .map((variant) => variant.price)
+    .filter((price): price is NonNullable<typeof price> => Boolean(price));
+
+  if (prices.length === 0) return null;
+
+  const amounts = prices.map((price) => price.amount);
+  const lowest = Math.min(...amounts);
+  const formatted = formatPrice(lowest, prices[0].currency_code);
+
+  return Math.min(...amounts) === Math.max(...amounts) ? formatted : `dès ${formatted}`;
+}
+
+/**
+ * Une variante en réassort permanent reste vendable sans stock. Les variantes sans niveau
+ * d'inventaire sont ignorées : on ne sait rien d'elles, ce n'est pas une rupture.
+ */
+function stockBadge(product: SearchResultProduct): Suggestion["badge"] {
+  const known = product.variants.filter((variant) => variant.stock !== null);
+  if (known.length === 0) return null;
+
+  if (product.variants.some((variant) => variant.allow_backorder)) {
+    return { label: "Sur commande", tone: "in" };
+  }
+
+  const total = known.reduce((sum, variant) => sum + (variant.stock ?? 0), 0);
+  if (total <= 0) return { label: "Rupture", tone: "out" };
+  if (total <= 5) return { label: `Plus que ${total}`, tone: "low" };
+  return { label: "En stock", tone: "in" };
+}
+
+/** Au-delà de trois déclinaisons, les lister allongerait le panneau sans rien apprendre. */
+function variantLabel(product: SearchResultProduct): string | null {
+  const titles = product.variants.map((variant) => variant.title).filter(Boolean);
+  if (titles.length <= 1) return null;
+  return titles.length <= 3 ? titles.join(" · ") : `${titles.length} déclinaisons`;
+}
+
+const BADGE_CLASSES: Record<"in" | "low" | "out", string> = {
+  in: "bg-brand-cream text-brand-chocolate/70",
+  low: "bg-brand-gold/25 text-brand-chocolate",
+  out: "bg-brand-chocolate/10 text-brand-chocolate/50",
+};
 
 export default function SearchBar() {
   const router = useRouter();
@@ -44,6 +97,8 @@ export default function SearchBar() {
         kind: "brand" as const,
         key: `brand-${brand.value}`,
         label: brand.value,
+        detail: null,
+        badge: null,
         imageUrl: brand.image_url,
         href: `/marques/${encodeURIComponent(brand.value)}`,
       })),
@@ -51,6 +106,8 @@ export default function SearchBar() {
         kind: "product" as const,
         key: `product-${product.id}`,
         label: product.title,
+        detail: [priceLabel(product), variantLabel(product)].filter(Boolean).join("  ·  ") || null,
+        badge: stockBadge(product),
         imageUrl: product.image_url,
         href: `/products/${product.handle}`,
       })),
@@ -166,7 +223,12 @@ export default function SearchBar() {
 
       {showPanel && (
         <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-brand-chocolate/10 bg-white shadow-lg">
-          {noResults ? (
+          {loading && !suggestions.length ? (
+            <p className="flex items-center justify-center gap-2 px-5 py-6 text-sm text-brand-chocolate/50">
+              <Loader2 size={16} aria-hidden className="animate-spin" />
+              Recherche en cours…
+            </p>
+          ) : noResults ? (
             <p className="px-5 py-6 text-center text-sm text-brand-chocolate/60">
               Aucun résultat pour « {term.trim()} »
             </p>
@@ -210,9 +272,25 @@ export default function SearchBar() {
                           <Tag size={16} aria-hidden className="text-brand-chocolate/30" />
                         )}
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-sm text-brand-chocolate">
-                        {suggestion.label}
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="truncate text-sm text-brand-chocolate">
+                          {suggestion.label}
+                        </span>
+                        {suggestion.detail && (
+                          <span className="truncate text-xs text-brand-chocolate/55">
+                            {suggestion.detail}
+                          </span>
+                        )}
                       </span>
+                      {suggestion.badge && (
+                        <span
+                          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
+                            BADGE_CLASSES[suggestion.badge.tone]
+                          }`}
+                        >
+                          {suggestion.badge.label}
+                        </span>
+                      )}
                     </button>
                   </li>
                 );
