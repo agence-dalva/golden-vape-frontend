@@ -2,12 +2,12 @@ import { notFound } from "next/navigation";
 import {
   getProductByHandle,
   listProductAttributes,
-  listRelatedProducts,
+  listProductsByCategory,
   groupAttributesByType,
 } from "@/lib/medusa";
 import { getCurrentCart } from "@/lib/cart-actions";
 import SectionHeading from "@/components/section-heading";
-import ProductCard from "@/components/product-card";
+import ProductSlider from "@/components/product-slider";
 import Breadcrumbs, { type Crumb } from "./breadcrumbs";
 import ProductGallery from "./product-gallery";
 import PurchasePanel from "./purchase-panel";
@@ -45,11 +45,11 @@ export default async function ProductPage({
   const categories = product.categories ?? [];
   const category = categories.find((item) => item.parent_category) ?? categories[0] ?? null;
 
-  // Les suggestions sont calculées côté Medusa : le storefront ne fait que les afficher.
-  const { similar, complementary } = await listRelatedProducts(product.id, 4).catch(() => ({
-    similar: [],
-    complementary: [],
-  }));
+  const related = category
+    ? await listProductsByCategory(category.id, 13, 0)
+        .then(({ products }) => products.filter((item) => item.id !== product.id).slice(0, 12))
+        .catch(() => [])
+    : [];
 
   const trail: Crumb[] = [
     { label: "Accueil", href: "/" },
@@ -100,28 +100,17 @@ export default async function ProductPage({
         meta={{ origin, contenance, ratio }}
       />
 
-      {complementary.length > 0 && (
-        <section className="mt-16 lg:mt-20">
-          <SectionHeading eyebrow="Pour aller avec" title="Complétez votre achat" />
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {complementary.map((item) => (
-              <ProductCard key={item.id} product={item} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {similar.length > 0 && (
+      {related.length > 0 && (
         <section className="mt-16 lg:mt-20">
           <SectionHeading
             title="Vous aimerez aussi"
-            link={{ label: "Parcourir le catalogue", href: "/categories" }}
+            link={
+              category
+                ? { label: `Tout ${category.name.toLowerCase()}`, href: `/categories/${category.handle}` }
+                : undefined
+            }
           />
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {similar.map((item) => (
-              <ProductCard key={item.id} product={item} />
-            ))}
-          </div>
+          <ProductSlider products={related} label="Produits similaires" />
         </section>
       )}
     </div>
