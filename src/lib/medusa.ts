@@ -254,13 +254,17 @@ export async function getCategoryByHandle(handle: string) {
     "/store/product-categories",
     {
       handle,
-      fields: "id,name,handle,parent_category_id,*parent_category,*category_children",
+      fields:
+        "id,name,handle,description,parent_category_id,*parent_category,*category_children",
     }
   )
   return product_categories[0] ?? null
 }
 
-export async function listProductsByCategory(categoryId: string, limit = 24, offset = 0) {
+export async function listProductsByCategory(
+  categoryId: string,
+  { limit = 24, offset = 0, order }: { limit?: number; offset?: number; order?: string } = {}
+) {
   const { products, count } = await medusaFetch<{ products: MedusaProduct[]; count: number }>(
     "/store/products",
     {
@@ -270,9 +274,76 @@ export async function listProductsByCategory(categoryId: string, limit = 24, off
       fields: PRODUCT_LIST_FIELDS,
       limit: String(limit),
       offset: String(offset),
+      ...(order ? { order } : {}),
     }
   )
   return { products, count }
+}
+
+/**
+ * Prix le plus bas de chaque produit d'une catégorie, identifiants seuls.
+ *
+ * `order=variants.calculated_price` fait répondre une erreur au backend : le prix est calculé
+ * après la requête, il n'est pas triable en base. Trier la seule page affichée donnerait un
+ * classement faux dès la page deux, d'où cet index sur la catégorie entière. Les champs sont
+ * réduits au strict nécessaire : 865 produits pèsent une cinquantaine de kilo-octets.
+ */
+export async function listCategoryPriceIndex(
+  categoryId: string
+): Promise<{ id: string; price: number | null }[]> {
+  const regionId = await getDefaultRegionId()
+  const pageSize = 1000
+  // Garde-fou : au-delà, la page de catégorie doit revoir sa stratégie plutôt que
+  // d'enchaîner les allers-retours.
+  const maxPages = 10
+
+  const index: { id: string; price: number | null }[] = []
+
+  for (let page = 0; page < maxPages; page++) {
+    const { products, count } = await medusaFetch<{
+      products: Pick<MedusaProduct, "id" | "variants">[]
+      count: number
+    }>("/store/products", {
+      category_id: categoryId,
+      region_id: regionId,
+      country_code: DEFAULT_COUNTRY_CODE,
+      fields: "id,*variants.calculated_price",
+      limit: String(pageSize),
+      offset: String(page * pageSize),
+    })
+
+    for (const product of products) {
+      const amounts = (product.variants ?? [])
+        .map((variant) => variant.calculated_price)
+        .filter((price): price is MedusaCalculatedPrice => Boolean(price))
+        .map(getDisplayAmount)
+
+      index.push({ id: product.id, price: amounts.length ? Math.min(...amounts) : null })
+    }
+
+    if (index.length >= count || products.length === 0) break
+  }
+
+  return index
+}
+
+export type ProductAttributeBrief = { value: string; type: string }
+
+/**
+ * Caractéristiques de plusieurs produits en une requête. Interroger
+ * /store/products/:id/attributes carte par carte ferait vingt-quatre allers-retours par page
+ * de catalogue.
+ */
+export async function listProductAttributesBulk(
+  ids: string[]
+): Promise<Record<string, ProductAttributeBrief[]>> {
+  if (ids.length === 0) return {}
+
+  const { attributes } = await medusaFetch<{
+    attributes: Record<string, ProductAttributeBrief[]>
+  }>("/store/product-attributes", { product_ids: ids.join(",") })
+
+  return attributes
 }
 
 export type DiscoveryCategory = {
@@ -320,7 +391,7 @@ export async function listDiscoveryCategories(count = 3): Promise<DiscoveryCateg
   // décorative à maintenir en plus.
   return Promise.all(
     selection.map(async (category) => {
-      const { products } = await listProductsByCategory(category.id, 1, 0).catch(() => ({
+      const { products } = await listProductsByCategory(category.id, { limit: 1 }).catch(() => ({
         products: [] as MedusaProduct[],
         count: 0,
       }))

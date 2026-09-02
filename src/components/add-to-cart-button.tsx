@@ -6,7 +6,7 @@ import { ShoppingCart, Check } from "lucide-react";
 import { addToCartAction } from "@/lib/cart-actions";
 
 const buttonClass =
-  "mt-auto flex h-[42px] w-full items-center justify-center gap-2 rounded-[7px] border text-[13px] font-semibold transition-colors duration-200";
+  "mt-auto flex min-h-11 w-full items-center justify-center gap-2 rounded-[7px] border text-[13px] font-semibold transition-colors duration-200";
 
 export type CartCandidate = {
   id: string;

@@ -1,69 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Package, type LucideIcon } from "lucide-react";
-import {
-  Droplets,
-  Zap,
-  BatteryCharging,
-  Cpu,
-  Flame,
-  Leaf,
-  Wind,
-  Wrench,
-  FlaskConical,
-  Tag,
-  CircleDot,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { MedusaCategory } from "@/lib/medusa";
+import { categoryVisual } from "@/lib/category-visuals";
 
 const MAX_SUBCATEGORIES = 3;
 
-// Repère visuel par famille, rapproché sur le nom : les handles portent un suffixe issu de
-// l'import Hiboutik, qui diffère d'une base à l'autre.
-const ICONS: Record<string, LucideIcon> = {
-  liquides: Droplets,
-  kits: Zap,
-  diy: FlaskConical,
-  chargeurs: BatteryCharging,
-  destockage: Tag,
-  cbd: Leaf,
-  "puffs rechargeables": Wind,
-  "clearomiseurs et dripper": CircleDot,
-  accus: BatteryCharging,
-  resistances: Flame,
-  mods: Cpu,
-  "pyrex et reconstructibles": Wrench,
-};
-
-// Illustrations fournies pour le catalogue, rapprochées sur le nom de catégorie — les
-// handles portent un suffixe issu de l'import Hiboutik, variable d'une base à l'autre.
-// Les familles sans illustration retombent sur l'icône vectorielle ci-dessus.
-const ILLUSTRATIONS: Record<string, string> = {
-  liquides: "/categories/page/liquides.png",
-  chargeurs: "/categories/page/chargeurs.png",
-  destockage: "/categories/page/destockage.png",
-  cbd: "/categories/page/cbd.png",
-  "puffs rechargeables": "/categories/page/puffs-rechargeables.png",
-  "clearomiseurs et dripper": "/categories/page/clearomiseurs-drippers.png",
-  accus: "/categories/page/accus.png",
-  resistances: "/categories/page/resistances.png",
-  mods: "/categories/page/mods.png",
-  "pyrex et reconstructibles": "/categories/page/pyrex-reconstructibles.png",
-  accessoires: "/categories/page/accessoires.png",
-};
-
-function simplify(value: string): string {
-  return value
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .trim();
-}
-
 export default function CategoryTile({ category }: { category: MedusaCategory }) {
-  const key = simplify(category.name);
-  const illustration = ILLUSTRATIONS[key];
-  const Icon = ICONS[key] ?? Package;
+  const { illustration, Icon } = categoryVisual(category.name);
   const children = category.category_children ?? [];
   const visible = children.slice(0, MAX_SUBCATEGORIES);
   const hidden = children.length - visible.length;

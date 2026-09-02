@@ -65,7 +65,13 @@ export default function CategoryNav({
               />
             </button>
 
-            <div className={`absolute left-0 top-full z-100 min-w-52 pt-1 ${menuPanelClasses(moreMenu.open)}`}>
+            {/*
+              Aligné à droite : « Plus » est l'avant-dernier item de la barre, un panneau
+              ouvert vers la droite dépassait du document et faisait apparaître une barre de
+              défilement horizontale de trois pixels — le panneau reste monté pour être animé,
+              donc il compte dans la largeur même fermé.
+            */}
+            <div className={`absolute right-0 top-full z-100 min-w-52 pt-1 ${menuPanelClasses(moreMenu.open)}`}>
               <div className="rounded-[10px] border border-gv-border bg-white py-2 shadow-gv-sm">
                 {overflow.map((category) => (
                   <Link

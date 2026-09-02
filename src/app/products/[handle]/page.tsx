@@ -46,7 +46,7 @@ export default async function ProductPage({
   const category = categories.find((item) => item.parent_category) ?? categories[0] ?? null;
 
   const related = category
-    ? await listProductsByCategory(category.id, 13, 0)
+    ? await listProductsByCategory(category.id, { limit: 13 })
         .then(({ products }) => products.filter((item) => item.id !== product.id).slice(0, 12))
         .catch(() => [])
     : [];
