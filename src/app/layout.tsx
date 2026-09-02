@@ -14,7 +14,9 @@ import "./globals.css";
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  // 700 n'est là que pour le titre de bannière : à 58px, le contraste très marqué du
+  // Cormorant fait paraître le SemiBold plus léger qu'il ne l'est.
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
