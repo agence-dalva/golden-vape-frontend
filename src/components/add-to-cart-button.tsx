@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { ShoppingCart, Check } from "lucide-react";
+import { ShoppingBag, Check } from "lucide-react";
 import { addToCartAction } from "@/lib/cart-actions";
 
 const buttonClass =
@@ -73,7 +73,7 @@ export default function AddToCartButton({
         </>
       ) : (
         <>
-          <ShoppingCart size={16} strokeWidth={1.5} aria-hidden />
+          <ShoppingBag size={16} strokeWidth={1.6} aria-hidden />
           {isPending ? "Ajout…" : "Ajouter au panier"}
         </>
       )}

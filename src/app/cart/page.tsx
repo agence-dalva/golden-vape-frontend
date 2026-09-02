@@ -107,7 +107,7 @@ export default async function CartPage() {
 
         <div className="lg:sticky lg:top-6">
           <section className="rounded-xl border border-gv-border bg-gv-card p-6 shadow-gv-sm">
-            <h2 className="mb-6 font-display text-[26px] font-normal text-gv-text">Récapitulatif</h2>
+            <h2 className="mb-6 text-lg font-semibold tracking-[-0.01em] text-gv-text">Récapitulatif</h2>
 
             <dl className="flex flex-col gap-4 text-sm">
               <div className="flex justify-between gap-5">
@@ -136,7 +136,7 @@ export default async function CartPage() {
             </dl>
 
             <div className="mt-6 flex items-baseline justify-between gap-4 border-t border-gv-border pt-5">
-              <span className="font-display text-[26px] font-normal text-gv-text">Total</span>
+              <span className="text-lg font-semibold tracking-[-0.01em] text-gv-text">Total</span>
               <span className="text-[30px] font-semibold tabular-nums text-gv-text">
                 {formatPrice(cart!.total, currency)}
               </span>
