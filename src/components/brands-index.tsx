@@ -11,6 +11,36 @@ const ALL = "Toutes";
 const DIGITS = "0-9";
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
+function InitialButton({
+  label,
+  active,
+  available,
+  onSelect,
+}: {
+  label: string;
+  active: boolean;
+  /** Une lettre sans marque reste visible — l'alphabet garde sa forme — mais n'appelle pas au clic. */
+  available: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      onClick={() => available && onSelect()}
+      disabled={!available}
+      aria-current={active ? "location" : undefined}
+      className={`flex h-9 min-w-9 shrink-0 cursor-pointer items-center justify-center rounded-[7px] px-2 text-[13px] font-medium transition-colors ${
+        active
+          ? "bg-gv-800 text-white"
+          : available
+            ? "text-gv-text hover:bg-gv-50 hover:text-gv-800"
+            : "cursor-not-allowed text-gv-text-muted/45"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
 export default function BrandsIndex({ brands }: { brands: MedusaBrand[] }) {
   const [active, setActive] = useState(ALL);
 
@@ -28,34 +58,36 @@ export default function BrandsIndex({ brands }: { brands: MedusaBrand[] }) {
 
   return (
     <>
-      <div // Une seule ligne qui défile plutôt qu'un pavé sur deux lignes : l'alphabet se lit
-        // d'un coup d'œil, et le comportement est le même du mobile au grand écran.
-        className="mb-8 flex items-center gap-1.5 overflow-x-auto rounded-[10px] border border-gv-border bg-gv-card p-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <span className="shrink-0 px-2 text-[13px] text-gv-text-soft">Filtrer par initiale</span>
-        {[ALL, DIGITS, ...LETTERS].map((key) => {
-          const available = key === ALL || (groups.get(key)?.length ?? 0) > 0;
-          const isActive = key === active;
-
-          return (
-            <button
+      <div className="mb-8 rounded-[10px] border border-gv-border bg-gv-card p-2">
+        <div className="mb-2 flex items-center gap-1.5 border-b border-gv-border pb-2">
+          <span className="shrink-0 px-2 text-[13px] text-gv-text-soft">Filtrer par initiale</span>
+          {[ALL, DIGITS].map((key) => (
+            <InitialButton
               key={key}
-              onClick={() => available && setActive(key)}
-              // Une lettre sans marque n'est pas cliquable : elle reste visible pour que
-              // l'alphabet garde sa forme, mais n'appelle pas au clic.
-              disabled={!available}
-              aria-current={isActive ? "location" : undefined}
-              className={`flex h-9 min-w-9 shrink-0 cursor-pointer items-center justify-center rounded-[7px] px-2 text-[13px] font-medium transition-colors ${
-                isActive
-                  ? "bg-gv-800 text-white"
-                  : available
-                    ? "text-gv-text hover:bg-gv-50 hover:text-gv-800"
-                    : "cursor-not-allowed text-gv-text-muted/45"
-              }`}
-            >
-              {key}
-            </button>
-          );
-        })}
+              label={key}
+              active={key === active}
+              available={key === ALL || (groups.get(key)?.length ?? 0) > 0}
+              onSelect={() => setActive(key)}
+            />
+          ))}
+        </div>
+
+        {/*
+          Les vingt-six lettres ne tiennent sur une ligne qu'à partir de `xl` : à 1024px,
+          largeur d'un iPad en paysage, il leur manque quelques pixels. En dessous, elles
+          défilent donc au doigt, sans ascenseur visible.
+        */}
+        <div className="flex items-center gap-1.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] xl:justify-between xl:gap-1 xl:overflow-x-visible [&::-webkit-scrollbar]:hidden">
+          {LETTERS.map((letter) => (
+            <InitialButton
+              key={letter}
+              label={letter}
+              active={letter === active}
+              available={(groups.get(letter)?.length ?? 0) > 0}
+              onSelect={() => setActive(letter)}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
