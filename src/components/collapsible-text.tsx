@@ -3,6 +3,11 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 
+/** Doit correspondre au `leading` appliqué au texte, faute de quoi le repli coupe mal. */
+const LINE_HEIGHT = 1.65;
+const FONT_SIZE = 15;
+const DURATION_MS = 280;
+
 export default function CollapsibleText({
   children,
   /** Nombre de lignes visibles une fois replié. */
@@ -12,46 +17,55 @@ export default function CollapsibleText({
   lines?: number;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [overflows, setOverflows] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const [fullHeight, setFullHeight] = useState(0);
+  const innerRef = useRef<HTMLDivElement>(null);
   const contentId = useId();
 
-  // Le bouton n'a de sens que si le texte dépasse réellement — inutile de proposer
-  // « Lire la suite » sur une description de deux lignes. La mesure ne se fait qu'à l'état
-  // replié : déplié, la hauteur visible égale la hauteur totale et le bouton disparaîtrait.
+  // Hauteur naturelle du texte, mesurée sur un élément jamais rogné. `ResizeObserver`
+  // déclenche un premier appel dès l'observation : inutile de mesurer dans le corps de
+  // l'effet, ce que la règle React du projet interdit de toute façon.
   useEffect(() => {
-    if (expanded) return;
+    const inner = innerRef.current;
+    if (!inner) return;
 
-    const element = contentRef.current;
-    if (!element) return;
-
-    const measure = () => setOverflows(element.scrollHeight > element.clientHeight + 1);
-    measure();
-
-    const observer = new ResizeObserver(measure);
-    observer.observe(element);
+    const observer = new ResizeObserver(() => setFullHeight(inner.offsetHeight));
+    observer.observe(inner);
     return () => observer.disconnect();
-  }, [expanded]);
+  }, []);
+
+  // La hauteur repliée s'exprime en `em` : elle est juste dès le premier rendu, sans
+  // attendre la mesure — pas de texte entier qui apparaît puis se replie d'un coup.
+  const collapsedHeight = lines * LINE_HEIGHT;
+  const overflows = fullHeight > collapsedHeight * FONT_SIZE + 1;
 
   return (
     <div>
-      <div className="relative">
+      <div className="relative max-w-[720px]">
         <div
-          ref={contentRef}
           id={contentId}
-          className="max-w-[720px] whitespace-pre-line text-[15px] leading-[1.65] text-gv-text-soft"
-          style={expanded ? undefined : { display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: lines, overflow: "hidden" }}
+          className="overflow-hidden transition-[max-height] ease-[cubic-bezier(0.22,1,0.36,1)]"
+          style={{
+            // Animer vers `auto` est impossible : on vise la hauteur mesurée, tenue à jour
+            // par l'observateur si le texte se recompose.
+            maxHeight: expanded && fullHeight ? `${fullHeight}px` : `${collapsedHeight}em`,
+            transitionDuration: `${DURATION_MS}ms`,
+          }}
         >
-          {children}
+          <div
+            ref={innerRef}
+            className="whitespace-pre-line text-[15px] leading-[1.65] text-gv-text-soft"
+          >
+            {children}
+          </div>
         </div>
 
-        {/* Dégradé de coupe : il signale que le texte continue, sans trancher une lettre en deux. */}
-        {!expanded && overflows && (
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-12 max-w-[720px] bg-gradient-to-t from-white to-transparent"
-          />
-        )}
+        {/* Dégradé de coupe : il signale que le texte continue, et s'efface au dépliage. */}
+        <div
+          aria-hidden
+          className={`pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white to-transparent transition-opacity duration-200 ${
+            expanded || !overflows ? "opacity-0" : "opacity-100"
+          }`}
+        />
       </div>
 
       {overflows && (
