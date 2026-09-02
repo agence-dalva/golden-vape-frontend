@@ -1,4 +1,5 @@
 import { MapPin, Droplets, FlaskConical } from "lucide-react";
+import CollapsibleText from "@/components/collapsible-text";
 
 export type Spec = { label: string; value: string };
 
@@ -39,9 +40,7 @@ export default function ProductDetails({
           <h2 className="mb-3 mt-2 font-display text-[26px] font-medium leading-[1.05] text-gv-text sm:text-[32px]">
             {title}
           </h2>
-          <div className="max-w-[720px] whitespace-pre-line text-[15px] leading-[1.65] text-gv-text-soft">
-            {description}
-          </div>
+          <CollapsibleText>{description}</CollapsibleText>
 
           {metaItems.length > 0 && (
             <ul className="mt-[22px] flex flex-wrap gap-x-6 gap-y-2">
