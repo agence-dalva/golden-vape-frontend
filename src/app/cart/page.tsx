@@ -1,12 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getCurrentCart } from "@/lib/cart-actions";
+import { getCurrentCustomer } from "@/lib/customer-actions";
 import { formatPrice } from "@/lib/medusa";
 import { getLineItemImage } from "@/lib/medusa-cart";
+import CheckoutStepper from "@/components/checkout-stepper";
 import CartLineControls from "./cart-line-controls";
 
 export default async function CartPage() {
-  const cart = await getCurrentCart();
+  const [cart, customer] = await Promise.all([getCurrentCart(), getCurrentCustomer()]);
   const items = cart?.items ?? [];
 
   if (items.length === 0) {
@@ -28,8 +30,13 @@ export default async function CartPage() {
     );
   }
 
+  // Un client connecté n'a pas à choisir entre compte et commande invité.
+  const checkoutHref = customer ? "/checkout" : "/checkout/identification";
+
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
+      <CheckoutStepper current={1} />
+
       <h1 className="text-2xl font-semibold tracking-tight text-brand-chocolate mb-8">
         Votre panier
       </h1>
@@ -86,7 +93,7 @@ export default async function CartPage() {
       </div>
 
       <Link
-        href="/checkout"
+        href={checkoutHref}
         className="mt-6 block w-full rounded-lg bg-brand-chocolate py-3 text-center text-sm font-medium text-brand-cream transition-opacity hover:opacity-90"
       >
         Commander

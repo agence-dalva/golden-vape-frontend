@@ -13,7 +13,9 @@ export default async function LoginPage({
       <h1 className="mb-8 text-2xl font-semibold tracking-tight text-brand-chocolate">
         Connexion
       </h1>
-      <LoginForm redirectTo={redirectTo} />
+      <div className="rounded-xl border border-brand-chocolate/10 bg-white p-6 sm:p-8">
+        <LoginForm redirectTo={redirectTo} />
+      </div>
     </div>
   );
 }

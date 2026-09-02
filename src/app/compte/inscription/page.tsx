@@ -13,7 +13,9 @@ export default async function RegisterPage({
       <h1 className="mb-8 text-2xl font-semibold tracking-tight text-brand-chocolate">
         Créer un compte
       </h1>
-      <RegisterForm redirectTo={redirectTo} />
+      <div className="rounded-xl border border-brand-chocolate/10 bg-white p-6 sm:p-8">
+        <RegisterForm redirectTo={redirectTo} />
+      </div>
     </div>
   );
 }
