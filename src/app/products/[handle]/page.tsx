@@ -8,7 +8,7 @@ import {
 import { getCurrentCart } from "@/lib/cart-actions";
 import SectionHeading from "@/components/section-heading";
 import ProductSlider from "@/components/product-slider";
-import Breadcrumbs, { type Crumb } from "./breadcrumbs";
+import Breadcrumbs, { type Crumb } from "@/components/breadcrumbs";
 import ProductGallery from "./product-gallery";
 import PurchasePanel from "./purchase-panel";
 import ProductDetails, { type Spec } from "./product-details";

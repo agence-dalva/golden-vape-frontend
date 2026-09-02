@@ -99,6 +99,22 @@ export async function createCustomerAddress(
   });
 }
 
+export async function updateCustomerAddress(
+  token: string,
+  addressId: string,
+  address: MedusaAddress & { is_default_shipping?: boolean; is_default_billing?: boolean }
+): Promise<void> {
+  await authFetch(`/store/customers/me/addresses/${addressId}`, {
+    method: "POST",
+    body: JSON.stringify(address),
+    token,
+  });
+}
+
+export async function deleteCustomerAddress(token: string, addressId: string): Promise<void> {
+  await authFetch(`/store/customers/me/addresses/${addressId}`, { method: "DELETE", token });
+}
+
 // Associe un panier existant au customer connecté (transferCartCustomerWorkflow côté backend).
 export async function attachCartToCustomer(cartId: string, token: string): Promise<void> {
   await authFetch(`/store/carts/${cartId}/customer`, { method: "POST", token });

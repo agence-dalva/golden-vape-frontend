@@ -8,6 +8,8 @@ import {
   addLineItem,
   updateLineItem,
   removeLineItem,
+  applyPromoCode,
+  removePromoCode,
   type MedusaCart,
 } from "./medusa-cart";
 
@@ -70,6 +72,43 @@ export async function removeCartLineAction(lineId: string) {
   if (!cart) throw new Error("Aucun panier actif");
   await removeLineItem(cart.id, lineId);
   revalidatePath("/", "layout");
+}
+
+export async function applyPromoCodeAction(code: string): Promise<{ error?: string }> {
+  const cart = await getCurrentCart();
+  if (!cart) return { error: "Aucun panier actif" };
+
+  const trimmed = code.trim();
+  if (!trimmed) return { error: "Saisissez un code" };
+
+  try {
+    const updated = await applyPromoCode(cart.id, trimmed);
+    // Medusa n'échoue pas sur un code inconnu : il rend le panier inchangé. C'est donc
+    // l'absence de la promotion dans la réponse qui signale le refus.
+    const applied = updated.promotions?.some(
+      (promotion) => promotion.code?.toLowerCase() === trimmed.toLowerCase()
+    );
+
+    if (!applied) return { error: "Ce code n'est pas valide ou ne s'applique pas à ce panier" };
+
+    revalidatePath("/", "layout");
+    return {};
+  } catch {
+    return { error: "Impossible d'appliquer ce code" };
+  }
+}
+
+export async function removePromoCodeAction(code: string): Promise<{ error?: string }> {
+  const cart = await getCurrentCart();
+  if (!cart) return { error: "Aucun panier actif" };
+
+  try {
+    await removePromoCode(cart.id, code);
+    revalidatePath("/", "layout");
+    return {};
+  } catch {
+    return { error: "Impossible de retirer ce code" };
+  }
 }
 
 // À appeler une fois un panier complété (transformé en commande) : le panier est verrouillé

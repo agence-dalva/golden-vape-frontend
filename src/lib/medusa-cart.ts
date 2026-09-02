@@ -5,6 +5,8 @@ export type MedusaCartLineItem = {
   variant_id: string;
   product_id: string;
   product_title: string;
+  // Permet de renvoyer sur la fiche depuis le panier sans requête supplémentaire.
+  product_handle: string | null;
   variant_title: string | null;
   thumbnail: string | null;
   quantity: number;
@@ -64,7 +66,9 @@ export type MedusaCart = {
   items: MedusaCartLineItem[];
   item_total: number;
   shipping_total: number;
+  discount_total: number;
   total: number;
+  promotions: { id: string; code: string | null }[];
   shipping_address: MedusaAddress | null;
   billing_address: MedusaAddress | null;
   shipping_methods: MedusaShippingMethod[];
@@ -78,7 +82,7 @@ export type MedusaCart = {
 // Champs checkout (adresses, shipping_methods, payment_collection) inclus systématiquement :
 // le panier est relu à chaque étape du checkout, plus simple qu'un second jeu de champs dédié.
 const CART_FIELDS =
-  "id,currency_code,region_id,customer_id,email,completed_at,total,item_total,shipping_total,*items,*items.total,*items.subtotal,*items.thumbnail,*items.variant.images.url,*items.product.images.url,*shipping_address,*billing_address,*shipping_methods,*shipping_methods.shipping_option,*payment_collection.payment_sessions"
+  "id,currency_code,region_id,customer_id,email,completed_at,total,item_total,shipping_total,discount_total,*promotions,*items,*items.total,*items.subtotal,*items.thumbnail,*items.variant.images.url,*items.product.images.url,*shipping_address,*billing_address,*shipping_methods,*shipping_methods.shipping_option,*payment_collection.payment_sessions"
 
 async function cartFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${MEDUSA_BACKEND_URL}${path}`, {
@@ -146,6 +150,25 @@ export async function updateLineItem(
       method: "POST",
       body: JSON.stringify({ quantity }),
     }
+  );
+  return cart;
+}
+
+// Codes promo : Medusa valide et applique la remise côté serveur, le storefront n'en
+// recalcule rien. Un code refusé ne provoque pas d'erreur HTTP — le panier revient
+// simplement sans promotion, ce que l'appelant doit vérifier.
+export async function applyPromoCode(cartId: string, code: string): Promise<MedusaCart> {
+  const { cart } = await cartFetch<{ cart: MedusaCart }>(
+    withFields(`/store/carts/${cartId}/promotions`),
+    { method: "POST", body: JSON.stringify({ promo_codes: [code] }) }
+  );
+  return cart;
+}
+
+export async function removePromoCode(cartId: string, code: string): Promise<MedusaCart> {
+  const { cart } = await cartFetch<{ cart: MedusaCart }>(
+    withFields(`/store/carts/${cartId}/promotions`),
+    { method: "DELETE", body: JSON.stringify({ promo_codes: [code] }) }
   );
   return cart;
 }

@@ -6,6 +6,8 @@ import {
   registerAuthIdentity,
   createCustomer,
   createCustomerAddress,
+  updateCustomerAddress,
+  deleteCustomerAddress,
   loginCustomer,
   getCustomerByToken,
   attachCartToCustomer,
@@ -88,6 +90,64 @@ export async function getCurrentCustomer(): Promise<MedusaCustomer | null> {
 export async function getCurrentCustomerToken(): Promise<string | null> {
   const cookieStore = await cookies();
   return cookieStore.get(CUSTOMER_COOKIE)?.value ?? null;
+}
+
+type AddressInput = MedusaAddress & { is_default_shipping?: boolean; is_default_billing?: boolean };
+
+// Toutes les écritures d'adresse passent par le jeton de session : Medusa vérifie donc
+// côté serveur que l'adresse appartient bien au client connecté.
+export async function saveAddressAction(
+  address: AddressInput,
+  addressId?: string
+): Promise<{ error?: string }> {
+  const token = await getCurrentCustomerToken();
+  if (!token) return { error: "Vous devez être connecté" };
+
+  try {
+    if (addressId) {
+      await updateCustomerAddress(token, addressId, address);
+    } else {
+      await createCustomerAddress(token, address);
+    }
+    revalidatePath("/compte");
+    return {};
+  } catch {
+    return { error: "Impossible d'enregistrer cette adresse" };
+  }
+}
+
+export async function deleteAddressAction(addressId: string): Promise<{ error?: string }> {
+  const token = await getCurrentCustomerToken();
+  if (!token) return { error: "Vous devez être connecté" };
+
+  try {
+    await deleteCustomerAddress(token, addressId);
+    revalidatePath("/compte");
+    return {};
+  } catch {
+    return { error: "Impossible de supprimer cette adresse" };
+  }
+}
+
+export async function setDefaultAddressAction(addressId: string): Promise<{ error?: string }> {
+  const token = await getCurrentCustomerToken();
+  if (!token) return { error: "Vous devez être connecté" };
+
+  const customer = await getCustomerByToken(token);
+  const address = customer?.addresses?.find((entry) => entry.id === addressId);
+  if (!address) return { error: "Adresse introuvable" };
+
+  try {
+    await updateCustomerAddress(token, addressId, {
+      ...address,
+      is_default_shipping: true,
+      is_default_billing: true,
+    });
+    revalidatePath("/compte");
+    return {};
+  } catch {
+    return { error: "Impossible de définir cette adresse par défaut" };
+  }
 }
 
 export async function getMyOrders(): Promise<MedusaOrderSummary[]> {
