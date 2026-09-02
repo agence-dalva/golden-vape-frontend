@@ -5,32 +5,19 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import type { MedusaBrand } from "@/lib/medusa";
+import { sortBrands, brandGroupKey } from "@/lib/brands";
 
 const ALL = "Toutes";
 const DIGITS = "0-9";
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
-// Tri français : insensible à la casse et aux accents, « Élikuid » se range donc avec les E.
-const collator = new Intl.Collator("fr", { sensitivity: "base", numeric: true });
-
-/** Lettre de regroupement : les noms commençant par un chiffre vont dans « 0-9 ». */
-function groupKeyOf(name: string): string {
-  const first = name.normalize("NFD").replace(/[̀-ͯ]/g, "").trim().charAt(0).toUpperCase();
-  if (/[0-9]/.test(first)) return DIGITS;
-  return /[A-Z]/.test(first) ? first : DIGITS;
-}
-
 export default function BrandsIndex({ brands }: { brands: MedusaBrand[] }) {
   const [active, setActive] = useState(ALL);
 
   const groups = useMemo(() => {
-    // Doublons écartés sur la valeur, qui fait office d'identifiant de marque.
-    const unique = Array.from(new Map(brands.map((brand) => [brand.value, brand])).values());
-    const sorted = unique.sort((a, b) => collator.compare(a.value, b.value));
-
     const map = new Map<string, MedusaBrand[]>();
-    for (const brand of sorted) {
-      const key = groupKeyOf(brand.value);
+    for (const brand of sortBrands(brands)) {
+      const key = brandGroupKey(brand.value);
       map.set(key, [...(map.get(key) ?? []), brand]);
     }
     return map;
@@ -43,7 +30,7 @@ export default function BrandsIndex({ brands }: { brands: MedusaBrand[] }) {
     <>
       <div // Une seule ligne qui défile plutôt qu'un pavé sur deux lignes : l'alphabet se lit
         // d'un coup d'œil, et le comportement est le même du mobile au grand écran.
-        className="mb-8 flex items-center gap-1.5 overflow-x-auto rounded-[10px] border border-gv-border bg-gv-card p-2 [scrollbar-width:thin]">
+        className="mb-8 flex items-center gap-1.5 overflow-x-auto rounded-[10px] border border-gv-border bg-gv-card p-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <span className="shrink-0 px-2 text-[13px] text-gv-text-soft">Filtrer par initiale</span>
         {[ALL, DIGITS, ...LETTERS].map((key) => {
           const available = key === ALL || (groups.get(key)?.length ?? 0) > 0;
@@ -102,9 +89,10 @@ export default function BrandsIndex({ brands }: { brands: MedusaBrand[] }) {
             <section key={letter} aria-labelledby={`brands-${letter}`} id={`letter-${letter}`} className="scroll-mt-28">
               <h3
                 id={`brands-${letter}`}
-                className="mb-4 border-b border-gv-border pb-2 font-display text-2xl font-medium text-gv-text"
+                className="mb-4 flex items-center gap-4 font-display text-2xl font-medium text-gv-text"
               >
                 {letter}
+                <span aria-hidden className="h-px flex-1 bg-gv-border" />
               </h3>
 
               <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">

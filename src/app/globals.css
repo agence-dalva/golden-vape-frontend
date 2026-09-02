@@ -13,7 +13,9 @@
   --gv-brand-100: #ebe5e1;
   --gv-brand-50: #f6f2ef;
 
-  --gv-bg-page: #fbfaf8;
+  /* Fond de page volontairement très proche du blanc : les cartes restent lisibles
+     sans que la page paraisse grise. */
+  --gv-bg-page: #fdfcfb;
   --gv-bg-soft: #f6f2ee;
   --gv-bg-card: #ffffff;
   --gv-bg-image: #f7f4f1;
