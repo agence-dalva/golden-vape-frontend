@@ -43,6 +43,13 @@ export async function getCurrentCart(): Promise<MedusaCart | null> {
   return cart && !cart.completed_at ? cart : null;
 }
 
+// Identifiant brut du cookie, y compris si le panier vient d'être complété : le retour de
+// paiement en a besoin pour retrouver la commande créée par la notification de Monetico.
+export async function getCartIdCookie(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get(CART_COOKIE)?.value ?? null;
+}
+
 export async function addToCartAction(variantId: string, quantity: number) {
   const cart = await getOrCreateCart();
   const updated = await addLineItem(cart.id, variantId, quantity);

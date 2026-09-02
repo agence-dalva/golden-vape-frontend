@@ -80,16 +80,32 @@ export async function addShippingMethod(cartId: string, optionId: string): Promi
   return cart;
 }
 
-// Crée la payment collection puis initie une session avec le provider provisoire — un seul
-// appel côté frontend, pas d'étape de choix visible tant qu'il n'y a qu'un seul provider.
-export async function createPaymentCollectionAndSession(cartId: string): Promise<void> {
+export const MONETICO_PROVIDER_ID = "pp_monetico_monetico";
+
+// Formulaire scellé à poster vers Monetico, construit côté Medusa.
+export type MoneticoPaymentForm = {
+  actionUrl: string;
+  fields: Record<string, string>;
+};
+
+// Crée la payment collection puis ouvre une session Monetico. Rejouer cet appel remplace la
+// session existante : une nouvelle tentative de paiement repart donc sur une référence neuve.
+export async function createMoneticoPaymentSession(cartId: string): Promise<void> {
   const { payment_collection } = await checkoutFetch<{ payment_collection: { id: string } }>(
     "/store/payment-collections",
     { method: "POST", body: JSON.stringify({ cart_id: cartId }) }
   );
   await checkoutFetch(`/store/payment-collections/${payment_collection.id}/payment-sessions`, {
     method: "POST",
-    body: JSON.stringify({ provider_id: "pp_system_default" }),
+    body: JSON.stringify({ provider_id: MONETICO_PROVIDER_ID }),
+  });
+}
+
+// Le montant et la référence viennent de la session de paiement, jamais du navigateur.
+export async function getMoneticoPaymentForm(cartId: string): Promise<MoneticoPaymentForm> {
+  return checkoutFetch<MoneticoPaymentForm>("/store/monetico/payment-form", {
+    method: "POST",
+    body: JSON.stringify({ cart_id: cartId }),
   });
 }
 

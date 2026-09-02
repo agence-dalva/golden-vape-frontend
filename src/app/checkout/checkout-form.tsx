@@ -1,15 +1,15 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import type { MedusaCart, MedusaAddress } from "@/lib/medusa-cart";
 import type { MedusaCustomer } from "@/lib/medusa-customer";
-import type { MedusaShippingOption } from "@/lib/medusa-checkout";
+import type { MedusaShippingOption, MoneticoPaymentForm as MoneticoForm } from "@/lib/medusa-checkout";
 import { formatPrice } from "@/lib/medusa";
-import { setAddressesAction, setShippingMethodAction, completeCheckoutAction } from "@/lib/checkout-actions";
+import { setAddressesAction, setShippingMethodAction, startMoneticoPaymentAction } from "@/lib/checkout-actions";
 import AddressForm from "@/components/address-form";
+import MoneticoPaymentForm from "@/components/monetico-payment-form";
 
 const EMPTY_ADDRESS: MedusaAddress = {
   first_name: "",
@@ -31,8 +31,8 @@ export default function CheckoutForm({
   customer: MedusaCustomer | null;
   shippingOptions: MedusaShippingOption[];
 }) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [moneticoForm, setMoneticoForm] = useState<MoneticoForm | null>(null);
 
   const [email, setEmail] = useState(cart.email ?? customer?.email ?? "");
   const [shippingAddress, setShippingAddress] = useState<MedusaAddress>(
@@ -75,14 +75,16 @@ export default function CheckoutForm({
     });
   };
 
-  const handleCompleteOrder = () => {
+  // La commande n'est pas créée ici : on ouvre une session Monetico et on laisse le
+  // navigateur poster le formulaire scellé vers la page de paiement sécurisé.
+  const handlePay = () => {
     startTransition(async () => {
-      const result = await completeCheckoutAction();
+      const result = await startMoneticoPaymentAction();
       if ("error" in result) {
         toast.error(result.error);
         return;
       }
-      router.push(`/checkout/confirmation/${result.orderId}`);
+      setMoneticoForm(result.form);
     });
   };
 
@@ -208,13 +210,19 @@ export default function CheckoutForm({
           </div>
         </div>
 
-        <button
-          onClick={handleCompleteOrder}
-          disabled={!canPay || isPending}
-          className="mt-6 w-full cursor-pointer rounded-lg bg-brand-chocolate py-3 text-sm font-medium text-brand-cream transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isPending ? "Traitement..." : "Payer"}
-        </button>
+        {moneticoForm ? (
+          <div className="mt-6">
+            <MoneticoPaymentForm form={moneticoForm} />
+          </div>
+        ) : (
+          <button
+            onClick={handlePay}
+            disabled={!canPay || isPending}
+            className="mt-6 w-full cursor-pointer rounded-lg bg-brand-chocolate py-3 text-sm font-medium text-brand-cream transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isPending ? "Traitement..." : "Payer"}
+          </button>
+        )}
 
         {!customer && (
           <p className="mt-3 text-center text-sm text-brand-chocolate/60">
