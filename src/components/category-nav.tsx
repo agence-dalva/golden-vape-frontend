@@ -30,8 +30,7 @@ export default function CategoryNav({
   return (
     <nav
       aria-label="Catégories"
-      // Dégradé chaud très léger : la navigation se détache du header sans trait marqué.
-      className="relative z-20 hidden border-b border-gv-border bg-gradient-to-b from-white to-gv-50 lg:block"
+      className="relative z-20 hidden border-b border-gv-border bg-gv-card lg:block"
     >
       <div className="gv-container flex min-h-12 items-center justify-between gap-x-4">
         {visible.map((category) => (
