@@ -98,21 +98,21 @@ body {
   font-family: var(--font-manrope), Arial, Helvetica, sans-serif;
 }
 
-/* Largeur de page unique : 1320px, marges dégressives jusqu'à 16px sur mobile. */
+/* Largeur de page unique : 1440px, marges dégressives jusqu'à 16px sur mobile. */
 .gv-container {
-  width: min(100% - 32px, 1320px);
+  width: min(100% - 32px, 1440px);
   margin-inline: auto;
 }
 
 @media (min-width: 768px) {
   .gv-container {
-    width: min(100% - 48px, 1320px);
+    width: min(100% - 48px, 1440px);
   }
 }
 
 @media (min-width: 1100px) {
   .gv-container {
-    width: min(100% - 96px, 1320px);
+    width: min(100% - 96px, 1440px);
   }
 }
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Package, type LucideIcon } from "lucide-react";
 import {
   Droplets,
@@ -34,6 +35,23 @@ const ICONS: Record<string, LucideIcon> = {
   "pyrex et reconstructibles": Wrench,
 };
 
+// Illustrations fournies pour le catalogue, rapprochées sur le nom de catégorie — les
+// handles portent un suffixe issu de l'import Hiboutik, variable d'une base à l'autre.
+// Les familles sans illustration retombent sur l'icône vectorielle ci-dessus.
+const ILLUSTRATIONS: Record<string, string> = {
+  liquides: "/categories/page/liquides.png",
+  chargeurs: "/categories/page/chargeurs.png",
+  destockage: "/categories/page/destockage.png",
+  cbd: "/categories/page/cbd.png",
+  "puffs rechargeables": "/categories/page/puffs-rechargeables.png",
+  "clearomiseurs et dripper": "/categories/page/clearomiseurs-drippers.png",
+  accus: "/categories/page/accus.png",
+  resistances: "/categories/page/resistances.png",
+  mods: "/categories/page/mods.png",
+  "pyrex et reconstructibles": "/categories/page/pyrex-reconstructibles.png",
+  accessoires: "/categories/page/accessoires.png",
+};
+
 function simplify(value: string): string {
   return value
     .normalize("NFD")
@@ -43,7 +61,9 @@ function simplify(value: string): string {
 }
 
 export default function CategoryTile({ category }: { category: MedusaCategory }) {
-  const Icon = ICONS[simplify(category.name)] ?? Package;
+  const key = simplify(category.name);
+  const illustration = ILLUSTRATIONS[key];
+  const Icon = ICONS[key] ?? Package;
   const children = category.category_children ?? [];
   const visible = children.slice(0, MAX_SUBCATEGORIES);
   const hidden = children.length - visible.length;
@@ -57,9 +77,13 @@ export default function CategoryTile({ category }: { category: MedusaCategory })
     <article className="group relative flex min-h-[164px] gap-4 rounded-[14px] border border-gv-border bg-gv-card p-[22px] transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-gv-border-strong hover:shadow-[0_14px_34px_rgba(68,54,46,0.08)]">
       <span
         aria-hidden
-        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[10px] bg-gv-50 text-gv-800"
+        className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-gv-50 text-gv-800"
       >
-        <Icon size={22} strokeWidth={1.5} />
+        {illustration ? (
+          <Image src={illustration} alt="" fill sizes="56px" className="object-contain p-1.5" />
+        ) : (
+          <Icon size={22} strokeWidth={1.5} />
+        )}
       </span>
 
       <div className="min-w-0 flex-1">

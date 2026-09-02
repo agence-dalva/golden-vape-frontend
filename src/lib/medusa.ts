@@ -291,7 +291,7 @@ const DISCOVERY_PREFERENCES = ["liquides", "kits", "diy"]
 // Visuels dédiés aux univers mis en avant. À défaut, la carte retombe sur une photo d'un
 // vrai produit de la catégorie — aucune image décorative à maintenir en plus.
 const DISCOVERY_BACKGROUNDS: Record<string, string> = {
-  liquides: "/categories/e-lequides.png",
+  liquides: "/categories/e-liquides.png",
   kits: "/categories/kits-pods.png",
   diy: "/categories/diy.png",
 }
