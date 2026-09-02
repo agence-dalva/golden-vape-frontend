@@ -20,7 +20,15 @@ import type { MedusaAddress } from "./medusa-cart";
 // Contrairement à cart_id (identifiant opaque, non sensible), ce cookie porte un JWT de session
 // — httpOnly pour ne jamais être exposé au JS client.
 const CUSTOMER_COOKIE = "customer_token";
-const COOKIE_OPTIONS = { path: "/", maxAge: 60 * 60 * 24 * 30, httpOnly: true, sameSite: "lax" as const };
+const COOKIE_OPTIONS = {
+  path: "/",
+  maxAge: 60 * 60 * 24 * 30,
+  httpOnly: true,
+  sameSite: "lax" as const,
+  // Sans ce drapeau, le jeton de session partirait aussi sur une connexion non chiffrée.
+  // Conditionné à la production : en local, sur http://localhost, le navigateur le rejetterait.
+  secure: process.env.NODE_ENV === "production",
+};
 
 async function linkCartIfNeeded(token: string) {
   const cart = await getCurrentCart();

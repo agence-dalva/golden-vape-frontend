@@ -15,10 +15,21 @@ import {
 
 const CART_COOKIE = "cart_id";
 
+// Aucun code client ne lit ce cookie : le mettre hors de portée du JavaScript ferme la porte
+// au vol d'identifiant par injection de script. Chez Medusa, qui détient l'identifiant d'un
+// panier peut le lire et le modifier — l'opacité de la valeur ne suffit pas à s'en passer.
+const CART_COOKIE_OPTIONS = {
+  path: "/",
+  maxAge: 60 * 60 * 24 * 30,
+  httpOnly: true,
+  sameSite: "lax" as const,
+  secure: process.env.NODE_ENV === "production",
+};
+
 // Lit le panier courant (cookie cart_id), le recrée s'il est absent ou invalide (ex: expiré,
 // supprimé côté serveur, ou déjà complété — un panier transformé en commande est verrouillé
-// côté Medusa et ne doit plus jamais être réutilisé). Le cookie n'a pas besoin d'être httpOnly :
-// il ne contient qu'un identifiant opaque, aucune donnée sensible.
+// côté Medusa et ne doit plus jamais être réutilisé). Voir CART_COOKIE_OPTIONS
+// pour les protections posées sur le cookie.
 export async function getOrCreateCart(): Promise<MedusaCart> {
   const cookieStore = await cookies();
   const existingId = cookieStore.get(CART_COOKIE)?.value;
@@ -29,7 +40,7 @@ export async function getOrCreateCart(): Promise<MedusaCart> {
   }
 
   const cart = await createCart();
-  cookieStore.set(CART_COOKIE, cart.id, { path: "/", maxAge: 60 * 60 * 24 * 30 });
+  cookieStore.set(CART_COOKIE, cart.id, CART_COOKIE_OPTIONS);
   return cart;
 }
 
