@@ -46,6 +46,20 @@ export default function CategoryNav({
       className="relative z-20 hidden border-b border-gv-border bg-gv-card lg:block"
     >
       <div className="gv-container flex min-h-12 items-center justify-between gap-x-4">
+        {/*
+          En tête de barre, et non en fin : à droite, « Nos marques » se trouvait sur le
+          trajet de la souris entre l'icône du panier et le bouton de commande, et son grand
+          panneau s'ouvrait à chaque passage.
+        */}
+        <div {...brandsHoverProps}>
+          <Link
+            href="/marques"
+            className="flex items-center gap-1 whitespace-nowrap py-3 text-sm font-medium tracking-[-0.01em] text-gv-text transition-colors duration-200 hover:text-gv-800"
+          >
+            Nos marques
+          </Link>
+        </div>
+
         {visible.map((category) => (
           <CategoryNavItem key={category.id} category={category} />
         ))}
@@ -66,7 +80,7 @@ export default function CategoryNav({
             </button>
 
             {/*
-              Aligné à droite : « Plus » est l'avant-dernier item de la barre, un panneau
+              Aligné à droite : « Plus » ferme la barre, un panneau
               ouvert vers la droite dépassait du document et faisait apparaître une barre de
               défilement horizontale de trois pixels — le panneau reste monté pour être animé,
               donc il compte dans la largeur même fermé.
@@ -88,14 +102,6 @@ export default function CategoryNav({
           </div>
         )}
 
-        <div {...brandsHoverProps}>
-          <Link
-            href="/marques"
-            className="flex items-center gap-1 whitespace-nowrap py-3 text-sm font-medium tracking-[-0.01em] text-gv-text transition-colors duration-200 hover:text-gv-800"
-          >
-            Nos marques
-          </Link>
-        </div>
       </div>
 
       {brands.length > 0 && (
