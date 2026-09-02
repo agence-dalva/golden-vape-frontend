@@ -25,7 +25,7 @@ export type MedusaOrder = {
 };
 
 const CART_FIELDS =
-  "id,currency_code,region_id,customer_id,email,total,item_total,shipping_total,*items,*items.total,*items.subtotal,*items.thumbnail,*items.variant.images.url,*items.product.images.url,*shipping_address,*billing_address,*shipping_methods,*shipping_methods.shipping_option,*payment_collection.payment_sessions";
+  "id,currency_code,region_id,customer_id,email,total,item_total,shipping_total,*items,*items.total,*items.subtotal,*items.thumbnail,*items.variant.images.url,*items.product.images.url,*shipping_address,*billing_address,*shipping_methods,*shipping_methods.shipping_option,payment_collection.id,*payment_collection.payment_sessions";
 
 const ORDER_FIELDS =
   "id,display_id,email,currency_code,total,*items,*items.total,*shipping_address";
@@ -88,14 +88,32 @@ export type MoneticoPaymentForm = {
   fields: Record<string, string>;
 };
 
-// Crée la payment collection puis ouvre une session Monetico. Rejouer cet appel remplace la
-// session existante : une nouvelle tentative de paiement repart donc sur une référence neuve.
+/**
+ * Ouvre une session Monetico sur le panier, en réutilisant sa collection de paiement.
+ *
+ * Medusa refuse d'en créer une seconde — `validateExistingPaymentCollectionStep` lève
+ * « Cart … already has a payment collection ». Sans cette réutilisation, un paiement
+ * abandonné ou refusé rendrait le panier définitivement impayable : le client ne pourrait
+ * plus que le vider et tout ressaisir.
+ *
+ * Rejouer l'appel sur une collection existante remplace bien la session : la tentative
+ * suivante repart sur une référence neuve.
+ */
 export async function createMoneticoPaymentSession(cartId: string): Promise<void> {
-  const { payment_collection } = await checkoutFetch<{ payment_collection: { id: string } }>(
-    "/store/payment-collections",
-    { method: "POST", body: JSON.stringify({ cart_id: cartId }) }
+  const { cart } = await checkoutFetch<{ cart: MedusaCart }>(
+    withFields(`/store/carts/${cartId}`, CART_FIELDS)
   );
-  await checkoutFetch(`/store/payment-collections/${payment_collection.id}/payment-sessions`, {
+
+  const collectionId =
+    cart.payment_collection?.id ??
+    (
+      await checkoutFetch<{ payment_collection: { id: string } }>("/store/payment-collections", {
+        method: "POST",
+        body: JSON.stringify({ cart_id: cartId }),
+      })
+    ).payment_collection.id;
+
+  await checkoutFetch(`/store/payment-collections/${collectionId}/payment-sessions`, {
     method: "POST",
     body: JSON.stringify({ provider_id: MONETICO_PROVIDER_ID }),
   });
