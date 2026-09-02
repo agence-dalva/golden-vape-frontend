@@ -68,18 +68,19 @@ export default function PurchasePanel({
     if (!selected) return;
 
     startTransition(async () => {
-      try {
-        await addToCartAction(selected.id, quantity);
-        setJustAdded(true);
-        setTimeout(() => setJustAdded(false), 2500);
-        toast.success("Ajouté au panier", {
-          description: `${product.title}${
-            selected.options[0]?.value ? ` — ${selected.options[0].value}` : ""
-          } · Qté ${quantity}`,
-        });
-      } catch {
-        toast.error("Impossible d'ajouter cet article au panier");
+      const result = await addToCartAction(selected.id, quantity);
+      if (result.error) {
+        toast.error(result.error);
+        return;
       }
+
+      setJustAdded(true);
+      setTimeout(() => setJustAdded(false), 2500);
+      toast.success("Ajouté au panier", {
+        description: `${product.title}${
+          selected.options[0]?.value ? ` — ${selected.options[0].value}` : ""
+        } · Qté ${quantity}`,
+      });
     });
   };
 

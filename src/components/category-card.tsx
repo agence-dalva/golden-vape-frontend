@@ -23,18 +23,6 @@ export default function CategoryCard({ category }: { category: DiscoveryCategory
         />
       )}
 
-      {/* Voile ivoire dégressif : il dégage la moitié gauche sans masquer le produit. */}
-      <span
-        aria-hidden
-        className="absolute inset-0 -z-10"
-        style={{
-          // Un visuel pleine carte demande un voile plus soutenu pour que le titre tienne.
-          background: category.isBackground
-            ? "linear-gradient(90deg, rgb(251 250 248 / 0.94) 0%, rgb(251 250 248 / 0.74) 52%, rgb(251 250 248 / 0.1) 100%)"
-            : "linear-gradient(90deg, rgb(255 255 255 / 0.97) 0%, rgb(255 255 255 / 0.85) 48%, rgb(255 255 255 / 0) 78%)",
-        }}
-      />
-
       <span className="flex max-w-[62%] flex-col justify-center p-6 sm:p-7">
         <span className="font-display text-[22px] font-medium leading-tight text-gv-text sm:text-[26px]">
           {category.name}

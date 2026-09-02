@@ -96,10 +96,29 @@ async function cartFetch<T>(path: string, options?: RequestInit): Promise<T> {
   });
 
   if (!res.ok) {
-    throw new Error(`Medusa store API a répondu ${res.status} sur ${path}`);
+    throw new Error(await readCartError(res, path));
   }
 
   return res.json();
+}
+
+// Messages destinés au client final : le code d'erreur de Medusa est explicite mais ne se
+// montre pas tel quel.
+const CART_ERROR_MESSAGES: Record<string, string> = {
+  insufficient_inventory: "Stock insuffisant : la quantité demandée dépasse ce qu'il nous reste.",
+};
+
+async function readCartError(res: Response, path: string): Promise<string> {
+  try {
+    const body = (await res.json()) as { code?: string; message?: string };
+    if (body.code && CART_ERROR_MESSAGES[body.code]) {
+      return CART_ERROR_MESSAGES[body.code];
+    }
+    if (body.message) return body.message;
+  } catch {
+    // Corps illisible : on retombe sur un message technique.
+  }
+  return `Medusa store API a répondu ${res.status} sur ${path}`;
 }
 
 function withFields(path: string): string {

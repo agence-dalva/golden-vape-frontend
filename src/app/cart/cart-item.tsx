@@ -26,22 +26,19 @@ export default function CartItem({
   const setQuantity = (next: number) => {
     if (next < 1) return;
     startTransition(async () => {
-      try {
-        await updateCartLineAction(item.id, next);
-      } catch {
-        toast.error("Impossible de modifier la quantité");
-      }
+      const result = await updateCartLineAction(item.id, next);
+      if (result.error) toast.error(result.error);
     });
   };
 
   const remove = () => {
     startTransition(async () => {
-      try {
-        await removeCartLineAction(item.id);
-        toast.success("Article retiré du panier");
-      } catch {
-        toast.error("Impossible de retirer cet article");
+      const result = await removeCartLineAction(item.id);
+      if (result.error) {
+        toast.error(result.error);
+        return;
       }
+      toast.success("Article retiré du panier");
     });
   };
 

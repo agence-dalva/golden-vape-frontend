@@ -52,26 +52,50 @@ export async function getCartIdCookie(): Promise<string | null> {
   return cookieStore.get(CART_COOKIE)?.value ?? null;
 }
 
-export async function addToCartAction(variantId: string, quantity: number) {
+export async function addToCartAction(
+  variantId: string,
+  quantity: number
+): Promise<{ error?: string }> {
   const cart = await getOrCreateCart();
-  const updated = await addLineItem(cart.id, variantId, quantity);
-  revalidatePath("/", "layout");
-  return updated;
+
+  try {
+    await addLineItem(cart.id, variantId, quantity);
+    revalidatePath("/", "layout");
+    return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Impossible d'ajouter ce produit" };
+  }
 }
 
-export async function updateCartLineAction(lineId: string, quantity: number) {
+export async function updateCartLineAction(
+  lineId: string,
+  quantity: number
+): Promise<{ error?: string }> {
   const cart = await getCurrentCart();
-  if (!cart) throw new Error("Aucun panier actif");
-  const updated = await updateLineItem(cart.id, lineId, quantity);
-  revalidatePath("/", "layout");
-  return updated;
+  if (!cart) return { error: "Aucun panier actif" };
+
+  try {
+    await updateLineItem(cart.id, lineId, quantity);
+    revalidatePath("/", "layout");
+    return {};
+  } catch (e) {
+    // Le stock fait autorité côté Medusa : le storefront ne le connaît pas sur une ligne
+    // de panier et ne peut donc pas plafonner la quantité avant l'appel.
+    return { error: e instanceof Error ? e.message : "Impossible de modifier la quantité" };
+  }
 }
 
-export async function removeCartLineAction(lineId: string) {
+export async function removeCartLineAction(lineId: string): Promise<{ error?: string }> {
   const cart = await getCurrentCart();
-  if (!cart) throw new Error("Aucun panier actif");
-  await removeLineItem(cart.id, lineId);
-  revalidatePath("/", "layout");
+  if (!cart) return { error: "Aucun panier actif" };
+
+  try {
+    await removeLineItem(cart.id, lineId);
+    revalidatePath("/", "layout");
+    return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Impossible de retirer cet article" };
+  }
 }
 
 export async function applyPromoCodeAction(code: string): Promise<{ error?: string }> {

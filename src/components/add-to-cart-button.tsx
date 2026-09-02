@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { ShoppingBag, Check } from "lucide-react";
+import { ShoppingCart, Check } from "lucide-react";
 import { addToCartAction } from "@/lib/cart-actions";
 
 const buttonClass =
@@ -41,18 +41,19 @@ export default function AddToCartButton({
 
   const handleAdd = () => {
     startTransition(async () => {
-      try {
-        await addToCartAction(chosen.id, 1);
-        setAdded(true);
-        setTimeout(() => setAdded(false), 2000);
-        // La déclinaison est nommée dans la confirmation : sur un produit qui en compte
-        // plusieurs, le client voit immédiatement laquelle est partie au panier.
-        toast.success("Ajouté au panier", {
-          description: chosen.label ? `${productTitle} — ${chosen.label}` : productTitle,
-        });
-      } catch {
-        toast.error("Impossible d'ajouter ce produit au panier");
+      const result = await addToCartAction(chosen.id, 1);
+      if (result.error) {
+        toast.error(result.error);
+        return;
       }
+
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+      // La déclinaison est nommée dans la confirmation : sur un produit qui en compte
+      // plusieurs, le client voit immédiatement laquelle est partie au panier.
+      toast.success("Ajouté au panier", {
+        description: chosen.label ? `${productTitle} — ${chosen.label}` : productTitle,
+      });
     });
   };
 
@@ -72,7 +73,7 @@ export default function AddToCartButton({
         </>
       ) : (
         <>
-          <ShoppingBag size={16} aria-hidden />
+          <ShoppingCart size={16} strokeWidth={1.5} aria-hidden />
           {isPending ? "Ajout…" : "Ajouter au panier"}
         </>
       )}
