@@ -116,6 +116,27 @@ body {
   }
 }
 
+/* Logotype textuel de la marque : Cormorant Garamond SemiBold, capitales espacées.
+   La couleur par défaut est celle du logo fourni — pensée pour un fond marron. */
+/* Déclaré dans `components` et non hors calque : une règle sans calque l'emporterait sur
+   toutes les utilitaires Tailwind, et `text-[26px]` posé à côté resterait sans effet. */
+@layer components {
+  .logo-wordmark {
+    font-family: var(--font-cormorant), Georgia, serif;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #fffaf6;
+  }
+
+  /* Même logotype posé sur un fond clair. */
+  .logo-wordmark--ink {
+    color: var(--gv-brand-800);
+  }
+}
+
 /* Sur-titre de section : petites capitales espacées, couleur de marque. */
 .gv-eyebrow {
   font-size: 12px;

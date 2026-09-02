@@ -23,7 +23,7 @@ export default async function CataloguePage() {
       <section className="relative isolate flex min-h-[190px] items-center overflow-hidden rounded-[16px] border border-gv-border bg-gv-soft">
         <div className="relative z-10 max-w-xl px-6 py-8 sm:px-9 sm:py-10">
           <p className="gv-eyebrow">Catalogue</p>
-          <h1 className="mt-2 text-balance font-display text-[30px] font-medium leading-[1.05] tracking-[-0.025em] text-gv-text sm:text-[38px]">
+          <h1 className="mt-2 text-balance font-display text-[30px] font-semibold leading-[1.05] tracking-[-0.025em] text-gv-text sm:text-[38px]">
             Trouvez l&apos;univers qui vous correspond.
           </h1>
           <p className="mt-3 max-w-md text-sm leading-relaxed text-gv-text-soft">
@@ -55,7 +55,7 @@ export default async function CataloguePage() {
       <div className="mb-6 mt-14 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="gv-eyebrow">Tout le catalogue</p>
-          <h2 className="mt-2 font-display text-[28px] font-medium leading-[1.05] tracking-[-0.025em] text-gv-text sm:text-[34px]">
+          <h2 className="mt-2 font-display text-[28px] font-semibold leading-[1.05] tracking-[-0.025em] text-gv-text sm:text-[34px]">
             Toutes les catégories
           </h2>
         </div>
@@ -86,7 +86,7 @@ export default async function CataloguePage() {
             <Headset size={28} strokeWidth={1.5} />
           </span>
           <div>
-            <p className="font-display text-xl font-medium text-gv-text">
+            <p className="font-display text-xl font-semibold text-gv-text">
               Besoin d&apos;aide pour choisir ?
             </p>
             <p className="mt-0.5 text-sm text-gv-text-soft">

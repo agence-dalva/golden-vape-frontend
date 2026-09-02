@@ -37,7 +37,7 @@ export default function ProductDetails({
       {description && (
         <div>
           <p className="gv-eyebrow text-[11px]">La description</p>
-          <h2 className="mb-3 mt-2 font-display text-[26px] font-medium leading-[1.05] text-gv-text sm:text-[32px]">
+          <h2 className="mb-3 mt-2 font-display text-[26px] font-semibold leading-[1.05] text-gv-text sm:text-[32px]">
             {title}
           </h2>
           <CollapsibleText>{description}</CollapsibleText>
@@ -59,7 +59,7 @@ export default function ProductDetails({
           à des centimètres de son libellé. */}
       {specs.length > 0 && (
         <div className={twoColumns ? "lg:border-l lg:border-gv-border lg:pl-9" : "max-w-2xl"}>
-          <h2 className="mb-3.5 font-display text-2xl font-medium text-gv-text">Caractéristiques</h2>
+          <h2 className="mb-3.5 font-display text-2xl font-semibold text-gv-text">Caractéristiques</h2>
           <dl>
             {specs.map((spec, index) => (
               <div

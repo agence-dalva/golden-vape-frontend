@@ -18,7 +18,7 @@ export default function BrandMenu({ brands }: { brands: MedusaBrand[] }) {
       <div className="mb-5 flex items-end justify-between gap-4">
         <div>
           <p className="gv-eyebrow">Nos marques</p>
-          <p className="mt-1 font-display text-xl font-medium text-gv-text">
+          <p className="mt-1 font-display text-xl font-semibold text-gv-text">
             Les marques qui font la différence
           </p>
         </div>

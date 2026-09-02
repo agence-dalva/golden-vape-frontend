@@ -11,7 +11,7 @@ export default function HeroSection() {
         <div className="max-w-[480px]">
           <p className="gv-eyebrow">{HERO.eyebrow}</p>
 
-          <h1 className="mt-3.5 max-w-[470px] text-balance font-display text-[40px] font-medium leading-[0.94] tracking-[-0.035em] text-gv-text sm:text-[48px] lg:text-[58px]">
+          <h1 className="mt-3.5 max-w-[470px] text-balance font-display text-[40px] font-semibold leading-[0.94] tracking-[-0.035em] text-gv-text sm:text-[48px] lg:text-[58px]">
             {HERO.title}
           </h1>
 

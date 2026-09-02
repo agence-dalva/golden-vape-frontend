@@ -28,7 +28,7 @@ export default async function CartPage() {
     return (
       <div className="gv-container pb-16">
         <Breadcrumbs trail={[{ label: "Accueil", href: "/" }, { label: "Panier" }]} />
-        <h1 className="mb-8 font-display text-[36px] font-medium leading-none tracking-[-0.025em] text-gv-text lg:text-[44px]">
+        <h1 className="mb-8 font-display text-[36px] font-semibold leading-none tracking-[-0.025em] text-gv-text lg:text-[44px]">
           Votre panier
         </h1>
 
@@ -61,7 +61,7 @@ export default async function CartPage() {
 
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-[36px] font-medium leading-none tracking-[-0.025em] text-gv-text lg:text-[44px]">
+          <h1 className="font-display text-[36px] font-semibold leading-none tracking-[-0.025em] text-gv-text lg:text-[44px]">
             Votre panier
           </h1>
           <p className="mt-2 text-sm text-gv-text-soft">
@@ -107,7 +107,7 @@ export default async function CartPage() {
 
         <div className="lg:sticky lg:top-6">
           <section className="rounded-xl border border-gv-border bg-gv-card p-6 shadow-gv-sm">
-            <h2 className="mb-6 font-display text-[26px] font-medium text-gv-text">Récapitulatif</h2>
+            <h2 className="mb-6 font-display text-[26px] font-semibold text-gv-text">Récapitulatif</h2>
 
             <dl className="flex flex-col gap-4 text-sm">
               <div className="flex justify-between gap-5">
@@ -136,7 +136,7 @@ export default async function CartPage() {
             </dl>
 
             <div className="mt-6 flex items-baseline justify-between gap-4 border-t border-gv-border pt-5">
-              <span className="font-display text-[26px] font-medium text-gv-text">Total</span>
+              <span className="font-display text-[26px] font-semibold text-gv-text">Total</span>
               <span className="text-[30px] font-semibold tabular-nums text-gv-text">
                 {formatPrice(cart!.total, currency)}
               </span>

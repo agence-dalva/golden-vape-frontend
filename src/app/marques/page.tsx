@@ -21,7 +21,7 @@ export default async function BrandsPage() {
       <section className="mb-10 flex flex-wrap items-end justify-between gap-6 border-b border-gv-border pb-8">
         <div className="max-w-2xl">
           <p className="gv-eyebrow">Nos marques</p>
-          <h1 className="mt-2 text-balance font-display text-[32px] font-medium leading-[1.05] tracking-[-0.025em] text-gv-text sm:text-[40px]">
+          <h1 className="mt-2 text-balance font-display text-[32px] font-semibold leading-[1.05] tracking-[-0.025em] text-gv-text sm:text-[40px]">
             Les marques qui font la différence.
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-gv-text-soft">

@@ -94,7 +94,7 @@ export default function BrandsIndex({ brands }: { brands: MedusaBrand[] }) {
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="gv-eyebrow">Toutes les marques</p>
-          <h2 className="mt-2 font-display text-[28px] font-medium leading-[1.05] text-gv-text">
+          <h2 className="mt-2 font-display text-[28px] font-semibold leading-[1.05] text-gv-text">
             Par ordre alphabétique
           </h2>
         </div>
@@ -122,7 +122,7 @@ export default function BrandsIndex({ brands }: { brands: MedusaBrand[] }) {
             <section key={letter} aria-labelledby={`brands-${letter}`} id={`letter-${letter}`} className="scroll-mt-28">
               <h3
                 id={`brands-${letter}`}
-                className="mb-4 flex items-center gap-4 font-display text-2xl font-medium text-gv-text"
+                className="mb-4 flex items-center gap-4 font-display text-2xl font-semibold text-gv-text"
               >
                 {letter}
                 <span aria-hidden className="h-px flex-1 bg-gv-border" />

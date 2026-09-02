@@ -21,7 +21,7 @@ export default function EmptyState({
       </span>
 
       <div className="min-w-0">
-        <h3 className="font-display text-[22px] font-medium leading-tight text-gv-text sm:text-2xl">
+        <h3 className="font-display text-[22px] font-semibold leading-tight text-gv-text sm:text-2xl">
           {title}
         </h3>
         <p className="mt-1.5 text-sm text-gv-text-soft">{description}</p>

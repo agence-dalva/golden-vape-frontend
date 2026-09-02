@@ -26,7 +26,7 @@ export default function AccountSidebar({
       aria-label="Navigation du compte"
       className="rounded-xl border border-gv-border bg-gv-card px-2.5 pb-3 pt-5 shadow-gv-xs"
     >
-      <h2 className="mb-4 px-3 font-display text-[22px] font-medium text-gv-text">Mon espace</h2>
+      <h2 className="mb-4 px-3 font-display text-[22px] font-semibold text-gv-text">Mon espace</h2>
 
       <div className="mb-4 flex items-center gap-3 px-3">
         <span
