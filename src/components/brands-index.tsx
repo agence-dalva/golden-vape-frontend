@@ -28,7 +28,7 @@ function InitialButton({
       onClick={() => available && onSelect()}
       disabled={!available}
       aria-current={active ? "location" : undefined}
-      className={`flex h-9 min-w-9 shrink-0 cursor-pointer items-center justify-center rounded-[7px] px-2 text-[13px] font-medium transition-colors ${
+      className={`flex h-9 min-w-9 shrink-0 cursor-pointer items-center justify-center rounded-[7px] px-2 text-[13px] font-medium transition-colors xl:min-w-8 xl:px-1.5 ${
         active
           ? "bg-gv-800 text-white"
           : available
@@ -58,36 +58,22 @@ export default function BrandsIndex({ brands }: { brands: MedusaBrand[] }) {
 
   return (
     <>
-      <div className="mb-8 rounded-[10px] border border-gv-border bg-gv-card p-2">
-        <div className="mb-2 flex items-center gap-1.5 border-b border-gv-border pb-2">
-          <span className="shrink-0 px-2 text-[13px] text-gv-text-soft">Filtrer par initiale</span>
-          {[ALL, DIGITS].map((key) => (
-            <InitialButton
-              key={key}
-              label={key}
-              active={key === active}
-              available={key === ALL || (groups.get(key)?.length ?? 0) > 0}
-              onSelect={() => setActive(key)}
-            />
-          ))}
-        </div>
-
-        {/*
-          Les vingt-six lettres ne tiennent sur une ligne qu'à partir de `xl` : à 1024px,
-          largeur d'un iPad en paysage, il leur manque quelques pixels. En dessous, elles
-          défilent donc au doigt, sans ascenseur visible.
-        */}
-        <div className="flex items-center gap-1.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] xl:justify-between xl:gap-1 xl:overflow-x-visible [&::-webkit-scrollbar]:hidden">
-          {LETTERS.map((letter) => (
-            <InitialButton
-              key={letter}
-              label={letter}
-              active={letter === active}
-              available={(groups.get(letter)?.length ?? 0) > 0}
-              onSelect={() => setActive(letter)}
-            />
-          ))}
-        </div>
+      {/*
+        Une seule ligne qui défile horizontalement. La barre reste visible sur mobile et
+        tablette, où elle sert de repère au doigt. À partir de `xl` elle est masquée : à
+        cette largeur l'alphabet tient en entier, resserré, donc rien n'est hors d'atteinte.
+      */}
+      <div className="mb-8 flex items-center gap-1.5 overflow-x-auto rounded-[10px] border border-gv-border bg-gv-card p-2 xl:gap-1 xl:[-ms-overflow-style:none] xl:[scrollbar-width:none] xl:[&::-webkit-scrollbar]:hidden">
+        <span className="shrink-0 px-2 text-[13px] text-gv-text-soft">Filtrer par initiale</span>
+        {[ALL, DIGITS, ...LETTERS].map((key) => (
+          <InitialButton
+            key={key}
+            label={key}
+            active={key === active}
+            available={key === ALL || (groups.get(key)?.length ?? 0) > 0}
+            onSelect={() => setActive(key)}
+          />
+        ))}
       </div>
 
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
