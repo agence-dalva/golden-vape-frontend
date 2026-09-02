@@ -117,6 +117,7 @@ export type MedusaCategory = MedusaCategoryRef & {
   parent_category_id: string | null
   parent_category: MedusaCategoryRef | null
   category_children: MedusaCategoryRef[]
+  description: string | null
 }
 
 // Le catalogue tolère une minute de retard, pas le stock : une fiche produit qui annonce
@@ -240,7 +241,7 @@ export async function listCategories() {
   const { product_categories } = await medusaFetch<{ product_categories: MedusaCategory[] }>(
     "/store/product-categories",
     {
-      fields: "id,name,handle,*category_children",
+      fields: "id,name,handle,description,*category_children",
       parent_category_id: "null",
       limit: "100",
     }
