@@ -1,10 +1,38 @@
 export const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL!
 export const MEDUSA_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY!
 
-// Région par défaut utilisée pour calculer les prix affichés (une seule région existe : Europe)
-export const DEFAULT_REGION_ID = "reg_01KWE2MGV9BXFJER78NW5GF0CQ"
 // country_code est requis pour que Medusa calcule le prix TTC (taxe configurée sur la région France)
 export const DEFAULT_COUNTRY_CODE = "fr"
+
+type MedusaRegion = {
+  id: string
+  countries?: { iso_2: string }[]
+}
+
+// L'identifiant de région change d'une base à l'autre — local, staging, production. Le coder
+// en dur liait le frontend à une base précise : Medusa répond alors « Region with id … not
+// found » et toute page qui affiche un prix tombe. On le résout donc au premier appel.
+let regionIdPromise: Promise<string> | null = null
+
+export function getDefaultRegionId(): Promise<string> {
+  regionIdPromise ??= resolveDefaultRegionId().catch((error) => {
+    // Une panne passagère ne doit pas figer l'échec pour toute la vie du process.
+    regionIdPromise = null
+    throw error
+  })
+  return regionIdPromise
+}
+
+async function resolveDefaultRegionId(): Promise<string> {
+  const { regions } = await medusaFetch<{ regions: MedusaRegion[] }>("/store/regions", {})
+  const region =
+    regions.find((r) => r.countries?.some((c) => c.iso_2 === DEFAULT_COUNTRY_CODE)) ?? regions[0]
+
+  if (!region) {
+    throw new Error("Aucune région n'est configurée sur le backend Medusa.")
+  }
+  return region.id
+}
 
 export type MedusaImage = {
   id: string
@@ -111,7 +139,7 @@ export async function listProducts(limit = 24, offset = 0, order?: string) {
   const { products, count } = await medusaFetch<{ products: MedusaProduct[]; count: number }>(
     "/store/products",
     {
-      region_id: DEFAULT_REGION_ID,
+      region_id: await getDefaultRegionId(),
       country_code: DEFAULT_COUNTRY_CODE,
       fields: PRODUCT_LIST_FIELDS,
       limit: String(limit),
@@ -138,7 +166,7 @@ export async function listFeaturedProducts(limit = 8) {
 export async function getProductByHandle(handle: string) {
   const { products } = await medusaFetch<{ products: MedusaProduct[] }>("/store/products", {
     handle,
-    region_id: DEFAULT_REGION_ID,
+    region_id: await getDefaultRegionId(),
     country_code: DEFAULT_COUNTRY_CODE,
     fields: PRODUCT_DETAIL_FIELDS,
   })
@@ -173,7 +201,7 @@ export async function listProductsByCategory(categoryId: string, limit = 24, off
     "/store/products",
     {
       category_id: categoryId,
-      region_id: DEFAULT_REGION_ID,
+      region_id: await getDefaultRegionId(),
       country_code: DEFAULT_COUNTRY_CODE,
       fields: PRODUCT_LIST_FIELDS,
       limit: String(limit),
@@ -219,7 +247,7 @@ export async function listProductsByBrand(value: string, attributeTypeId: string
   // medusaFetch ne supporte pas les paramètres tableau, d'où la construction manuelle de l'URL.
   const url = new URL(`${MEDUSA_BACKEND_URL}/store/products`)
   product_ids.forEach((id) => url.searchParams.append("id[]", id))
-  url.searchParams.set("region_id", DEFAULT_REGION_ID)
+  url.searchParams.set("region_id", await getDefaultRegionId())
   url.searchParams.set("country_code", DEFAULT_COUNTRY_CODE)
   url.searchParams.set("fields", PRODUCT_LIST_FIELDS)
   url.searchParams.set("limit", String(limit))

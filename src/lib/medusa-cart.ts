@@ -1,4 +1,4 @@
-import { MEDUSA_BACKEND_URL, MEDUSA_PUBLISHABLE_KEY, DEFAULT_REGION_ID } from "./medusa";
+import { MEDUSA_BACKEND_URL, MEDUSA_PUBLISHABLE_KEY, getDefaultRegionId } from "./medusa";
 
 export type MedusaCartLineItem = {
   id: string;
@@ -106,7 +106,7 @@ function withFields(path: string): string {
 export async function createCart(): Promise<MedusaCart> {
   const { cart } = await cartFetch<{ cart: MedusaCart }>(withFields("/store/carts"), {
     method: "POST",
-    body: JSON.stringify({ region_id: DEFAULT_REGION_ID }),
+    body: JSON.stringify({ region_id: await getDefaultRegionId() }),
   });
   return cart;
 }
