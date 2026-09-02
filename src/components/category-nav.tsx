@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import type { MedusaCategory, MedusaBrand } from "@/lib/medusa";
+import { useHoverMenu, menuPanelClasses } from "@/lib/use-hover-menu";
 import CategoryNavItem from "./category-nav-item";
 import BrandMenu from "./brand-menu";
 
@@ -21,8 +22,20 @@ export default function CategoryNav({
   categories: MedusaCategory[];
   brands: MedusaBrand[];
 }) {
-  const [brandsOpen, setBrandsOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
+  const brandsMenu = useHoverMenu();
+  const moreMenu = useHoverMenu();
+
+  /*
+    Le panneau reste monté pour pouvoir être animé, mais son contenu — dont dix-huit logos —
+    n'est construit qu'au premier survol : sinon chaque page du site paierait ces images
+    sans que personne n'ouvre le menu.
+  */
+  const [brandsRendered, setBrandsRendered] = useState(false);
+  const openBrands = () => {
+    setBrandsRendered(true);
+    brandsMenu.openMenu();
+  };
+  const brandsHoverProps = { onMouseEnter: openBrands, onMouseLeave: brandsMenu.closeMenu };
 
   const visible = categories.slice(0, MAX_VISIBLE);
   const overflow = categories.slice(MAX_VISIBLE);
@@ -38,59 +51,53 @@ export default function CategoryNav({
         ))}
 
         {overflow.length > 0 && (
-          <div
-            className="relative"
-            onMouseEnter={() => setMoreOpen(true)}
-            onMouseLeave={() => setMoreOpen(false)}
-          >
+          <div className="relative" {...moreMenu.hoverProps}>
             <button
-              onClick={() => setMoreOpen((open) => !open)}
-              aria-expanded={moreOpen}
-              className="flex cursor-pointer items-center gap-1 whitespace-nowrap py-3 text-sm font-medium tracking-[-0.01em] text-gv-text transition-colors hover:text-gv-800"
+              onClick={moreMenu.toggle}
+              aria-expanded={moreMenu.open}
+              className="flex cursor-pointer items-center gap-1 whitespace-nowrap py-3 text-sm font-medium tracking-[-0.01em] text-gv-text transition-colors duration-200 hover:text-gv-800"
             >
               Plus
-              <ChevronDown size={14} aria-hidden className="opacity-60" />
+              <ChevronDown
+                size={14}
+                aria-hidden
+                className={`opacity-60 transition-transform duration-200 ${moreMenu.open ? "rotate-180" : ""}`}
+              />
             </button>
 
-            {moreOpen && (
-              <div className="absolute left-0 top-full z-100 min-w-52 rounded-[10px] border border-gv-border bg-white py-2 shadow-gv-sm">
+            <div className={`absolute left-0 top-full z-100 min-w-52 pt-1 ${menuPanelClasses(moreMenu.open)}`}>
+              <div className="rounded-[10px] border border-gv-border bg-white py-2 shadow-gv-sm">
                 {overflow.map((category) => (
                   <Link
                     key={category.id}
                     href={`/categories/${category.handle}`}
-                    onClick={() => setMoreOpen(false)}
-                    className="block px-4 py-2 text-sm text-gv-text-soft hover:bg-gv-soft hover:text-gv-text"
+                    onClick={moreMenu.closeNow}
+                    className="block px-4 py-2 text-sm text-gv-text-soft transition-colors duration-150 hover:bg-gv-soft hover:text-gv-text"
                   >
                     {category.name}
                   </Link>
                 ))}
               </div>
-            )}
+            </div>
           </div>
         )}
 
-        <div
-          onMouseEnter={() => setBrandsOpen(true)}
-          onMouseLeave={() => setBrandsOpen(false)}
-        >
+        <div {...brandsHoverProps}>
           <Link
             href="/marques"
-            className="flex items-center gap-1 whitespace-nowrap py-3 text-sm font-medium tracking-[-0.01em] text-gv-text transition-colors hover:text-gv-800"
+            className="flex items-center gap-1 whitespace-nowrap py-3 text-sm font-medium tracking-[-0.01em] text-gv-text transition-colors duration-200 hover:text-gv-800"
           >
             Nos marques
           </Link>
         </div>
       </div>
 
-      {brandsOpen && brands.length > 0 && (
+      {brands.length > 0 && (
         <div
-          className="absolute left-0 right-0 top-full z-100 border-t border-gv-border bg-white shadow-gv-sm"
-          onMouseEnter={() => setBrandsOpen(true)}
-          onMouseLeave={() => setBrandsOpen(false)}
+          className={`absolute left-0 right-0 top-full z-100 border-t border-gv-border bg-white shadow-gv-sm ${menuPanelClasses(brandsMenu.open)}`}
+          {...brandsHoverProps}
         >
-          <div className="gv-container py-6">
-            <BrandMenu brands={brands} />
-          </div>
+          <div className="gv-container py-6">{brandsRendered && <BrandMenu brands={brands} />}</div>
         </div>
       )}
     </nav>
