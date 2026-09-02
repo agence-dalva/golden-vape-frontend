@@ -104,7 +104,14 @@ export type MedusaBrand = {
   attribute_type_id: string
 }
 
-export type MedusaCategoryRef = { id: string; name: string; handle: string }
+export type MedusaCategoryRef = {
+  id: string
+  name: string
+  handle: string
+  // Renvoyé en ligne par /store/products : la hiérarchie du fil d'Ariane n'exige donc
+  // aucune requête supplémentaire.
+  parent_category?: { id: string; name: string; handle: string } | null
+}
 
 export type MedusaCategory = MedusaCategoryRef & {
   parent_category_id: string | null

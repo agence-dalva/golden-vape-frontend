@@ -20,7 +20,7 @@ export default function AddToCartButton({
   productTitle: string;
   productHandle: string;
   soldOut: boolean;
-  /** Plusieurs déclinaisons : le choix appartient à la fiche produit, pas à la carte. */
+  /** Plusieurs déclinaisons : le choix du dosage appartient à la fiche produit. */
   needsChoice: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -36,13 +36,18 @@ export default function AddToCartButton({
     );
   }
 
+  // Libellé identique partout, mais on ne devine pas la déclinaison : quand le produit en a
+  // plusieurs, le bouton mène à la fiche où le dosage se choisit. Ajouter la première au
+  // hasard mettrait un autre dosage que celui voulu dans le panier.
   if (needsChoice || !variantId) {
     return (
       <Link
         href={`/products/${productHandle}`}
+        aria-label={`Voir ${productTitle} et choisir sa déclinaison`}
         className={`${buttonClass} border-gv-800 bg-white text-gv-800 hover:bg-gv-800 hover:text-white`}
       >
-        Choisir
+        <ShoppingBag size={16} aria-hidden />
+        Ajouter au panier
       </Link>
     );
   }
