@@ -358,10 +358,23 @@ export async function listProductsByBrand(value: string, attributeTypeId: string
     return { products: [] as MedusaProduct[], count: 0 }
   }
 
-  // Réutilise /store/products?id[]=... pour bénéficier du calcul de prix standard —
-  // medusaFetch ne supporte pas les paramètres tableau, d'où la construction manuelle de l'URL.
+  return listProductsByIds(product_ids, limit, offset)
+}
+
+/**
+ * Repasse une liste d'identifiants à /store/products pour récupérer les produits complets.
+ * Les routes personnalisées du backend ne renvoient que des identifiants : le calcul de prix
+ * reste ainsi au même endroit pour tout le site, et les prix ne divergent pas d'une section
+ * à l'autre.
+ */
+export async function listProductsByIds(ids: string[], limit = 24, offset = 0) {
+  if (ids.length === 0) {
+    return { products: [] as MedusaProduct[], count: 0 }
+  }
+
+  // medusaFetch ne gère pas les paramètres tableau, d'où la construction manuelle de l'URL.
   const url = new URL(`${MEDUSA_BACKEND_URL}/store/products`)
-  product_ids.forEach((id) => url.searchParams.append("id[]", id))
+  ids.forEach((id) => url.searchParams.append("id[]", id))
   url.searchParams.set("region_id", await getDefaultRegionId())
   url.searchParams.set("country_code", DEFAULT_COUNTRY_CODE)
   url.searchParams.set("fields", PRODUCT_LIST_FIELDS)
@@ -373,10 +386,47 @@ export async function listProductsByBrand(value: string, attributeTypeId: string
     next: { revalidate: 60 },
   })
   if (!res.ok) {
-    throw new Error(`Medusa store API a répondu ${res.status} sur /store/products (par marque)`)
+    throw new Error(`Medusa store API a répondu ${res.status} sur /store/products (par identifiants)`)
   }
+
   const { products, count } = (await res.json()) as { products: MedusaProduct[]; count: number }
-  return { products, count }
+  // /store/products ne garantit pas l'ordre demandé : on le rétablit, la pertinence des
+  // suggestions étant portée par leur rang.
+  const byId = new Map(products.map((product) => [product.id, product]))
+  return { products: ids.map((id) => byId.get(id)).filter((p): p is MedusaProduct => Boolean(p)), count }
+}
+
+export type RelatedProducts = { similar: MedusaProduct[]; complementary: MedusaProduct[] }
+
+/**
+ * Suggestions calculées par le backend : produits similaires (même marque, puis même
+ * catégorie) et univers complémentaires. La règle de rapprochement vit côté Medusa, où le
+ * commerçant peut l'ajuster par les métadonnées de catégorie.
+ */
+export async function listRelatedProducts(productId: string, limit = 4): Promise<RelatedProducts> {
+  const url = new URL(`${MEDUSA_BACKEND_URL}/store/products/${productId}/related`)
+  url.searchParams.set("limit", String(limit))
+
+  const res = await fetch(url, {
+    headers: { "x-publishable-api-key": MEDUSA_PUBLISHABLE_KEY },
+    next: { revalidate: 60 },
+  })
+
+  if (!res.ok) {
+    return { similar: [], complementary: [] }
+  }
+
+  const { similar, complementary } = (await res.json()) as {
+    similar: string[]
+    complementary: string[]
+  }
+
+  const [similarProducts, complementaryProducts] = await Promise.all([
+    listProductsByIds(similar, limit),
+    listProductsByIds(complementary, limit),
+  ])
+
+  return { similar: similarProducts.products, complementary: complementaryProducts.products }
 }
 
 export async function listProductAttributes(productId: string) {

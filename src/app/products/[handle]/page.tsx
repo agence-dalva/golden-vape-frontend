@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import {
   getProductByHandle,
   listProductAttributes,
-  listProductsByCategory,
+  listRelatedProducts,
   groupAttributesByType,
 } from "@/lib/medusa";
 import { getCurrentCart } from "@/lib/cart-actions";
@@ -45,11 +45,11 @@ export default async function ProductPage({
   const categories = product.categories ?? [];
   const category = categories.find((item) => item.parent_category) ?? categories[0] ?? null;
 
-  const related = category
-    ? await listProductsByCategory(category.id, 5, 0)
-        .then(({ products }) => products.filter((item) => item.id !== product.id).slice(0, 4))
-        .catch(() => [])
-    : [];
+  // Les suggestions sont calculées côté Medusa : le storefront ne fait que les afficher.
+  const { similar, complementary } = await listRelatedProducts(product.id, 4).catch(() => ({
+    similar: [],
+    complementary: [],
+  }));
 
   const trail: Crumb[] = [
     { label: "Accueil", href: "/" },
@@ -100,14 +100,25 @@ export default async function ProductPage({
         meta={{ origin, contenance, ratio }}
       />
 
-      {related.length > 0 && (
+      {complementary.length > 0 && (
+        <section className="mt-16 lg:mt-20">
+          <SectionHeading eyebrow="Pour aller avec" title="Complétez votre achat" />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {complementary.map((item) => (
+              <ProductCard key={item.id} product={item} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {similar.length > 0 && (
         <section className="mt-16 lg:mt-20">
           <SectionHeading
             title="Vous aimerez aussi"
             link={{ label: "Parcourir le catalogue", href: "/categories" }}
           />
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {related.map((item) => (
+            {similar.map((item) => (
               <ProductCard key={item.id} product={item} />
             ))}
           </div>
