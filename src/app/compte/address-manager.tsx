@@ -88,7 +88,7 @@ export default function AddressManager({ addresses }: { addresses: MedusaCustome
   return (
     <>
       <div className="mb-[18px] flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-2xl font-semibold text-gv-text sm:text-[28px]">
+        <h2 className="font-display text-2xl font-normal text-gv-text sm:text-[28px]">
           Mes adresses
         </h2>
         <button

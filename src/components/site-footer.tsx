@@ -24,7 +24,7 @@ export default async function SiteFooter() {
     <footer className="mt-20 border-t border-gv-border bg-gv-card">
       <div className="gv-container grid grid-cols-2 gap-x-8 gap-y-10 py-12 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] lg:py-16">
         <div className="col-span-2 lg:col-span-1">
-          <p className="logo-wordmark logo-wordmark--ink text-[26px]">Golden Vape</p>
+          <p className="logo-text logo-text--ink text-[19px]">Golden Vape</p>
           <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-gv-text-soft">
             Liquides, matériel et accessoires sélectionnés avec exigence, pour une vape
             fiable au quotidien.

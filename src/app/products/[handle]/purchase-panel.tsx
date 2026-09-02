@@ -90,7 +90,7 @@ export default function PurchasePanel({
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-gv-800">{brand}</p>
       )}
 
-      <h1 className="font-display text-[36px] font-semibold leading-none tracking-[-0.025em] text-gv-text lg:text-[46px]">
+      <h1 className="font-display text-[36px] font-normal leading-[1.2] tracking-[0.01em] text-gv-text lg:text-[46px]">
         {product.title}
       </h1>
 

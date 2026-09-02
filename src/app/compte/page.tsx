@@ -46,7 +46,7 @@ export default async function AccountPage() {
 
       <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-[36px] font-semibold leading-none tracking-[-0.025em] text-gv-text lg:text-[44px]">
+          <h1 className="font-display text-[36px] font-normal leading-[1.2] tracking-[0.01em] text-gv-text lg:text-[44px]">
             Mon compte
           </h1>
           <p className="mt-2 text-sm text-gv-text-soft">
@@ -69,7 +69,7 @@ export default async function AccountPage() {
 
         <div id="vue-ensemble" className="flex flex-col gap-12">
           <section id="commandes" className="scroll-mt-24">
-            <h2 className="mb-[18px] font-display text-2xl font-semibold text-gv-text sm:text-[28px]">
+            <h2 className="mb-[18px] font-display text-2xl font-normal text-gv-text sm:text-[28px]">
               Mes commandes
             </h2>
 
@@ -121,7 +121,7 @@ export default async function AccountPage() {
           </section>
 
           <section id="informations" className="scroll-mt-24">
-            <h2 className="mb-[18px] font-display text-2xl font-semibold text-gv-text sm:text-[28px]">
+            <h2 className="mb-[18px] font-display text-2xl font-normal text-gv-text sm:text-[28px]">
               Mes informations
             </h2>
             <dl className="max-w-xl rounded-xl border border-gv-border bg-gv-card p-5 sm:p-6">

@@ -24,7 +24,7 @@ export default function CategoryCard({ category }: { category: DiscoveryCategory
       )}
 
       <span className="flex max-w-[62%] flex-col justify-center p-6 sm:p-7">
-        <span className="font-display text-[22px] font-semibold leading-tight text-gv-text sm:text-[26px]">
+        <span className="break-words font-display text-[20px] font-normal leading-[1.2] text-gv-text sm:text-[23px]">
           {category.name}
         </span>
         <span className="mt-1.5 line-clamp-2 text-[13px] leading-snug text-gv-text-soft">

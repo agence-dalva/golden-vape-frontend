@@ -43,7 +43,7 @@ export default function CartItem({
   };
 
   const title = (
-    <span className="font-display text-xl leading-tight text-gv-text sm:text-2xl">
+    <span className="font-display text-xl leading-[1.2] text-gv-text sm:text-2xl">
       {item.product_title}
     </span>
   );

@@ -87,7 +87,7 @@ export default function CategoryTile({ category }: { category: MedusaCategory })
       </span>
 
       <div className="min-w-0 flex-1">
-        <h3 className="font-display text-[22px] font-semibold leading-tight text-gv-text">
+        <h3 className="break-words font-display text-[18px] font-normal leading-[1.2] text-gv-text">
           <Link
             href={`/categories/${category.handle}`}
             className="after:absolute after:inset-0 after:content-['']"

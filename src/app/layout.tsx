@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { Michroma, Manrope } from "next/font/google";
 import { Toaster } from "sonner";
 import AnnouncementBar from "@/components/announcement-bar";
 import MainHeader from "@/components/main-header";
@@ -10,13 +10,12 @@ import { getCurrentCart } from "@/lib/cart-actions";
 import { getCurrentCustomer } from "@/lib/customer-actions";
 import "./globals.css";
 
-// Serif éditoriale pour les titres, sans-serif pour l'interface — deux familles, pas plus.
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
+// Michroma pour les titres — la famille du logotype —, sans-serif pour l'interface.
+// Michroma n'existe qu'en 400 : toute autre graisse serait grossie par le navigateur.
+const michroma = Michroma({
+  variable: "--font-michroma",
   subsets: ["latin"],
-  // 700 n'est là que pour le titre de bannière : à 58px, le contraste très marqué du
-  // Cormorant fait paraître le SemiBold plus léger qu'il ne l'est.
-  weight: ["400", "500", "600", "700"],
+  weight: "400",
   display: "swap",
 });
 
@@ -49,7 +48,7 @@ export default async function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${manrope.variable} ${cormorant.variable} h-full antialiased`}
+      className={`${manrope.variable} ${michroma.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
         <AnnouncementBar />
