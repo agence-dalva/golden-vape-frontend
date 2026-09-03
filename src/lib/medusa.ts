@@ -207,17 +207,22 @@ function variantLabel(variant: MedusaVariant): string {
   return variant.options?.[0]?.value ?? variant.title ?? ""
 }
 
-/** Premier nombre de l'étiquette : « 12 mg » → 12, « 1,5 mg » → 1.5. `null` à défaut. */
-function labelledNumber(label: string): number | null {
-  const found = label.match(/\d+(?:[.,]\d+)?/)
+type Measure = { value: number; unit: string }
+
+/**
+ * Grandeur portée par l'étiquette : « 12 mg » → 12 mg, « 50ml » → 50 ml, « 3 » → 3 sans
+ * unité. `null` quand l'étiquette ne porte aucun nombre — « Black », « Menthe ».
+ */
+function measureOf(label: string): Measure | null {
+  const found = label.match(/(\d+(?:[.,]\d+)?)\s*([a-zA-Z]*)/)
   if (!found) return null
 
-  const value = Number(found[0].replace(",", "."))
-  return Number.isFinite(value) ? value : null
+  const value = Number(found[1].replace(",", "."))
+  return Number.isFinite(value) ? { value, unit: found[2].toLowerCase() } : null
 }
 
 /**
- * Classe par le nombre que porte l'étiquette, ordre croissant — dosages et contenances.
+ * Classe par la grandeur que porte l'étiquette, ordre croissant — dosages et contenances.
  *
  * L'administration enregistre les déclinaisons dans l'ordre de saisie, et c'est cet ordre que
  * l'API renvoie : une fiche saisie « 6 mg, 0 mg, 12 mg » s'affiche ainsi. Classer à
@@ -228,18 +233,40 @@ function labelledNumber(label: string): number | null {
  * couleur ou de saveur n'a pas d'ordre naturel, et l'ordre voulu à l'administration y vaut
  * mieux qu'un classement arbitraire.
  */
-export function orderByLabelledNumber<T>(items: T[], label: (item: T) => string): T[] {
+export function orderByLabelledMeasure<T>(items: T[], label: (item: T) => string): T[] {
   if (items.length < 2) {
     return items
   }
 
-  const measured = items.map((item) => ({ item, value: labelledNumber(label(item)) }))
-  if (measured.some((entry) => entry.value === null)) {
-    return items
+  // Une seule étiquette sans nombre suffit à tout laisser en place : décider où ranger
+  // « Menthe » parmi des dosages serait arbitraire dans tous les cas.
+  const measured: { item: T; measure: Measure }[] = []
+  for (const item of items) {
+    const measure = measureOf(label(item))
+    if (!measure) {
+      return items
+    }
+    measured.push({ item, measure })
+  }
+
+  /*
+    Les unités sont regroupées dans leur ordre d'apparition, et les nombres comparés
+    seulement à l'intérieur d'un groupe. Le catalogue mêle en effet les deux sur une même
+    fiche — « 3 mg, 6 mg, 12 mg » et « 50ml » pour Grapaya : comparer des milligrammes à des
+    millilitres n'a pas de sens, et un « 10ml » se retrouverait coincé entre deux dosages.
+  */
+  const unitRank = new Map<string, number>()
+  for (const { measure } of measured) {
+    if (!unitRank.has(measure.unit)) {
+      unitRank.set(measure.unit, unitRank.size)
+    }
   }
 
   return measured
-    .sort((a, b) => (a.value as number) - (b.value as number))
+    .sort((a, b) => {
+      const byUnit = (unitRank.get(a.measure.unit) ?? 0) - (unitRank.get(b.measure.unit) ?? 0)
+      return byUnit !== 0 ? byUnit : a.measure.value - b.measure.value
+    })
     .map((entry) => entry.item)
 }
 
@@ -249,7 +276,7 @@ function withOrderedVariants<T extends { variants?: MedusaVariant[] }>(product: 
     return product
   }
 
-  const ordered = orderByLabelledNumber(variants, variantLabel)
+  const ordered = orderByLabelledMeasure(variants, variantLabel)
   return ordered === variants ? product : { ...product, variants: ordered }
 }
 

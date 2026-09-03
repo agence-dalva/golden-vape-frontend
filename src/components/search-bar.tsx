@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, Loader2, Tag } from "lucide-react";
 import type { SearchResultProduct, SearchResults } from "@/lib/medusa";
-import { formatPrice, orderByLabelledNumber } from "@/lib/medusa";
+import { formatPrice, orderByLabelledMeasure } from "@/lib/medusa";
 
 const DEBOUNCE_MS = 250;
 const MIN_TERM_LENGTH = 2;
@@ -61,7 +61,7 @@ function stockBadge(product: SearchResultProduct): Suggestion["badge"] {
 function variantLabel(product: SearchResultProduct): string | null {
   // Mêmes dosages que sur la fiche, donc même classement : les lister dans l'ordre de saisie
   // donnerait « 6 mg · 0 mg · 12 mg » sous le titre.
-  const titles = orderByLabelledNumber(product.variants, (variant) => variant.title ?? "")
+  const titles = orderByLabelledMeasure(product.variants, (variant) => variant.title ?? "")
     .map((variant) => variant.title)
     .filter(Boolean);
   if (titles.length <= 1) return null;
