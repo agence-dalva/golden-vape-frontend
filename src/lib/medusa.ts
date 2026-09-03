@@ -202,6 +202,57 @@ async function medusaFetch<T>(
   return res.json()
 }
 
+/** Étiquette d'une déclinaison, telle que l'affichent la fiche produit et les cartes. */
+function variantLabel(variant: MedusaVariant): string {
+  return variant.options?.[0]?.value ?? variant.title ?? ""
+}
+
+/** Premier nombre de l'étiquette : « 12 mg » → 12, « 1,5 mg » → 1.5. `null` à défaut. */
+function labelledNumber(label: string): number | null {
+  const found = label.match(/\d+(?:[.,]\d+)?/)
+  if (!found) return null
+
+  const value = Number(found[0].replace(",", "."))
+  return Number.isFinite(value) ? value : null
+}
+
+/**
+ * Classe par le nombre que porte l'étiquette, ordre croissant — dosages et contenances.
+ *
+ * L'administration enregistre les déclinaisons dans l'ordre de saisie, et c'est cet ordre que
+ * l'API renvoie : une fiche saisie « 6 mg, 0 mg, 12 mg » s'affiche ainsi. Classer à
+ * l'affichage rend la saisie sans conséquence, plutôt que de demander de la reprendre fiche
+ * par fiche.
+ *
+ * Le classement n'a lieu que si TOUTES les étiquettes portent un nombre : une déclinaison de
+ * couleur ou de saveur n'a pas d'ordre naturel, et l'ordre voulu à l'administration y vaut
+ * mieux qu'un classement arbitraire.
+ */
+export function orderByLabelledNumber<T>(items: T[], label: (item: T) => string): T[] {
+  if (items.length < 2) {
+    return items
+  }
+
+  const measured = items.map((item) => ({ item, value: labelledNumber(label(item)) }))
+  if (measured.some((entry) => entry.value === null)) {
+    return items
+  }
+
+  return measured
+    .sort((a, b) => (a.value as number) - (b.value as number))
+    .map((entry) => entry.item)
+}
+
+function withOrderedVariants<T extends { variants?: MedusaVariant[] }>(product: T): T {
+  const variants = product.variants
+  if (!variants || variants.length < 2) {
+    return product
+  }
+
+  const ordered = orderByLabelledNumber(variants, variantLabel)
+  return ordered === variants ? product : { ...product, variants: ordered }
+}
+
 // created_at date le badge « Nouveau », inventory_quantity conditionne le bouton panier.
 const PRODUCT_LIST_FIELDS =
   "id,title,subtitle,handle,thumbnail,created_at,*images,*variants,*variants.calculated_price,*variants.inventory_quantity"
@@ -220,7 +271,7 @@ export async function listProducts(limit = 24, offset = 0, order?: string) {
       ...(order ? { order } : {}),
     }
   )
-  return { products, count }
+  return { products: products.map(withOrderedVariants), count }
 }
 
 export async function listLatestProducts(limit = 10) {
@@ -248,7 +299,7 @@ export async function getProductByHandle(handle: string) {
     // La fiche produit affiche le stock et pilote le bouton d'ajout au panier.
     { fresh: true }
   )
-  return products[0] ?? null
+  return products[0] ? withOrderedVariants(products[0]) : null
 }
 
 export type SearchResultVariant = {
@@ -335,7 +386,7 @@ export async function listProductsByCategory(
       ...(order ? { order } : {}),
     }
   )
-  return { products, count }
+  return { products: products.map(withOrderedVariants), count }
 }
 
 /**
@@ -541,7 +592,7 @@ export async function listProductsByIds(ids: string[], limit = 24, offset = 0) {
   const { products, count } = (await res.json()) as { products: MedusaProduct[]; count: number }
   // /store/products ne garantit pas l'ordre demandé : on le rétablit, la pertinence des
   // suggestions étant portée par leur rang.
-  const byId = new Map(products.map((product) => [product.id, product]))
+  const byId = new Map(products.map((product) => [product.id, withOrderedVariants(product)]))
   return { products: ids.map((id) => byId.get(id)).filter((p): p is MedusaProduct => Boolean(p)), count }
 }
 
