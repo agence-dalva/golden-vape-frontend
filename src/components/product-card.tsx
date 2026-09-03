@@ -29,6 +29,11 @@ export default function ProductCard({
   const imageUrl = product.images[0]?.url ?? product.thumbnail;
   const variants = product.variants ?? [];
 
+  // Le sous-titre porte les mots-clés saisis à l'administration ; à défaut, la carte retombe
+  // sur la caractéristique tirée des attributs. Une seule des deux : superposées, ces deux
+  // lignes grises de même graisse se liraient comme un paragraphe.
+  const secondary = product.subtitle?.trim() || feature;
+
   const prices = variants
     .map((variant) => variant.calculated_price)
     .filter((price): price is NonNullable<typeof price> => Boolean(price));
@@ -106,8 +111,8 @@ export default function ProductCard({
           </Link>
         </h3>
 
-        {feature && (
-          <p className="mt-1 truncate text-[12px] leading-snug text-gv-text-soft">{feature}</p>
+        {secondary && (
+          <p className="mt-1 truncate text-[12px] leading-snug text-gv-text-soft">{secondary}</p>
         )}
 
         {/* Prix et action collés au bas de la carte : ils s'alignent d'une carte à l'autre

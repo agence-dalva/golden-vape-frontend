@@ -16,6 +16,8 @@ type Suggestion = {
   kind: "brand" | "product";
   key: string;
   label: string;
+  /** Mots-clés du produit : ils expliquent pourquoi la suggestion répond au terme cherché. */
+  subtitle: string | null;
   detail: string | null;
   badge: { label: string; tone: "in" | "low" | "out" } | null;
   imageUrl: string | null;
@@ -97,6 +99,7 @@ export default function SearchBar() {
         kind: "brand" as const,
         key: `brand-${brand.value}`,
         label: brand.value,
+        subtitle: null,
         detail: null,
         badge: null,
         imageUrl: brand.image_url,
@@ -106,6 +109,7 @@ export default function SearchBar() {
         kind: "product" as const,
         key: `product-${product.id}`,
         label: product.title,
+        subtitle: product.subtitle?.trim() || null,
         detail: [priceLabel(product), variantLabel(product)].filter(Boolean).join("  ·  ") || null,
         badge: stockBadge(product),
         imageUrl: product.image_url,
@@ -276,6 +280,11 @@ export default function SearchBar() {
                         <span className="truncate text-sm text-gv-text">
                           {suggestion.label}
                         </span>
+                        {suggestion.subtitle && (
+                          <span className="truncate text-xs text-gv-text-muted">
+                            {suggestion.subtitle}
+                          </span>
+                        )}
                         {suggestion.detail && (
                           <span className="truncate text-xs text-gv-text-soft">
                             {suggestion.detail}

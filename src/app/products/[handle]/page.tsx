@@ -72,9 +72,11 @@ export default async function ProductPage({
       .map((group) => ({ label: group.typeName, value: group.values.join(" · ") })),
   ];
 
-  // L'accroche reprend les attributs existants ; à défaut elle disparaît, plutôt que
-  // d'inventer une promesse commerciale.
-  const tagline = [flavour, contenance].filter(Boolean).join(" · ") || null;
+  // L'accroche vient du sous-titre saisi à l'administration, seul texte écrit pour être lu
+  // ici. À défaut elle reprend les attributs existants, et à défaut encore elle disparaît,
+  // plutôt que d'inventer une promesse commerciale.
+  const tagline =
+    product.subtitle?.trim() || [flavour, contenance].filter(Boolean).join(" · ") || null;
 
   const cartVariantIds = cart?.items.map((item) => item.variant_id) ?? [];
 

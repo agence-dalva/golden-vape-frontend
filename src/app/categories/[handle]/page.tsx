@@ -9,6 +9,7 @@ import CategoryIntro from "@/components/category/category-intro";
 import SortSelect from "@/components/category/sort-select";
 import ProductPagination from "@/components/category/product-pagination";
 import {
+  collectCategoryIds,
   getCategoryByHandle,
   listProductsByCategory,
   listProductsByIds,
@@ -56,6 +57,10 @@ export default async function CategoryPage({
     notFound();
   }
 
+  // Une rubrique de regroupement — « Cigarette électronique » — ne porte aucun produit en
+  // propre : la page liste donc aussi ceux de ses sous-catégories, sans quoi elle serait vide.
+  const categoryIds = collectCategoryIds(category);
+
   const sort = resolveSort(query.tri);
   const requestedPage = Number.parseInt(query.page ?? "1", 10);
   const currentPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
@@ -67,7 +72,7 @@ export default async function CategoryPage({
   if (sort.byPrice) {
     // Le prix n'est pas triable en base : on classe un index léger de la catégorie entière,
     // puis on ne charge en détail que les vingt-quatre produits de la page demandée.
-    const index = await listCategoryPriceIndex(category.id);
+    const index = await listCategoryPriceIndex(categoryIds);
     const direction = sort.byPrice === "asc" ? 1 : -1;
     const ranked = [...index].sort((a, b) => {
       // Un produit sans prix ne vaut pas zéro : il part en fin de liste dans les deux sens.
@@ -86,7 +91,7 @@ export default async function CategoryPage({
       .map((id) => byId.get(id))
       .filter((product): product is MedusaProduct => Boolean(product));
   } else {
-    ({ products, count } = await listProductsByCategory(category.id, {
+    ({ products, count } = await listProductsByCategory(categoryIds, {
       limit: PAGE_SIZE,
       offset,
       order: sort.order,

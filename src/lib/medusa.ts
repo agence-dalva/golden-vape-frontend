@@ -1,5 +1,32 @@
-export const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL!
-export const MEDUSA_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY!
+/*
+  Bascule staging. Renseigner les deux variables NEXT_PUBLIC_MEDUSA_STAGING_* dans
+  .env.local fait lire au frontend local le catalogue du staging, le temps de travailler sur
+  des données réelles — sous-titres, arborescence de catégories — que la base locale n'a pas.
+  Les laisser vides garde le backend local.
+
+  Attention : la bascule vaut pour TOUS les appels, panier et commande compris. En mode
+  staging, un ajout au panier ou une commande passée depuis le site local sont créés pour de
+  vrai sur le staging. Naviguer est sans risque, acheter ne l'est pas.
+*/
+const STAGING_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_STAGING_BACKEND_URL?.trim()
+const STAGING_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_STAGING_PUBLISHABLE_KEY?.trim()
+const usingStaging = Boolean(STAGING_BACKEND_URL)
+
+// Une URL de staging sans sa clé publiable ferait répondre 401 à chaque page : mieux vaut
+// échouer au démarrage avec le nom de la variable manquante qu'un site entier en erreur.
+if (usingStaging && !STAGING_PUBLISHABLE_KEY) {
+  throw new Error(
+    "NEXT_PUBLIC_MEDUSA_STAGING_BACKEND_URL est renseignée sans NEXT_PUBLIC_MEDUSA_STAGING_PUBLISHABLE_KEY."
+  )
+}
+
+export const MEDUSA_BACKEND_URL = usingStaging
+  ? STAGING_BACKEND_URL!
+  : process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL!
+// La clé suit son backend : présentée à l'autre, elle n'y est simplement pas déclarée.
+export const MEDUSA_PUBLISHABLE_KEY = usingStaging
+  ? STAGING_PUBLISHABLE_KEY!
+  : process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY!
 
 // country_code est requis pour que Medusa calcule le prix TTC (taxe configurée sur la région France)
 export const DEFAULT_COUNTRY_CODE = "fr"
@@ -70,6 +97,9 @@ export type MedusaProductOption = {
 export type MedusaProduct = {
   id: string
   title: string
+  // Mots-clés saisis à l'administration pour que le produit se trouve sous les termes que
+  // les clients emploient, absents du titre commercial. Affiché tel quel sous le titre.
+  subtitle: string | null
   created_at: string | null
   description: string | null
   handle: string
@@ -113,11 +143,27 @@ export type MedusaCategoryRef = {
   parent_category?: { id: string; name: string; handle: string } | null
 }
 
+/** Nœud de l'arbre : `include_descendants_tree` renvoie les enfants sur toute la profondeur. */
+export type MedusaCategoryNode = MedusaCategoryRef & {
+  category_children?: MedusaCategoryNode[]
+}
+
 export type MedusaCategory = MedusaCategoryRef & {
   parent_category_id: string | null
   parent_category: MedusaCategoryRef | null
-  category_children: MedusaCategoryRef[]
+  category_children: MedusaCategoryNode[]
   description: string | null
+}
+
+/**
+ * Identifiants de la catégorie et de toute sa descendance.
+ *
+ * Une rubrique de regroupement ne porte aucun produit en propre — « Cigarette électronique »
+ * les range tous sous Kits, Résistances, Accus… — et `category_id` ne remonte que les produits
+ * directement rattachés. Sans cette collecte, la page de la rubrique serait vide.
+ */
+export function collectCategoryIds(category: MedusaCategoryNode): string[] {
+  return [category.id, ...(category.category_children ?? []).flatMap(collectCategoryIds)]
 }
 
 // Le catalogue tolère une minute de retard, pas le stock : une fiche produit qui annonce
@@ -129,12 +175,17 @@ export type MedusaCategory = MedusaCategoryRef & {
 // fraîcheur peut donc être invisible en local et bien réel en production.
 async function medusaFetch<T>(
   path: string,
-  searchParams: Record<string, string>,
+  searchParams: Record<string, string | string[]>,
   { fresh = false }: { fresh?: boolean } = {}
 ): Promise<T> {
   const url = new URL(`${MEDUSA_BACKEND_URL}${path}`)
   for (const [key, value] of Object.entries(searchParams)) {
-    url.searchParams.set(key, value)
+    // Medusa attend la notation `cle[]=a&cle[]=b` pour un filtre à plusieurs valeurs.
+    if (Array.isArray(value)) {
+      value.forEach((entry) => url.searchParams.append(`${key}[]`, entry))
+    } else {
+      url.searchParams.set(key, value)
+    }
   }
 
   const res = await fetch(url, {
@@ -153,9 +204,9 @@ async function medusaFetch<T>(
 
 // created_at date le badge « Nouveau », inventory_quantity conditionne le bouton panier.
 const PRODUCT_LIST_FIELDS =
-  "id,title,handle,thumbnail,created_at,*images,*variants,*variants.calculated_price,*variants.inventory_quantity"
+  "id,title,subtitle,handle,thumbnail,created_at,*images,*variants,*variants.calculated_price,*variants.inventory_quantity"
 const PRODUCT_DETAIL_FIELDS =
-  "id,title,description,handle,thumbnail,*images,*options,*options.values,*variants,*variants.calculated_price,*variants.options,*variants.inventory_quantity,*variants.images,height,width,length,weight,origin_country,*categories"
+  "id,title,subtitle,description,handle,thumbnail,*images,*options,*options.values,*variants,*variants.calculated_price,*variants.options,*variants.inventory_quantity,*variants.images,height,width,length,weight,origin_country,*categories"
 
 export async function listProducts(limit = 24, offset = 0, order?: string) {
   const { products, count } = await medusaFetch<{ products: MedusaProduct[]; count: number }>(
@@ -212,6 +263,7 @@ export type SearchResultVariant = {
 export type SearchResultProduct = {
   id: string
   title: string
+  subtitle: string | null
   handle: string
   image_url: string | null
   variants: SearchResultVariant[]
@@ -256,19 +308,21 @@ export async function getCategoryByHandle(handle: string) {
       handle,
       fields:
         "id,name,handle,description,parent_category_id,*parent_category,*category_children",
+      // L'arbre entier, pour agréger les produits des sous-catégories sur la page parente.
+      include_descendants_tree: "true",
     }
   )
   return product_categories[0] ?? null
 }
 
 export async function listProductsByCategory(
-  categoryId: string,
+  categoryIds: string | string[],
   { limit = 24, offset = 0, order }: { limit?: number; offset?: number; order?: string } = {}
 ) {
   const { products, count } = await medusaFetch<{ products: MedusaProduct[]; count: number }>(
     "/store/products",
     {
-      category_id: categoryId,
+      category_id: categoryIds,
       region_id: await getDefaultRegionId(),
       country_code: DEFAULT_COUNTRY_CODE,
       fields: PRODUCT_LIST_FIELDS,
@@ -289,7 +343,7 @@ export async function listProductsByCategory(
  * réduits au strict nécessaire : 865 produits pèsent une cinquantaine de kilo-octets.
  */
 export async function listCategoryPriceIndex(
-  categoryId: string
+  categoryIds: string | string[]
 ): Promise<{ id: string; price: number | null }[]> {
   const regionId = await getDefaultRegionId()
   const pageSize = 1000
@@ -304,7 +358,7 @@ export async function listCategoryPriceIndex(
       products: Pick<MedusaProduct, "id" | "variants">[]
       count: number
     }>("/store/products", {
-      category_id: categoryId,
+      category_id: categoryIds,
       region_id: regionId,
       country_code: DEFAULT_COUNTRY_CODE,
       fields: "id,*variants.calculated_price",
