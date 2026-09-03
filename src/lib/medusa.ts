@@ -411,12 +411,17 @@ export type DiscoveryCategory = {
 // Univers mis en avant sur l'accueil. Le rapprochement se fait sur le nom et non sur le
 // handle : celui-ci porte un suffixe numérique issu de l'import Hiboutik, qui diffère d'une
 // base à l'autre. À défaut de correspondance, on retombe sur les premières racines.
-const DISCOVERY_PREFERENCES = ["liquides", "kits", "diy"]
+// « kits » et « cigarette electronique » coexistent volontairement : la première est une
+// racine aujourd'hui, la seconde le deviendra quand le regroupement sera fait dans
+// l'administration. Les absentes sont filtrées, la liste tient donc dans les deux états sans
+// laisser un jour la page d'accueil retomber en silence sur une catégorie quelconque.
+const DISCOVERY_PREFERENCES = ["liquides", "cigarette electronique", "kits", "diy"]
 
 // Visuels dédiés aux univers mis en avant. À défaut, la carte retombe sur une photo d'un
 // vrai produit de la catégorie — aucune image décorative à maintenir en plus.
 const DISCOVERY_BACKGROUNDS: Record<string, string> = {
   liquides: "/categories/e-liquides.png",
+  "cigarette electronique": "/categories/kits-pods.png",
   kits: "/categories/kits-pods.png",
   diy: "/categories/diy.png",
 }

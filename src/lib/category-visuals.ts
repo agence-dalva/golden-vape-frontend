@@ -1,4 +1,5 @@
 import {
+  Cigarette,
   Droplets,
   Zap,
   BatteryCharging,
@@ -18,20 +19,25 @@ import {
  * Repères visuels par famille de produits, rapprochés sur le NOM et non sur le handle :
  * celui-ci porte un suffixe numérique issu de l'import Hiboutik, qui diffère d'une base à
  * l'autre. Partagé par la grille du catalogue et l'en-tête des pages de catégorie.
+ *
+ * Revers de ce choix : renommer une catégorie dans l'administration décroche son visuel sans
+ * rien casser d'autre, donc sans rien signaler. Les clés doivent suivre les noms réels.
  */
 const ICONS: Record<string, LucideIcon> = {
   liquides: Droplets,
+  "cigarette electronique": Cigarette,
   kits: Zap,
   diy: FlaskConical,
   chargeurs: BatteryCharging,
   destockage: Tag,
   cbd: Leaf,
   "puffs rechargeables": Wind,
-  "clearomiseurs et dripper": CircleDot,
+  "clearomiseurs et reconstructible": CircleDot,
+  "cartouches pods": Package,
   accus: BatteryCharging,
   resistances: Flame,
-  mods: Cpu,
-  "pyrex et reconstructibles": Wrench,
+  "box et batteries": Cpu,
+  accessoires: Wrench,
 };
 
 const ILLUSTRATIONS: Record<string, string> = {
@@ -40,11 +46,10 @@ const ILLUSTRATIONS: Record<string, string> = {
   destockage: "/categories/page/destockage.png",
   cbd: "/categories/page/cbd.png",
   "puffs rechargeables": "/categories/page/puffs-rechargeables.png",
-  "clearomiseurs et dripper": "/categories/page/clearomiseurs-drippers.png",
+  "clearomiseurs et reconstructible": "/categories/page/clearomiseurs-drippers.png",
   accus: "/categories/page/accus.png",
   resistances: "/categories/page/resistances.png",
-  mods: "/categories/page/mods.png",
-  "pyrex et reconstructibles": "/categories/page/pyrex-reconstructibles.png",
+  "box et batteries": "/categories/page/mods.png",
   accessoires: "/categories/page/accessoires.png",
 };
 
