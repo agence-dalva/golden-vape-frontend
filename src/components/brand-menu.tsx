@@ -29,7 +29,7 @@ export default function BrandMenu({ brands }: { brands: MedusaBrand[] }) {
 
       <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
         {visible.map((brand) => (
-          <li key={brand.value}>
+          <li key={brand.value} className="min-w-0">
             <Link
               href={`/marques/${encodeURIComponent(brand.value)}`}
               className="group flex h-full flex-col overflow-hidden rounded-[10px] border border-gv-border bg-gv-card transition-[border-color,box-shadow] duration-200 hover:border-gv-border-strong hover:shadow-[0_10px_24px_rgba(68,54,46,0.07)]"

@@ -43,7 +43,7 @@ export default function AccountMenu({ customer }: { customer: MedusaCustomer | n
         <span className="hidden text-xs sm:block">Compte</span>
       </button>
 
-      <div className={`absolute right-0 top-full z-40 min-w-48 pt-1.5 ${menuPanelClasses(open)}`}>
+      <div className={`absolute right-0 top-full z-40 min-w-48 max-w-[280px] pt-1.5 ${menuPanelClasses(open)}`}>
         <div className="rounded-[10px] border border-gv-border bg-white py-2 shadow-gv-sm">
           <p className="truncate px-4 py-2 text-sm text-gv-text-soft">
             {customer.first_name ? `Bonjour ${customer.first_name}` : customer.email}
