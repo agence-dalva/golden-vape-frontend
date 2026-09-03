@@ -130,7 +130,7 @@ export default async function CategoryPage({
   };
 
   return (
-    <div className="pb-20">
+    <div>
       <div className="gv-container">
         <Breadcrumbs trail={trail} />
 

@@ -17,7 +17,7 @@ export default async function CataloguePage() {
   const categories = await listCategories().catch(() => []);
 
   return (
-    <div className="pb-20">
+    <div>
       <div className="gv-container">
         <Breadcrumbs trail={[{ label: "Accueil", href: "/" }, { label: "Catalogue" }]} />
 
