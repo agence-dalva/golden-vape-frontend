@@ -130,84 +130,97 @@ export default async function CategoryPage({
   };
 
   return (
-    <div className="gv-container pb-20">
-      <Breadcrumbs trail={trail} />
+    <div className="pb-20">
+      <div className="gv-container">
+        <Breadcrumbs trail={trail} />
 
-      <CategoryIntro category={category} />
+        <CategoryIntro category={category} />
 
-      <section id="produits" className="scroll-mt-8 pt-7">
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h2 className="font-display text-[26px] font-normal leading-[1.2] tracking-[0.01em] text-gv-text sm:text-[32px]">
-              Notre sélection
-            </h2>
-            <p aria-live="polite" className="text-[13px] text-gv-text-soft">
-              {count} produit{count > 1 ? "s" : ""}
-            </p>
+      </div>
+
+      {/*
+        Sol ivoire sous la grille, d'un bord à l'autre. Les cartes produit sont blanches : sur
+        un fond de page à deux points du blanc, elles ne se détachaient de rien et la section se
+        lisait comme un vide. Le même sol habille la grille du catalogue, pour que le passage de
+        l'une à l'autre ne change pas de décor.
+
+        Pas de filet haut : l'en-tête de catégorie en pose déjà un, les deux se doubleraient.
+      */}
+      <section id="produits" className="scroll-mt-8 border-b border-gv-border bg-gv-soft">
+        <div className="gv-container pb-12 pt-8">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <h2 className="font-display text-[26px] font-normal leading-[1.2] tracking-[0.01em] text-gv-text sm:text-[32px]">
+                Notre sélection
+              </h2>
+              <p aria-live="polite" className="text-[13px] text-gv-text-soft">
+                {count} produit{count > 1 ? "s" : ""}
+              </p>
+            </div>
+
+            {count > 0 && <SortSelect value={sort.value} />}
           </div>
 
-          {count > 0 && <SortSelect value={sort.value} />}
+          {/*
+            Les sous-catégories restent joignables depuis la page sans colonne de filtres :
+            des liens sobres, pas la rangée de cartes illustrées supprimée du haut de page.
+          */}
+          {children.length > 0 && (
+            <nav aria-label="Sous-catégories" className="mb-7 flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-[13px] text-gv-text-soft">Affiner :</span>
+              {children.map((child) => (
+                <Link
+                  key={child.id}
+                  href={`/categories/${child.handle}`}
+                  className="inline-flex min-h-11 items-center rounded-[8px] border border-gv-border bg-gv-card px-4 text-[13px] font-medium text-gv-text transition-colors hover:border-gv-border-strong hover:bg-gv-50"
+                >
+                  {child.name}
+                </Link>
+              ))}
+            </nav>
+          )}
+
+          {products.length > 0 ? (
+            <>
+              <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {products.map((product, index) => {
+                  const facts = extractProductFacts(attributes[product.id]);
+                  return (
+                    <li key={product.id}>
+                      <ProductCard
+                        product={product}
+                        priority={index < 4}
+                        brand={facts.brand}
+                        feature={facts.feature}
+                      />
+                    </li>
+                  );
+                })}
+              </ul>
+
+              <ProductPagination current={currentPage} total={totalPages} hrefFor={hrefFor} />
+            </>
+          ) : (
+            <EmptyState
+              icon={PackageSearch}
+              title={
+                count > 0
+                  ? "Cette page ne contient aucun produit."
+                  : "Aucun produit n'est disponible dans cette catégorie pour le moment."
+              }
+              description={
+                count > 0
+                  ? "Le numéro de page demandé dépasse la liste."
+                  : "Explorez les autres catégories du catalogue en attendant le réassort."
+              }
+              primary={
+                count > 0
+                  ? { label: "Revenir au début", href: `/categories/${category.handle}` }
+                  : { label: "Voir tout le catalogue", href: "/categories" }
+              }
+            />
+          )}
         </div>
-
-        {/*
-          Les sous-catégories restent joignables depuis la page sans colonne de filtres :
-          des liens sobres, pas la rangée de cartes illustrées supprimée du haut de page.
-        */}
-        {children.length > 0 && (
-          <nav aria-label="Sous-catégories" className="mb-7 flex flex-wrap items-center gap-2">
-            <span className="mr-1 text-[13px] text-gv-text-soft">Affiner :</span>
-            {children.map((child) => (
-              <Link
-                key={child.id}
-                href={`/categories/${child.handle}`}
-                className="inline-flex min-h-11 items-center rounded-[8px] border border-gv-border bg-gv-card px-4 text-[13px] font-medium text-gv-text transition-colors hover:border-gv-border-strong hover:bg-gv-50"
-              >
-                {child.name}
-              </Link>
-            ))}
-          </nav>
-        )}
-
-        {products.length > 0 ? (
-          <>
-            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {products.map((product, index) => {
-                const facts = extractProductFacts(attributes[product.id]);
-                return (
-                  <li key={product.id}>
-                    <ProductCard
-                      product={product}
-                      priority={index < 4}
-                      brand={facts.brand}
-                      feature={facts.feature}
-                    />
-                  </li>
-                );
-              })}
-            </ul>
-
-            <ProductPagination current={currentPage} total={totalPages} hrefFor={hrefFor} />
-          </>
-        ) : (
-          <EmptyState
-            icon={PackageSearch}
-            title={
-              count > 0
-                ? "Cette page ne contient aucun produit."
-                : "Aucun produit n'est disponible dans cette catégorie pour le moment."
-            }
-            description={
-              count > 0
-                ? "Le numéro de page demandé dépasse la liste."
-                : "Explorez les autres catégories du catalogue en attendant le réassort."
-            }
-            primary={
-              count > 0
-                ? { label: "Revenir au début", href: `/categories/${category.handle}` }
-                : { label: "Voir tout le catalogue", href: "/categories" }
-            }
-          />
-        )}
       </section>
     </div>
   );
