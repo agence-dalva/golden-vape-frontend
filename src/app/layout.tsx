@@ -5,6 +5,8 @@ import AnnouncementBar from "@/components/announcement-bar";
 import MainHeader from "@/components/main-header";
 import CategoryNav from "@/components/category-nav";
 import SiteFooter from "@/components/site-footer";
+import AgeGate from "@/components/age-gate";
+import { AGE_STORAGE_KEY } from "@/lib/age-gate";
 import { listCategories, listBrands } from "@/lib/medusa";
 import { getCurrentCart } from "@/lib/cart-actions";
 import { getCurrentCustomer } from "@/lib/customer-actions";
@@ -49,8 +51,23 @@ export default async function RootLayout({
     <html
       lang="fr"
       className={`${manrope.variable} ${michroma.variable} h-full antialiased`}
+      // Le script d'amorçage pose `data-age-ok` sur cet élément avant l'hydratation, ce que
+      // React signale sinon comme une divergence entre le rendu serveur et le client. La
+      // suppression ne porte que sur <html> lui-même, pas sur l'arbre en dessous.
+      suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
+        {/*
+          Synchrone et en tête de corps : l'attribut est posé avant que le portillon d'âge
+          ne soit peint, sinon un visiteur qui a déjà répondu le verrait clignoter à chaque
+          chargement. Un script ne pouvant rien importer, la clé est interpolée — depuis
+          `lib/age-gate` et non depuis le composant, qui est un module client.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem(${JSON.stringify(AGE_STORAGE_KEY)})==="1")document.documentElement.dataset.ageOk="1"}catch(e){}`,
+          }}
+        />
         <AnnouncementBar />
         <MainHeader
           categories={categories}
@@ -72,6 +89,7 @@ export default async function RootLayout({
             },
           }}
         />
+        <AgeGate />
       </body>
     </html>
   );

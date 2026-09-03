@@ -1,5 +1,6 @@
 import HeroSection from "@/components/hero-section";
 import TrustBar from "@/components/trust-bar";
+import MinorsNotice from "@/components/minors-notice";
 import SectionHeading from "@/components/section-heading";
 import ProductCard from "@/components/product-card";
 import CategoryCard from "@/components/category-card";
@@ -15,6 +16,7 @@ export default async function Home() {
     <>
       <HeroSection />
       <TrustBar />
+      <MinorsNotice />
 
       <section id="selection" className="gv-container scroll-mt-24 pt-16 sm:pt-20">
         <SectionHeading

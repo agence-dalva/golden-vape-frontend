@@ -168,3 +168,58 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/*
+  Portillon de vérification d'âge.
+
+  Il est rendu par le serveur, et non monté par le JavaScript : sans cela un nouveau
+  visiteur apercevrait la boutique le temps que la page s'hydrate. Réciproquement, le
+  script d'amorçage du gabarit pose `data-age-ok` sur <html> quand la réponse est déjà
+  connue, ce qui masque le portillon avant peinture — sinon il clignoterait à chaque
+  chargement pour les visiteurs connus.
+*/
+html[data-age-ok] #age-gate {
+  display: none;
+}
+
+/* Verrou de défilement en CSS et non en JavaScript, pour être actif dès la première
+   peinture. Il est levé en posant `data-age-ok`, une fois le fondu de sortie terminé. */
+html:not([data-age-ok]) {
+  overflow: hidden;
+}
+
+@keyframes gv-age-gate-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes gv-age-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+}
+
+/* `backwards` et non `both` : l'état de départ s'applique avant le premier keyframe, mais
+   l'animation ne fige pas l'opacité à l'arrivée — le fondu de sortie peut ainsi partir de
+   la valeur de base. */
+#age-gate {
+  animation: gv-age-gate-in 320ms ease-out backwards;
+}
+
+#age-gate > * {
+  animation: gv-age-panel-in 420ms 80ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+/* Une réponse donnée pendant l'entrée interromprait le fondu de sortie : l'animation
+   encore en cours l'emporterait sur la transition. */
+#age-gate[data-leaving="true"],
+#age-gate[data-leaving="true"] > * {
+  animation: none;
+}
+
+#age-gate[data-leaving="true"] {
+  opacity: 0;
+  transition: opacity 260ms ease-in;
+}
