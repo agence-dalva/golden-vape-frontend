@@ -223,3 +223,16 @@ html:not([data-age-ok]) {
   opacity: 0;
   transition: opacity 260ms ease-in;
 }
+
+/*
+  Titres de fiche produit, à peine épaissis.
+
+  Michroma n'existe qu'en 400 : demander une graisse supérieure ferait grossir le tracé par
+  le navigateur, qui l'empâte — c'est déjà noté au chargement de la police. Un filet de
+  0,4 pixel épaissit le trait proprement, technique que le logotype emploie déjà.
+  `paint-order` place le filet sous le remplissage, pour que la forme des lettres reste nette.
+*/
+.gv-title-strong {
+  -webkit-text-stroke: 0.4px currentColor;
+  paint-order: stroke fill;
+}

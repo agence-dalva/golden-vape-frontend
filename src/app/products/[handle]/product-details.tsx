@@ -37,7 +37,7 @@ export default function ProductDetails({
       {description && (
         <div>
           <p className="gv-eyebrow text-[11px]">La description</p>
-          <h2 className="mb-3 mt-2 font-display text-[26px] font-normal leading-[1.2] text-gv-text sm:text-[32px]">
+          <h2 className="gv-title-strong mb-3 mt-2 font-display text-[26px] font-normal leading-[1.2] text-gv-text sm:text-[32px]">
             {title}
           </h2>
           <CollapsibleText>{description}</CollapsibleText>
