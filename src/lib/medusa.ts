@@ -296,6 +296,10 @@ export async function listCategories() {
       fields: "id,name,handle,description,*category_children",
       parent_category_id: "null",
       limit: "100",
+      // Sans ce tri, l'API renvoie les racines dans leur ordre de création et l'écran
+      // « Modifier l'ordre » de l'administration n'a aucun effet sur le site. Les
+      // sous-catégories, elles, suivent déjà leur rang sans qu'on le demande.
+      order: "rank",
     }
   )
   return product_categories

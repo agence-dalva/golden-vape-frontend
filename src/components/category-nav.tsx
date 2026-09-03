@@ -11,7 +11,8 @@ import BrandMenu from "./brand-menu";
 /**
  * Nombre de catégories tenant sur une ligne à 1100px, largeur la plus étroite où cette
  * navigation reste affichée. Au-delà, les items déborderaient hors de l'écran : le surplus
- * bascule dans un menu « Plus ». L'ordre suit le rang défini dans l'administration Medusa.
+ * bascule dans un menu « Plus ». L'ordre suit le rang défini dans l'administration, à
+ * condition de le demander explicitement à l'API — cf. `listCategories`.
  */
 const MAX_VISIBLE = 7;
 
