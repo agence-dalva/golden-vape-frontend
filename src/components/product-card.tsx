@@ -98,7 +98,13 @@ export default function ProductCard({
         )}
       </div>
 
-      <div className="flex flex-col px-4 pb-4 pt-3.5">
+      {/*
+        `min-w-0` est indispensable : la ligne secondaire est tronquée, donc en `nowrap`, et sa
+        largeur minimale intrinsèque vaut celle du texte entier. Sans cela cet élément de
+        grille refuse de descendre sous cette largeur — un sous-titre de compatibilité de
+        quatre-vingt-dix caractères portait la carte à 533 pixels dans une colonne de 320.
+      */}
+      <div className="flex min-w-0 flex-col px-4 pb-4 pt-3.5">
         {brand && (
           <p className="mb-1 truncate text-[10px] font-semibold uppercase tracking-[0.08em] text-gv-text-muted">
             {brand}
