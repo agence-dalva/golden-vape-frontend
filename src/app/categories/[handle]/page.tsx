@@ -8,22 +8,31 @@ import EmptyState from "@/components/empty-state";
 import CategoryIntro from "@/components/category/category-intro";
 import SortSelect from "@/components/category/sort-select";
 import ProductPagination from "@/components/category/product-pagination";
+import FilterPanel from "@/components/category/filter-panel";
 import {
   collectCategoryIds,
   getCategoryByHandle,
   listProductsByCategory,
   listProductsByIds,
   listCategoryPriceIndex,
+  listCategoryFacets,
   listProductAttributesBulk,
   type MedusaProduct,
   type ProductAttributeBrief,
 } from "@/lib/medusa";
 import { resolveSort, DEFAULT_SORT } from "@/lib/catalog-sort";
+import { readFilters, clearFiltersHref } from "@/lib/catalog-filters";
 import { extractProductFacts } from "@/lib/product-facts";
 
 const PAGE_SIZE = 24;
 
-type SearchParams = Promise<{ tri?: string; page?: string }>;
+// Le prix est calculé après la requête et ne se trie pas en base : le classer suppose de
+// connaître tout l'ensemble retenu, pas seulement une page. Aligné sur la borne de la route.
+const MAX_FILTERED = 1000;
+
+// Les filtres arrivent en `f_<repère>` : la signature reste ouverte plutôt que d'énumérer des
+// clés que l'administration peut créer à tout moment.
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export async function generateMetadata({
   params,
@@ -61,10 +70,31 @@ export default async function CategoryPage({
   // propre : la page liste donc aussi ceux de ses sous-catégories, sans quoi elle serait vide.
   const categoryIds = collectCategoryIds(category);
 
-  const sort = resolveSort(query.tri);
-  const requestedPage = Number.parseInt(query.page ?? "1", 10);
+  const sort = resolveSort(typeof query.tri === "string" ? query.tri : undefined);
+  const requestedPage = Number.parseInt(
+    typeof query.page === "string" ? query.page : "1",
+    10
+  );
   const currentPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const offset = (currentPage - 1) * PAGE_SIZE;
+
+  /*
+    Les facettes sont demandées dans tous les cas : le panneau doit s'afficher même sans
+    filtre actif. Les identifiants qu'elles renvoient ne servent en revanche qu'une fois un
+    filtre posé — sans filtre, les chemins de lecture existants restent inchangés.
+
+    Une panne de la route ne doit pas emporter la page : le panneau disparaît, le catalogue
+    reste consultable.
+  */
+  const activeFilters = readFilters(query);
+  const filtering = Object.keys(activeFilters).length > 0;
+
+  const facetting = await listCategoryFacets(category.handle, {
+    filters: activeFilters,
+    limit: sort.byPrice ? MAX_FILTERED : PAGE_SIZE,
+    offset: sort.byPrice ? 0 : offset,
+    order: sort.order === "-created_at" ? "-created_at" : "title",
+  }).catch(() => null);
 
   let products: MedusaProduct[];
   let count: number;
@@ -73,19 +103,32 @@ export default async function CategoryPage({
     // Le prix n'est pas triable en base : on classe un index léger de la catégorie entière,
     // puis on ne charge en détail que les vingt-quatre produits de la page demandée.
     const index = await listCategoryPriceIndex(categoryIds);
+    // Les filtres restreignent l'ensemble avant le classement : trier puis filtrer donnerait
+    // des pages trouées.
+    const retenus = filtering && facetting ? new Set(facetting.product_ids) : null;
     const direction = sort.byPrice === "asc" ? 1 : -1;
-    const ranked = [...index].sort((a, b) => {
-      // Un produit sans prix ne vaut pas zéro : il part en fin de liste dans les deux sens.
-      if (a.price === null || b.price === null) {
-        return a.price === b.price ? 0 : a.price === null ? 1 : -1;
-      }
-      return (a.price - b.price) * direction;
-    });
+    const ranked = index
+      .filter((entry) => !retenus || retenus.has(entry.id))
+      .sort((a, b) => {
+        // Un produit sans prix ne vaut pas zéro : il part en fin de liste dans les deux sens.
+        if (a.price === null || b.price === null) {
+          return a.price === b.price ? 0 : a.price === null ? 1 : -1;
+        }
+        return (a.price - b.price) * direction;
+      });
 
     count = ranked.length;
     const ids = ranked.slice(offset, offset + PAGE_SIZE).map((entry) => entry.id);
     const fetched = ids.length ? (await listProductsByIds(ids, PAGE_SIZE)).products : [];
     // listProductsByIds rend les produits dans l'ordre de la base : on rétablit celui du tri.
+    const byId = new Map(fetched.map((product) => [product.id, product]));
+    products = ids
+      .map((id) => byId.get(id))
+      .filter((product): product is MedusaProduct => Boolean(product));
+  } else if (filtering && facetting) {
+    count = facetting.total;
+    const ids = facetting.product_ids;
+    const fetched = ids.length ? (await listProductsByIds(ids, PAGE_SIZE)).products : [];
     const byId = new Map(fetched.map((product) => [product.id, product]));
     products = ids
       .map((id) => byId.get(id))
@@ -121,12 +164,19 @@ export default async function CategoryPage({
     { label: category.name },
   ];
 
+  const basePath = `/categories/${category.handle}`;
+
+  // Les filtres actifs sont reconduits d'une page à l'autre : les perdre au changement de page
+  // renverrait sur un autre ensemble de produits que celui affiché.
   const hrefFor = (page: number) => {
     const params = new URLSearchParams();
     if (sort.value !== DEFAULT_SORT) params.set("tri", sort.value);
+    for (const [slug, values] of Object.entries(activeFilters)) {
+      params.set(`f_${slug}`, values.join(","));
+    }
     if (page > 1) params.set("page", String(page));
     const search = params.toString();
-    return `/categories/${category.handle}${search ? `?${search}` : ""}#produits`;
+    return `${basePath}${search ? `?${search}` : ""}#produits`;
   };
 
   return (
@@ -161,6 +211,15 @@ export default async function CategoryPage({
             {count > 0 && <SortSelect value={sort.value} />}
           </div>
 
+          <div className="grid gap-6 lg:grid-cols-[248px_minmax(0,1fr)] lg:items-start lg:gap-8">
+            <FilterPanel
+              facets={facetting?.facets ?? []}
+              filters={activeFilters}
+              basePath={basePath}
+              params={query}
+            />
+
+            <div className="min-w-0">
           {/*
             Les sous-catégories restent joignables depuis la page sans colonne de filtres :
             des liens sobres, pas la rangée de cartes illustrées supprimée du haut de page.
@@ -206,20 +265,28 @@ export default async function CategoryPage({
               title={
                 count > 0
                   ? "Cette page ne contient aucun produit."
-                  : "Aucun produit n'est disponible dans cette catégorie pour le moment."
+                  : filtering
+                    ? "Aucun produit ne correspond à ces filtres."
+                    : "Aucun produit n'est disponible dans cette catégorie pour le moment."
               }
               description={
                 count > 0
                   ? "Le numéro de page demandé dépasse la liste."
-                  : "Explorez les autres catégories du catalogue en attendant le réassort."
+                  : filtering
+                    ? "Élargissez votre sélection en retirant un critère."
+                    : "Explorez les autres catégories du catalogue en attendant le réassort."
               }
               primary={
                 count > 0
-                  ? { label: "Revenir au début", href: `/categories/${category.handle}` }
-                  : { label: "Voir tout le catalogue", href: "/categories" }
+                  ? { label: "Revenir au début", href: basePath }
+                  : filtering
+                    ? { label: "Effacer les filtres", href: clearFiltersHref(basePath, query) }
+                    : { label: "Voir tout le catalogue", href: "/categories" }
               }
             />
           )}
+            </div>
+          </div>
         </div>
       </section>
     </div>

@@ -463,6 +463,58 @@ export async function listCategoryPriceIndex(
   return index
 }
 
+export type CatalogFacet = {
+  type: string
+  allow_multiple: boolean
+  values: { value: string; count: number }[]
+}
+
+export type CatalogFacets = {
+  handle: string
+  total: number
+  product_ids: string[]
+  facets: CatalogFacet[]
+}
+
+/**
+ * Critères de filtrage disponibles pour une catégorie, leurs valeurs, et le nombre de produits
+ * derrière chacune — ainsi que les identifiants retenus par les filtres actifs.
+ *
+ * Les filtres sont désignés par leur repère d'URL (« dosage-pg-vg ») ; la route les rétablit
+ * en noms de types. Rien n'est configuré par catégorie : les critères sont ceux que portent
+ * réellement les produits de la catégorie et de sa descendance.
+ */
+export async function listCategoryFacets(
+  handle: string,
+  {
+    filters = {},
+    limit = 24,
+    offset = 0,
+    order,
+  }: {
+    filters?: Record<string, string[]>
+    limit?: number
+    offset?: number
+    order?: string
+  } = {}
+): Promise<CatalogFacets> {
+  const params: Record<string, string> = {
+    limit: String(limit),
+    offset: String(offset),
+    ...(order ? { order } : {}),
+  }
+  for (const [slug, values] of Object.entries(filters)) {
+    if (values.length > 0) {
+      params[`filters[${slug}]`] = values.join(",")
+    }
+  }
+
+  return medusaFetch<CatalogFacets>(
+    `/store/categories/${encodeURIComponent(handle)}/facets`,
+    params
+  )
+}
+
 export type ProductAttributeBrief = { value: string; type: string }
 
 /**
