@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { PackageSearch } from "lucide-react";
 import ProductCard from "@/components/product-card";
@@ -24,6 +25,7 @@ import {
 } from "@/lib/medusa";
 import { resolveSort, DEFAULT_SORT } from "@/lib/catalog-sort";
 import { readFilters, clearFiltersHref } from "@/lib/catalog-filters";
+import { categoryVisual, categoryNavIcon } from "@/lib/category-visuals";
 import { extractProductFacts } from "@/lib/product-facts";
 
 const PAGE_SIZE = 24;
@@ -240,15 +242,29 @@ export default async function CategoryPage({
           {children.length > 0 && (
             <nav aria-label="Sous-catégories" className="mb-7 flex flex-wrap items-center gap-2">
               <span className="mr-1 text-[13px] text-gv-text-soft">Affiner :</span>
-              {children.map((child) => (
-                <Link
-                  key={child.id}
-                  href={`/categories/${child.handle}`}
-                  className="inline-flex min-h-11 items-center rounded-[8px] border border-gv-border bg-gv-card px-4 text-[13px] font-medium text-gv-text transition-colors hover:border-gv-border-strong hover:bg-gv-50"
-                >
-                  {child.name}
-                </Link>
-              ))}
+              {children.map((child) => {
+                const dessin = categoryNavIcon(child.name);
+                const { Icon } = categoryVisual(child.name);
+
+                return (
+                  <Link
+                    key={child.id}
+                    href={`/categories/${child.handle}`}
+                    className="inline-flex min-h-11 items-center gap-2.5 rounded-[8px] bg-gv-card py-1.5 pl-2.5 pr-4 text-[13px] font-medium text-gv-text shadow-gv-raised transition-shadow hover:shadow-gv-raised-strong"
+                  >
+                    {/* Même boîte normalisée que dans les menus : les dessins vont du flacon
+                        étroit au kit large. */}
+                    <span className="relative flex h-6 w-6 shrink-0 items-center justify-center">
+                      {dessin ? (
+                        <Image src={dessin} alt="" fill sizes="24px" className="object-contain" />
+                      ) : (
+                        <Icon size={17} strokeWidth={1.6} aria-hidden className="text-gv-800" />
+                      )}
+                    </span>
+                    {child.name}
+                  </Link>
+                );
+              })}
             </nav>
           )}
 

@@ -53,7 +53,7 @@ export default function BrandTiles({
             href={hrefFor(brand)}
             onClick={onNavigate}
             title={`${brand.value} — ${brand.count} produit${brand.count > 1 ? "s" : ""}`}
-            className="flex flex-col items-center gap-1 rounded-[8px] bg-gv-card p-1.5 shadow-[0_1px_2px_rgb(68_54_46/0.10),0_1px_6px_rgb(68_54_46/0.06)] transition-shadow duration-150 hover:shadow-[0_2px_4px_rgb(68_54_46/0.14),0_4px_12px_rgb(68_54_46/0.10)]"
+            className="flex flex-col items-center gap-1 rounded-[8px] bg-gv-card p-1.5 shadow-gv-raised transition-shadow duration-150 hover:shadow-gv-raised-strong"
           >
             {/* Hauteur fixe et `contain` : les logos arrivent en formats très différents,
                 seule une zone normalisée les aligne. */}

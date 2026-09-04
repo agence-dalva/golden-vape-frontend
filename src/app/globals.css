@@ -33,6 +33,11 @@
   --gv-shadow-sm: 0 8px 24px rgb(68 54 46 / 0.07);
   --gv-shadow-md: 0 18px 50px rgb(68 54 46 / 0.11);
 
+  /* Relief des surfaces posées — cartes, tuiles, pastilles, champs. Il remplace le filet d'un
+     pixel : un trait redécoupe la page en cases, l'ombre se contente de soulever. */
+  --gv-shadow-raised: 0 1px 2px rgb(68 54 46 / 0.10), 0 1px 6px rgb(68 54 46 / 0.06);
+  --gv-shadow-raised-strong: 0 2px 4px rgb(68 54 46 / 0.14), 0 4px 12px rgb(68 54 46 / 0.10);
+
   --gv-hero-overlay: linear-gradient(
     90deg,
     rgb(251 249 246 / 0.98) 0%,
@@ -90,6 +95,8 @@
   --shadow-gv-xs: var(--gv-shadow-xs);
   --shadow-gv-sm: var(--gv-shadow-sm);
   --shadow-gv-md: var(--gv-shadow-md);
+  --shadow-gv-raised: var(--gv-shadow-raised);
+  --shadow-gv-raised-strong: var(--gv-shadow-raised-strong);
 }
 
 body {

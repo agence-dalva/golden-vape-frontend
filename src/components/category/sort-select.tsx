@@ -38,7 +38,7 @@ export default function SortSelect({ value }: { value: string }) {
           value={value}
           onChange={(event) => handleChange(event.target.value)}
           disabled={isPending}
-          className="h-11 cursor-pointer appearance-none rounded-[8px] border border-gv-border bg-gv-card py-0 pl-3.5 pr-9 text-[13px] font-medium text-gv-text transition-colors hover:border-gv-border-strong focus-visible:border-gv-800 disabled:cursor-wait"
+          className="h-11 cursor-pointer appearance-none rounded-[8px] bg-gv-card py-0 pl-3.5 pr-9 text-[13px] font-medium text-gv-text shadow-gv-raised transition-shadow hover:shadow-gv-raised-strong focus-visible:shadow-gv-raised-strong disabled:cursor-wait"
         >
           {SORT_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>

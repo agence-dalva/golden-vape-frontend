@@ -71,7 +71,7 @@ export default function ProductCard({
         : null;
 
   return (
-    <article className="group relative grid h-full min-w-0 grid-rows-[auto_1fr] overflow-hidden rounded-xl border border-gv-border bg-gv-card shadow-gv-xs transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-[2px] hover:border-gv-border-strong hover:shadow-gv-md">
+    <article className="group relative grid h-full min-w-0 grid-rows-[auto_1fr] overflow-hidden rounded-xl bg-gv-card shadow-gv-raised transition-[transform,box-shadow] duration-200 hover:-translate-y-[2px] hover:shadow-gv-md">
       {/* Fond blanc plutôt que teinté : les photos du catalogue sont détourées sur blanc,
           une teinte ferait apparaître un rectangle clair derrière chaque produit. */}
       <div className="relative h-[186px] w-full overflow-hidden bg-white">

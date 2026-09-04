@@ -26,7 +26,7 @@ export default function CategoryTile({ category }: { category: MedusaCategory })
   return (
     // Le lien du titre couvre toute la carte via `after`, ce qui la rend cliquable sans
     // imbriquer les liens de sous-catégorie dans un autre lien — HTML invalide.
-    <article className="group relative flex min-h-[164px] gap-4 rounded-[14px] border border-gv-border bg-gv-card p-[22px] transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-gv-border-strong hover:shadow-[0_14px_34px_rgba(68,54,46,0.08)]">
+    <article className="group relative flex min-h-[164px] gap-4 rounded-[14px] bg-gv-card p-[22px] shadow-gv-raised transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(68,54,46,0.08)]">
       <span
         aria-hidden
         className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-gv-50 text-gv-800"

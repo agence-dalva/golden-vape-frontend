@@ -62,8 +62,8 @@ export default function AddToCartButton({
       onClick={handleAdd}
       disabled={isPending}
       aria-label={`Ajouter ${productTitle} au panier`}
-      className={`${buttonClass} cursor-pointer border-gv-800 disabled:cursor-wait ${
-        added ? "bg-gv-800 text-white" : "bg-white text-gv-800 hover:bg-gv-800 hover:text-white"
+      className={`${buttonClass} cursor-pointer border-gv-800 bg-gv-800 text-white disabled:cursor-wait ${
+        added ? "" : "hover:border-gv-900 hover:bg-gv-900"
       }`}
     >
       {added ? (

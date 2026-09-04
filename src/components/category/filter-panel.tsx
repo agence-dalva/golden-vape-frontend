@@ -95,7 +95,7 @@ export default function FilterPanel({
   });
 
   const contenu = (
-    <div className="flex flex-col gap-4 rounded-xl border border-gv-border bg-gv-card p-4">
+    <div className="flex flex-col gap-4 rounded-xl bg-gv-card p-4 shadow-gv-raised">
       <div className="flex items-center justify-between gap-3">
         <p className="flex items-center gap-2 text-sm font-semibold text-gv-text">
           <SlidersHorizontal size={16} aria-hidden className="text-gv-800" />
@@ -126,7 +126,7 @@ export default function FilterPanel({
       {/* Sous `lg`, le panneau se replie : déplié, il repousserait la grille sous la ligne de
           flottaison sur tous les téléphones. */}
       <details className="lg:hidden">
-        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl border border-gv-border bg-gv-card px-4 text-sm font-semibold text-gv-text">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl bg-gv-card px-4 text-sm font-semibold text-gv-text shadow-gv-raised">
           <SlidersHorizontal size={16} aria-hidden className="text-gv-800" />
           Filtrer
           {active > 0 && (
