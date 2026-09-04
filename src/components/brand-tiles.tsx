@@ -28,9 +28,10 @@ function LogoAbsent() {
  * Grille de vignettes de marque, partagée par le menu de bureau et celui du mobile — sans
  * quoi les deux rendus divergeraient au premier ajustement.
  *
- * Vignettes ivoire sur panneau ivoire : ce qui les détache est une ombre portée, non un filet.
- * Un trait coloré redécouperait le panneau en autant de cases, là où l'ombre se contente de
- * les soulever.
+ * Fond blanc, à la différence des pastilles de rayon : beaucoup de logos portent un cadre
+ * blanc incrusté dans l'image, qui ferait une tache sur de l'ivoire. Ce qui détache la
+ * vignette du panneau reste l'ombre portée, non un filet — un trait coloré redécouperait le
+ * panneau en autant de cases.
  */
 export default function BrandTiles({
   brands,
@@ -52,7 +53,7 @@ export default function BrandTiles({
             href={hrefFor(brand)}
             onClick={onNavigate}
             title={`${brand.value} — ${brand.count} produit${brand.count > 1 ? "s" : ""}`}
-            className="flex flex-col items-center gap-1 rounded-[8px] bg-gv-50 p-1.5 shadow-[0_1px_2px_rgb(68_54_46/0.10),0_1px_6px_rgb(68_54_46/0.06)] transition-shadow duration-150 hover:shadow-[0_2px_4px_rgb(68_54_46/0.14),0_4px_12px_rgb(68_54_46/0.10)]"
+            className="flex flex-col items-center gap-1 rounded-[8px] bg-gv-card p-1.5 shadow-[0_1px_2px_rgb(68_54_46/0.10),0_1px_6px_rgb(68_54_46/0.06)] transition-shadow duration-150 hover:shadow-[0_2px_4px_rgb(68_54_46/0.14),0_4px_12px_rgb(68_54_46/0.10)]"
           >
             {/* Hauteur fixe et `contain` : les logos arrivent en formats très différents,
                 seule une zone normalisée les aligne. */}
