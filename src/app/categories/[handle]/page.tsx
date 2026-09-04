@@ -9,6 +9,8 @@ import CategoryIntro from "@/components/category/category-intro";
 import SortSelect from "@/components/category/sort-select";
 import ProductPagination from "@/components/category/product-pagination";
 import FilterPanel from "@/components/category/filter-panel";
+import { FilterTransition } from "@/components/category/filter-transition";
+import PendingGrid from "@/components/category/pending-grid";
 import {
   collectCategoryIds,
   getCategoryByHandle,
@@ -166,6 +168,10 @@ export default async function CategoryPage({
 
   const basePath = `/categories/${category.handle}`;
 
+  // Sans facette, pas de colonne de filtres : laisser la grille seule dans une grille à deux
+  // colonnes la coincerait dans les 248 pixels réservés au panneau.
+  const showFilters = (facetting?.facets.length ?? 0) > 0;
+
   // Les filtres actifs sont reconduits d'une page à l'autre : les perdre au changement de page
   // renverrait sur un autre ensemble de produits que celui affiché.
   const hrefFor = (page: number) => {
@@ -211,7 +217,14 @@ export default async function CategoryPage({
             {count > 0 && <SortSelect value={sort.value} />}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[248px_minmax(0,1fr)] lg:items-start lg:gap-8">
+          <FilterTransition>
+          <div
+            className={
+              showFilters
+                ? "grid gap-6 lg:grid-cols-[248px_minmax(0,1fr)] lg:items-start lg:gap-8"
+                : ""
+            }
+          >
             <FilterPanel
               facets={facetting?.facets ?? []}
               filters={activeFilters}
@@ -239,6 +252,7 @@ export default async function CategoryPage({
             </nav>
           )}
 
+          <PendingGrid count={Math.max(products.length, 4)}>
           {products.length > 0 ? (
             <>
               <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -285,8 +299,10 @@ export default async function CategoryPage({
               }
             />
           )}
+          </PendingGrid>
             </div>
           </div>
+          </FilterTransition>
         </div>
       </section>
     </div>

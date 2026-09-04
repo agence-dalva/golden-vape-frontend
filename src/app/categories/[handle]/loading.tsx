@@ -1,3 +1,5 @@
+import ProductGridSkeleton from "@/components/category/product-grid-skeleton";
+
 /**
  * Le squelette reprend les proportions exactes de la page rendue — image de 186px, deux
  * lignes de titre, prix, bouton — pour que l'arrivée des produits ne décale rien.
@@ -29,19 +31,7 @@ export default function CategoryLoading() {
           <div className="h-11 w-48 animate-pulse rounded-[8px] bg-gv-100" />
         </div>
 
-        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: SKELETON_CARDS }, (_, index) => (
-            <li key={index} className="overflow-hidden rounded-xl border border-gv-border bg-gv-card">
-              <div className="h-[186px] w-full animate-pulse bg-gv-image" />
-              <div className="px-4 pb-4 pt-3.5">
-                <div className="h-4 w-full animate-pulse rounded bg-gv-100" />
-                <div className="mt-2 h-4 w-3/4 animate-pulse rounded bg-gv-100" />
-                <div className="mt-3.5 h-5 w-24 animate-pulse rounded bg-gv-100" />
-                <div className="mt-3.5 h-[42px] w-full animate-pulse rounded-[7px] bg-gv-100" />
-              </div>
-            </li>
-          ))}
-        </ul>
+        <ProductGridSkeleton count={SKELETON_CARDS} />
       </div>
     </div>
   );

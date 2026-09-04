@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Check, SlidersHorizontal, X } from "lucide-react";
 import type { CatalogFacet } from "@/lib/medusa";
@@ -8,6 +10,7 @@ import {
   toggleFilterHref,
   type ActiveFilters,
 } from "@/lib/catalog-filters";
+import { shouldIntercept, useFilterTransition } from "./filter-transition";
 
 /**
  * Panneau de filtres d'une catégorie.
@@ -28,6 +31,9 @@ export default function FilterPanel({
   basePath: string;
   params: Record<string, string | string[] | undefined>;
 }) {
+  // Avant tout retour anticipé : un hook doit être appelé dans le même ordre à chaque rendu.
+  const { naviguer } = useFilterTransition();
+
   if (facets.length === 0) {
     return null;
   }
@@ -59,6 +65,11 @@ export default function FilterPanel({
                 <Link
                   href={toggleFilterHref(basePath, params, slug, value)}
                   scroll={false}
+                  onClick={(event) => {
+                    if (!shouldIntercept(event)) return;
+                    event.preventDefault();
+                    naviguer(toggleFilterHref(basePath, params, slug, value));
+                  }}
                   aria-pressed={choisie}
                   className={`flex min-h-9 items-center gap-2.5 rounded-[7px] px-2 py-1 text-[13px] transition-colors ${
                     choisie ? "bg-gv-800/[0.07] text-gv-text" : "text-gv-text-soft hover:bg-gv-card"
@@ -94,6 +105,11 @@ export default function FilterPanel({
           <Link
             href={clearFiltersHref(basePath, params)}
             scroll={false}
+            onClick={(event) => {
+              if (!shouldIntercept(event)) return;
+              event.preventDefault();
+              naviguer(clearFiltersHref(basePath, params));
+            }}
             className="inline-flex items-center gap-1 text-[12px] font-medium text-gv-text-soft transition-colors hover:text-gv-800"
           >
             <X size={13} aria-hidden />
