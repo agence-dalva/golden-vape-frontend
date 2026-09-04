@@ -9,7 +9,7 @@ export default function CategoryCard({ category }: { category: DiscoveryCategory
       href={`/categories/${category.handle}`}
       // Fond blanc, comme les cartes produit : les photos du catalogue sont détourées sur
       // blanc et laisseraient sinon un rectangle clair sur le fond ivoire.
-      className="group relative isolate flex aspect-[1.8/1] overflow-hidden rounded-xl border border-gv-border bg-white shadow-gv-xs transition-shadow duration-200 hover:shadow-gv-md"
+      className="group relative isolate flex aspect-[1.8/1] overflow-hidden rounded-xl bg-white shadow-gv-raised transition-shadow duration-200 hover:shadow-gv-md"
     >
       {category.imageUrl && (
         <Image

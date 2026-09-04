@@ -1,13 +1,22 @@
 import Image from "next/image";
 import type { MedusaCategory } from "@/lib/medusa";
-import { categoryVisual } from "@/lib/category-visuals";
+import { categoryVisual, categoryNavIcon } from "@/lib/category-visuals";
 
 /**
  * En-tête de page de catégorie : sur-titre, nom, description éditoriale et repère visuel.
  * Volontairement compact — la grille de produits doit commencer haut dans la page.
  */
 export default function CategoryIntro({ category }: { category: MedusaCategory }) {
+  /*
+    L'illustration de page d'abord, le pictogramme de navigation ensuite : la première
+    collection est partielle — ni Cigarette électronique ni Diy n'y figurent — et ces rubriques
+    affichaient un symbole d'interface là où leurs voisines ont un dessin.
+
+    Le pictogramme suffit à cette place : rendu au plus à 114 pixels dans ce cadre, il n'est
+    jamais agrandi au-delà de ses 128.
+  */
   const { illustration, Icon } = categoryVisual(category.name);
+  const dessin = illustration ?? categoryNavIcon(category.name);
   const description = category.description?.trim();
   const parent = category.parent_category;
 
@@ -31,9 +40,9 @@ export default function CategoryIntro({ category }: { category: MedusaCategory }
       */}
       <div aria-hidden className="hidden justify-self-end sm:block">
         <div className="relative flex h-[150px] w-[240px] items-center justify-center rounded-[14px] bg-gv-soft lg:h-[170px] lg:w-[300px]">
-          {illustration ? (
+          {dessin ? (
             <Image
-              src={illustration}
+              src={dessin}
               alt=""
               fill
               sizes="300px"
