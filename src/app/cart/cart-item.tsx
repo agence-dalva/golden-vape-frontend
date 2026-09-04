@@ -49,7 +49,7 @@ export default function CartItem({
   );
 
   return (
-    <li className="rounded-xl border border-gv-border bg-gv-card p-4 shadow-gv-xs sm:p-[22px]">
+    <li className="rounded-xl bg-gv-card p-4 shadow-gv-raised sm:p-[22px]">
       <div className="grid grid-cols-[92px_minmax(0,1fr)] items-start gap-4 sm:gap-6 lg:grid-cols-[126px_minmax(200px,1fr)_128px_120px] lg:items-center">
         <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-gv-image lg:h-[126px] lg:w-[126px]">
           {imageUrl ? (

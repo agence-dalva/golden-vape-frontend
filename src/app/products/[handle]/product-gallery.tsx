@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
 import type { MedusaProduct } from "@/lib/medusa";
 
 const ARROW_CLASSES =
-  "absolute top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-gv-border bg-white/92 text-gv-text shadow-gv-xs transition-colors hover:bg-white";
+  "absolute top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/92 text-gv-text shadow-gv-raised transition-shadow hover:shadow-gv-raised-strong";
 
 export default function ProductGallery({
   product,
@@ -51,7 +51,7 @@ export default function ProductGallery({
 
   return (
     <div className="flex flex-col gap-[18px]">
-      <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-gv-border bg-white lg:aspect-[1.2/1] lg:min-h-[600px]">
+      <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-white shadow-gv-raised lg:aspect-[1.2/1] lg:min-h-[600px]">
         {active ? (
           <Image
             src={active}

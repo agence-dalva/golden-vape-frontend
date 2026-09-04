@@ -30,7 +30,7 @@ export default function ProductDetails({
 
   return (
     <div
-      className={`mt-11 grid grid-cols-1 gap-9 rounded-xl border border-gv-border bg-white p-6 sm:p-8 lg:p-9 ${
+      className={`mt-11 grid grid-cols-1 gap-9 rounded-xl bg-white p-6 shadow-gv-raised sm:p-8 lg:p-9 ${
         twoColumns ? "lg:grid-cols-[minmax(0,1.75fr)_minmax(300px,1fr)]" : ""
       }`}
     >

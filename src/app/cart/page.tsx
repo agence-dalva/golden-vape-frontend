@@ -90,7 +90,7 @@ export default async function CartPage() {
             ))}
           </ul>
 
-          <ul className="mt-4 grid grid-cols-1 rounded-[10px] border border-gv-border bg-gv-card sm:grid-cols-3">
+          <ul className="mt-4 grid grid-cols-1 rounded-[10px] bg-gv-card shadow-gv-raised sm:grid-cols-3">
             {BENEFITS.map(({ icon: Icon, label }, index) => (
               <li
                 key={label}
@@ -106,7 +106,7 @@ export default async function CartPage() {
         </div>
 
         <div className="lg:sticky lg:top-6">
-          <section className="rounded-xl border border-gv-border bg-gv-card p-6 shadow-gv-sm">
+          <section className="rounded-xl bg-gv-card p-6 shadow-gv-raised">
             <h2 className="mb-6 text-lg font-semibold tracking-[-0.01em] text-gv-text">Récapitulatif</h2>
 
             <dl className="flex flex-col gap-4 text-sm">

@@ -35,7 +35,7 @@ export default function PromoCode({
   };
 
   return (
-    <div className="mt-4 rounded-[10px] border border-gv-border bg-gv-card">
+    <div className="mt-4 rounded-[10px] bg-gv-card shadow-gv-raised">
       <button
         onClick={() => setOpen((current) => !current)}
         aria-expanded={open}
