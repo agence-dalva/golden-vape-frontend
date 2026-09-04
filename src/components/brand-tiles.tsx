@@ -64,7 +64,7 @@ export default function BrandTiles({
                 <LogoAbsent />
               )}
             </span>
-            <span className="w-full truncate text-center text-[11px] leading-tight text-gv-text-soft">
+            <span className="w-full truncate text-center text-[12px] font-semibold leading-tight text-gv-text">
               {brand.value}
             </span>
           </Link>

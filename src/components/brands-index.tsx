@@ -152,8 +152,8 @@ export default function BrandsIndex({ brands }: { brands: MedusaBrand[] }) {
                         )}
                       </span>
 
-                      <span className="flex items-center justify-between gap-2 border-t border-gv-border px-4 py-3">
-                        <span className="min-w-0 truncate text-[13px] font-medium text-gv-text">
+                      <span className="flex items-center justify-between gap-2 px-4 pb-3">
+                        <span className="min-w-0 truncate text-[13px] font-semibold text-gv-text">
                           {brand.value}
                         </span>
                         <ArrowRight

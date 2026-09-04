@@ -50,7 +50,7 @@ export default function BrandMenu({ brands }: { brands: MedusaBrand[] }) {
                   </span>
                 )}
               </span>
-              <span className="truncate border-t border-gv-border px-3 py-2 text-center text-[12px] font-medium text-gv-text">
+              <span className="truncate px-3 pb-2.5 text-center text-[12px] font-semibold text-gv-text">
                 {brand.value}
               </span>
             </Link>
