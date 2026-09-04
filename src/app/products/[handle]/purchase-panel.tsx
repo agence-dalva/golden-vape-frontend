@@ -16,25 +16,15 @@ const BENEFITS = [
   { icon: Headset, label: "Conseils d'experts" },
 ];
 
-/** « 10 ml », « 50ml » → 10, 50. `null` si la contenance n'est pas exploitable. */
-function parseVolumeMl(contenance: string | null): number | null {
-  if (!contenance) return null;
-  const match = contenance.replace(",", ".").match(/([\d.]+)\s*ml/i);
-  const value = match ? Number(match[1]) : NaN;
-  return Number.isFinite(value) && value > 0 ? value : null;
-}
-
 export default function PurchasePanel({
   product,
   brand,
   tagline,
-  contenance,
   cartVariantIds,
 }: {
   product: MedusaProduct;
   brand: string | null;
   tagline: string | null;
-  contenance: string | null;
   cartVariantIds: string[];
 }) {
   const [isPending, startTransition] = useTransition();
@@ -51,10 +41,6 @@ export default function PurchasePanel({
 
   // Le stock plafonne la quantité, mais seulement lorsqu'il est connu.
   const maxQuantity = stock !== null && stock > 0 ? stock : Infinity;
-
-  const volumeMl = parseVolumeMl(contenance);
-  const pricePer100 =
-    price && volumeMl ? (getDisplayAmount(price) / volumeMl) * 100 : null;
 
   const optionTitle = product.options[0]?.title ?? "déclinaison";
 
@@ -97,16 +83,9 @@ export default function PurchasePanel({
       {tagline && <p className="mt-2.5 text-sm leading-relaxed text-gv-text-soft">{tagline}</p>}
 
       {price ? (
-        <>
-          <p className="mt-[22px] text-[32px] font-semibold leading-tight text-gv-text">
-            {formatPrice(getDisplayAmount(price), price.currency_code)}
-          </p>
-          {pricePer100 && (
-            <p className="mt-1 text-[13px] text-gv-text-soft">
-              {formatPrice(pricePer100, price.currency_code)} / 100 ml
-            </p>
-          )}
-        </>
+        <p className="mt-[22px] text-[32px] font-semibold leading-tight text-gv-text">
+          {formatPrice(getDisplayAmount(price), price.currency_code)}
+        </p>
       ) : (
         <p className="mt-[22px] text-sm text-gv-text-muted">Prix indisponible</p>
       )}

@@ -241,7 +241,7 @@ export default function SearchBar() {
               Aucun résultat pour « {term.trim()} »
             </p>
           ) : (
-            <ul id={listboxId} role="listbox" className="max-h-96 overflow-y-auto py-2">
+            <ul id={listboxId} role="listbox" className="max-h-[min(70vh,560px)] overflow-y-auto py-2">
               {suggestions.map((suggestion, index) => {
                 const previous = suggestions[index - 1];
                 const startsSection = !previous || previous.kind !== suggestion.kind;
@@ -259,17 +259,17 @@ export default function SearchBar() {
                       aria-selected={activeIndex === index}
                       onMouseEnter={() => setHighlighted(index)}
                       onClick={() => go(suggestion.href)}
-                      className={`flex w-full cursor-pointer items-center gap-3 px-5 py-2.5 text-left transition-colors ${
+                      className={`flex w-full cursor-pointer items-center gap-3.5 px-5 py-2 text-left transition-colors ${
                         activeIndex === index ? "bg-gv-soft" : ""
                       }`}
                     >
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gv-image">
+                      <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gv-image">
                         {suggestion.imageUrl ? (
                           <Image
                             src={suggestion.imageUrl}
                             alt=""
-                            width={40}
-                            height={40}
+                            width={56}
+                            height={56}
                             className={
                               suggestion.kind === "brand"
                                 ? "h-full w-full object-contain p-1"
@@ -277,7 +277,7 @@ export default function SearchBar() {
                             }
                           />
                         ) : (
-                          <Tag size={16} aria-hidden className="text-gv-text-muted" />
+                          <Tag size={20} aria-hidden className="text-gv-text-muted" />
                         )}
                       </span>
                       <span className="flex min-w-0 flex-1 flex-col">

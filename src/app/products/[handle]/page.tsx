@@ -90,7 +90,6 @@ export default async function ProductPage({
           product={product}
           brand={brand}
           tagline={tagline}
-          contenance={contenance}
           cartVariantIds={cartVariantIds}
         />
       </div>
