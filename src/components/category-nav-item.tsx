@@ -1,15 +1,20 @@
 "use client";
 
+import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronDown } from "lucide-react";
 import type { MedusaCategory, CategoryBrand } from "@/lib/medusa";
 import { useHoverMenu, menuPanelClasses } from "@/lib/use-hover-menu";
-import { categoryVisual } from "@/lib/category-visuals";
+import { categoryVisual, categoryNavIcon } from "@/lib/category-visuals";
 import { filterSlug } from "@/lib/catalog-filters";
 
 /** Deux rangées de six vignettes : au-delà, le panneau devient plus haut qu'utile. */
 const MAX_BRANDS = 12;
+
+/** Doit suivre la largeur déclarée sur le panneau : elle sert à décider de son ancrage. */
+const PANEL_WIDTH = 620;
+const MARGE = 16;
 
 const MARQUE_SLUG = filterSlug("Marque");
 
@@ -39,15 +44,28 @@ function LogoAbsent() {
 export default function CategoryNavItem({
   category,
   brands,
-  alignRight = false,
 }: {
   category: MedusaCategory;
   /** Marques présentes dans la rubrique ou sa descendance, les plus fournies d'abord. */
   brands: CategoryBrand[];
-  /** Panneau ancré à droite : large, il déborderait de l'écran sur les derniers items. */
-  alignRight?: boolean;
 }) {
-  const { open, closeNow, hoverProps } = useHoverMenu();
+  const { open, openMenu, closeMenu, closeNow } = useHoverMenu();
+
+  /*
+    L'ancrage est décidé à l'ouverture, en mesurant. Un rang dans la barre ne dit rien de
+    fiable : les libellés ont des largeurs très différentes, si bien qu'un item du milieu peut
+    déjà être trop à droite pour un panneau de 620 pixels — ce qui arrivait à « Diy ».
+  */
+  const conteneur = useRef<HTMLDivElement>(null);
+  const [ancreADroite, setAncreADroite] = useState(false);
+
+  const ouvrir = () => {
+    const boite = conteneur.current?.getBoundingClientRect();
+    if (boite) {
+      setAncreADroite(boite.left + PANEL_WIDTH > window.innerWidth - MARGE);
+    }
+    openMenu();
+  };
 
   const children = category.category_children;
   const visibleBrands = brands.slice(0, MAX_BRANDS);
@@ -58,7 +76,7 @@ export default function CategoryNavItem({
   const lienRubrique = `/categories/${category.handle}`;
 
   return (
-    <div className="relative" {...hoverProps}>
+    <div ref={conteneur} className="relative" onMouseEnter={ouvrir} onMouseLeave={closeMenu}>
       <Link
         href={lienRubrique}
         className="flex items-center gap-1 whitespace-nowrap py-3 text-sm font-medium tracking-[-0.01em] text-gv-text transition-colors duration-200 hover:text-gv-800"
@@ -75,7 +93,7 @@ export default function CategoryNavItem({
 
       {hasPanel && (
         <div
-          className={`absolute top-full z-100 pt-1 ${alignRight ? "right-0" : "left-0"} ${menuPanelClasses(open)}`}
+          className={`absolute top-full z-100 pt-1 ${ancreADroite ? "right-0" : "left-0"} ${menuPanelClasses(open)}`}
         >
           <div className="w-[min(620px,calc(100vw-64px))] rounded-[10px] border border-gv-border bg-white p-4 shadow-gv-sm">
             {hasChildren && (
@@ -87,15 +105,26 @@ export default function CategoryNavItem({
                     la hauteur reste disponible pour les marques. */}
                 <div className="flex flex-wrap gap-2">
                   {children.map((child) => {
+                    const dessin = categoryNavIcon(child.name);
                     const { Icon } = categoryVisual(child.name);
+
                     return (
                       <Link
                         key={child.id}
                         href={`/categories/${child.handle}`}
                         onClick={closeNow}
-                        className="flex items-center gap-2 rounded-[8px] border border-gv-border bg-gv-card px-3 py-2 text-[13px] font-medium text-gv-text transition-colors duration-150 hover:border-gv-border-strong hover:bg-gv-soft"
+                        className="flex items-center gap-2 rounded-[8px] border border-gv-border bg-gv-card py-2 pl-2.5 pr-3 text-[13px] font-medium text-gv-text transition-colors duration-150 hover:border-gv-border-strong hover:bg-gv-soft"
                       >
-                        <Icon size={15} strokeWidth={1.6} aria-hidden className="text-gv-800" />
+                        {/* Boîte carrée et `contain` : les dessins vont du flacon très étroit
+                            au kit large, seule une zone normalisée les aligne sur une même
+                            ligne de base. */}
+                        <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
+                          {dessin ? (
+                            <Image src={dessin} alt="" fill sizes="20px" className="object-contain" />
+                          ) : (
+                            <Icon size={15} strokeWidth={1.6} aria-hidden className="text-gv-800" />
+                          )}
+                        </span>
                         {child.name}
                       </Link>
                     );

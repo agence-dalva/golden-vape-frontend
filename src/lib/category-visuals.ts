@@ -89,12 +89,54 @@ const ILLUSTRATIONS: Record<string, string> = {
   accessoires: "/categories/page/accessoires.png",
 };
 
+/*
+  Pictogrammes dessinés, fournis pour la barre de navigation. Ils priment sur les symboles
+  d'interface : un flacon compte-gouttes dit « Flacons » mieux qu'un bécher générique.
+
+  Plusieurs noms partagent volontairement un fichier — « Fruité » et « Fruités », les trois
+  déclinaisons de clearomiseur — le catalogue employant les deux graphies. Les familles sans
+  dessin retombent sur leur symbole, aucune n'a besoin d'être déclarée ici.
+*/
+const NAV_ICONS: Record<string, string> = {
+  accus: "/navigation/accu.webp",
+  aromes: "/navigation/aromes.webp",
+  bases: "/navigation/bases.webp",
+  boissons: "/navigation/boisson.webp",
+  booster: "/navigation/booster.webp",
+  "box et batteries": "/navigation/box-batterie.webp",
+  "cartouches pods": "/navigation/cartouche-pods.webp",
+  "clearomiseurs et reconstructible": "/navigation/clearomiseur-reconstructible.webp",
+  clearomiseurs: "/navigation/clearomiseur-reconstructible.webp",
+  reconstructible: "/navigation/clearomiseur-reconstructible.webp",
+  "fibres et cotons": "/navigation/fibres-cotons.webp",
+  "fils resistifs": "/navigation/fils-resistifs.webp",
+  flacons: "/navigation/flacon.webp",
+  frais: "/navigation/frais.webp",
+  fruite: "/navigation/fruite.webp",
+  fruites: "/navigation/fruite.webp",
+  gourmand: "/navigation/gourmand.webp",
+  gourmands: "/navigation/gourmand.webp",
+  kits: "/navigation/kit.webp",
+  pyrex: "/navigation/pyrex.webp",
+  resistances: "/navigation/resistance.webp",
+  "sels de nicotine": "/navigation/sel-de-nicotine.webp",
+  tabac: "/navigation/tabac.webp",
+};
+
 export function simplifyCategoryName(value: string): string {
   return value
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
     .trim();
+}
+
+/**
+ * Pictogramme dessiné d'une famille, pour la barre de navigation. `null` quand elle n'en a
+ * pas : l'appelant retombe alors sur le symbole d'interface.
+ */
+export function categoryNavIcon(name: string): string | null {
+  return NAV_ICONS[simplifyCategoryName(name)] ?? null;
 }
 
 /** L'illustration est facultative : une famille sans visuel retombe sur son pictogramme. */

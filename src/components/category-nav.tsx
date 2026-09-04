@@ -47,7 +47,14 @@ export default function CategoryNav({
   return (
     <nav
       aria-label="Catégories"
-      className="relative z-20 hidden border-b border-gv-border bg-gv-card lg:block"
+      /*
+        `overflow-x: clip` et non `hidden` : il borne la largeur sans transformer l'axe
+        vertical en zone de défilement, donc les panneaux continuent de descendre sous la
+        barre. Sans lui, les panneaux fermés — invisibles mais toujours dans le flux de
+        défilement — étendent le document et font apparaître une barre horizontale dès le
+        chargement, avant tout survol.
+      */
+      className="relative z-20 hidden overflow-x-clip border-b border-gv-border bg-gv-card lg:block"
     >
       <div className="gv-container flex min-h-12 items-center justify-between gap-x-4">
         {/*
@@ -64,14 +71,11 @@ export default function CategoryNav({
           </Link>
         </div>
 
-        {/* Les panneaux des derniers items sont ancrés à droite : larges, ils déborderaient
-            de l'écran en s'ouvrant vers la droite. */}
-        {visible.map((category, index) => (
+        {visible.map((category) => (
           <CategoryNavItem
             key={category.id}
             category={category}
             brands={categoryBrands[category.handle] ?? []}
-            alignRight={index >= visible.length / 2}
           />
         ))}
 
