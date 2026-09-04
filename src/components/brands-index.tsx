@@ -58,7 +58,7 @@ export default function BrandsIndex({ brands }: { brands: MedusaBrand[] }) {
 
   return (
     <>
-      <div className="mb-8 rounded-[10px] border border-gv-border bg-gv-card p-2">
+      <div className="mb-8 rounded-[10px] bg-gv-card p-2 shadow-gv-raised">
         <div className="mb-2 flex items-center gap-1.5 border-b border-gv-border pb-2">
           <span className="shrink-0 px-2 text-[13px] text-gv-text-soft">Filtrer par initiale</span>
           {[ALL, DIGITS].map((key) => (
@@ -107,7 +107,7 @@ export default function BrandsIndex({ brands }: { brands: MedusaBrand[] }) {
       </div>
 
       {visibleCount === 0 ? (
-        <div className="rounded-[14px] border border-gv-border bg-gv-card px-6 py-10 text-center">
+        <div className="rounded-[14px] bg-gv-card px-6 py-10 text-center shadow-gv-raised">
           <p className="text-sm text-gv-text-soft">Aucune marque ne correspond à cette sélection.</p>
           <button
             onClick={() => setActive(ALL)}
@@ -133,7 +133,7 @@ export default function BrandsIndex({ brands }: { brands: MedusaBrand[] }) {
                   <li key={brand.value}>
                     <Link
                       href={`/marques/${encodeURIComponent(brand.value)}`}
-                      className="group flex h-full flex-col overflow-hidden rounded-[14px] border border-gv-border bg-gv-card transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-gv-border-strong hover:shadow-[0_14px_34px_rgba(68,54,46,0.08)]"
+                      className="group flex h-full flex-col overflow-hidden rounded-[14px] bg-gv-card shadow-gv-raised transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(68,54,46,0.10)]"
                     >
                       {/* Zone de logo normalisée : `contain` préserve proportions et couleurs
                           officielles, aucun recadrage. */}

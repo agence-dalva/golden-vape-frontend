@@ -12,7 +12,7 @@ export default function CategoryIntro({ category }: { category: MedusaCategory }
   const parent = category.parent_category;
 
   return (
-    <section className="grid grid-cols-1 items-center gap-6 border-b border-gv-border pb-7 pt-1 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] sm:gap-10">
+    <section className="grid grid-cols-1 items-center gap-6 pb-7 pt-1 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] sm:gap-10">
       <div>
         <p className="gv-eyebrow">{parent ? parent.name : "Catalogue"}</p>
         <h1 className="mt-2.5 text-balance font-display text-[30px] font-normal leading-[1.2] tracking-[0.01em] text-gv-text sm:text-[38px]">

@@ -202,7 +202,8 @@ export default async function CategoryPage({
         lisait comme un vide. Le même sol habille la grille du catalogue, pour que le passage de
         l'une à l'autre ne change pas de décor.
 
-        Pas de filet haut : l'en-tête de catégorie en pose déjà un, les deux se doubleraient.
+        Pas de filet haut : le changement de fond suffit à marquer la limite, un trait par-dessus
+        la redoublerait.
       */}
       <section id="produits" className="scroll-mt-8 border-b border-gv-border bg-gv-soft">
         <div className="gv-container pb-12 pt-8">
