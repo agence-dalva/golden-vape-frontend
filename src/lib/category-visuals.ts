@@ -1,6 +1,18 @@
 import {
+  Apple,
+  Beaker,
+  Blend,
+  Cable,
+  Candy,
   Cigarette,
+  Cog,
+  CupSoda,
   Droplets,
+  GlassWater,
+  Layers,
+  Snowflake,
+  TestTube,
+  Wheat,
   Zap,
   BatteryCharging,
   Cpu,
@@ -38,6 +50,30 @@ const ICONS: Record<string, LucideIcon> = {
   resistances: Flame,
   "box et batteries": Cpu,
   accessoires: Wrench,
+
+  /*
+    Sous-catégories. Sans elles, tout un menu déroulant affiche le même pictogramme générique
+    et le repère visuel ne repère plus rien. Les noms suivent ceux de l'administration, aux
+    accents près : la comparaison passe par `simplifyCategoryName`.
+  */
+  flacons: Beaker,
+  aromes: Blend,
+  bases: Droplets,
+  booster: Zap,
+  outils: Wrench,
+  "fils resistifs": Cable,
+  "fibres et cotons": Layers,
+  pyrex: GlassWater,
+  reconstructible: Cog,
+  clearomiseurs: CircleDot,
+  frais: Snowflake,
+  gourmand: Candy,
+  gourmands: Candy,
+  tabac: Wheat,
+  "sels de nicotine": TestTube,
+  fruite: Apple,
+  fruites: Apple,
+  boissons: CupSoda,
 };
 
 const ILLUSTRATIONS: Record<string, string> = {

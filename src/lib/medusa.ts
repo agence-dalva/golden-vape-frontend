@@ -515,7 +515,12 @@ export async function listCategoryFacets(
   )
 }
 
-export type CategoryBrand = { value: string; count: number }
+export type CategoryBrand = {
+  value: string
+  count: number
+  /** Absent tant que la marque n'a pas été illustrée à l'administration. */
+  image_url: string | null
+}
 
 /**
  * Marques présentes dans chaque catégorie racine, indexées par handle — une marque étant

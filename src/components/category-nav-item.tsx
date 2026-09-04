@@ -1,28 +1,44 @@
 "use client";
 
 import Link from "next/link";
-import type { MedusaCategory, CategoryBrand } from "@/lib/medusa";
+import Image from "next/image";
 import { ChevronDown } from "lucide-react";
+import type { MedusaCategory, CategoryBrand } from "@/lib/medusa";
 import { useHoverMenu, menuPanelClasses } from "@/lib/use-hover-menu";
+import { categoryVisual } from "@/lib/category-visuals";
 import { filterSlug } from "@/lib/catalog-filters";
 
-/**
- * Au-delà, le menu déroulant s'allonge plus que la page : les marques restantes se retrouvent
- * derrière le lien vers la rubrique, où le filtre les propose toutes.
- */
-const MAX_BRANDS = 8;
+/** Deux rangées de six vignettes : au-delà, le panneau devient plus haut qu'utile. */
+const MAX_BRANDS = 12;
+
+const MARQUE_SLUG = filterSlug("Marque");
+
+/** Repli quand la marque n'a pas été illustrée : ses initiales, dans la police d'affichage. */
+function initiales(value: string): string {
+  return value
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((mot) => mot[0] ?? "")
+    .join("")
+    .toUpperCase();
+}
 
 export default function CategoryNavItem({
   category,
   brands,
+  alignRight = false,
 }: {
   category: MedusaCategory;
   /** Marques présentes dans la rubrique ou sa descendance, les plus fournies d'abord. */
   brands: CategoryBrand[];
+  /** Panneau ancré à droite : large, il déborderait de l'écran sur les derniers items. */
+  alignRight?: boolean;
 }) {
   const { open, closeNow, hoverProps } = useHoverMenu();
-  const hasChildren = category.category_children.length > 0;
+
+  const children = category.category_children;
   const visibleBrands = brands.slice(0, MAX_BRANDS);
+  const hasChildren = children.length > 0;
   const hasBrands = visibleBrands.length > 0;
   const hasPanel = hasChildren || hasBrands;
 
@@ -45,72 +61,96 @@ export default function CategoryNavItem({
       </Link>
 
       {hasPanel && (
-        <div className={`absolute left-0 top-full z-100 pt-1 ${menuPanelClasses(open)}`}>
-          <div
-            /*
-              `flex` et non `grid` : le panneau est en position absolue, sa largeur s'ajuste à
-              son contenu. Des pistes `minmax(0, 1fr)` peuvent alors tomber à zéro et les deux
-              colonnes se superposent — ce qui arrivait. En flex, chaque colonne fait au moins
-              la largeur qu'elle réclame.
-            */
-            className={`rounded-[10px] border border-gv-border bg-white py-2 shadow-gv-sm ${
-              hasChildren && hasBrands ? "flex divide-x divide-gv-border" : ""
-            }`}
-          >
+        <div
+          className={`absolute top-full z-100 pt-1 ${alignRight ? "right-0" : "left-0"} ${menuPanelClasses(open)}`}
+        >
+          <div className="w-[min(620px,calc(100vw-64px))] rounded-[10px] border border-gv-border bg-white p-4 shadow-gv-sm">
             {hasChildren && (
-              <div className="min-w-48">
-                {hasBrands && (
-                  <p className="px-4 pb-1 pt-1 text-[11px] font-bold uppercase tracking-[0.08em] text-gv-text-muted">
-                    Rayons
-                  </p>
-                )}
-                {category.category_children.map((child) => (
-                  <Link
-                    key={child.id}
-                    href={`/categories/${child.handle}`}
-                    onClick={closeNow}
-                    className="block px-4 py-2 text-sm text-gv-text-soft transition-colors duration-150 hover:bg-gv-soft hover:text-gv-text"
-                  >
-                    {child.name}
-                  </Link>
-                ))}
-              </div>
+              <>
+                <p className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.08em] text-gv-text-muted">
+                  Rayons
+                </p>
+                {/* En rangée et non en colonne : quatre à six rayons tiennent sur une ligne, et
+                    la hauteur reste disponible pour les marques. */}
+                <div className="flex flex-wrap gap-2">
+                  {children.map((child) => {
+                    const { Icon } = categoryVisual(child.name);
+                    return (
+                      <Link
+                        key={child.id}
+                        href={`/categories/${child.handle}`}
+                        onClick={closeNow}
+                        className="flex items-center gap-2 rounded-[8px] border border-gv-border bg-gv-card px-3 py-2 text-[13px] font-medium text-gv-text transition-colors duration-150 hover:border-gv-border-strong hover:bg-gv-soft"
+                      >
+                        <Icon size={15} strokeWidth={1.6} aria-hidden className="text-gv-800" />
+                        {child.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </>
             )}
 
             {hasBrands && (
-              <div className="min-w-52">
-                {hasChildren && (
-                  <p className="px-4 pb-1 pt-1 text-[11px] font-bold uppercase tracking-[0.08em] text-gv-text-muted">
+              <>
+                <div
+                  className={`flex items-baseline justify-between gap-4 ${
+                    hasChildren ? "mt-4 border-t border-gv-border pt-4" : ""
+                  }`}
+                >
+                  <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-gv-text-muted">
                     Marques
                   </p>
-                )}
-                {/*
-                  Le lien mène à la rubrique filtrée, et non à la page de la marque : depuis
-                  « Diy », cliquer « Pulp » doit montrer les concentrés Pulp, pas l'ensemble du
-                  catalogue Pulp — e-liquides compris.
-                */}
-                {visibleBrands.map((brand) => (
-                  <Link
-                    key={brand.value}
-                    href={`${lienRubrique}?f_${filterSlug("Marque")}=${encodeURIComponent(brand.value)}#produits`}
-                    onClick={closeNow}
-                    className="flex items-center gap-3 px-4 py-2 text-sm text-gv-text-soft transition-colors duration-150 hover:bg-gv-soft hover:text-gv-text"
-                  >
-                    <span className="min-w-0 flex-1 truncate">{brand.value}</span>
-                    <span className="shrink-0 text-[12px] text-gv-text-muted">{brand.count}</span>
-                  </Link>
-                ))}
+                  {brands.length > visibleBrands.length && (
+                    <Link
+                      href={`${lienRubrique}#produits`}
+                      onClick={closeNow}
+                      className="text-[12px] font-medium text-gv-800 transition-colors hover:underline"
+                    >
+                      Les {brands.length} marques
+                    </Link>
+                  )}
+                </div>
 
-                {brands.length > visibleBrands.length && (
-                  <Link
-                    href={`${lienRubrique}#produits`}
-                    onClick={closeNow}
-                    className="block px-4 pb-1 pt-2 text-[12px] font-medium text-gv-800 transition-colors hover:underline"
-                  >
-                    Les {brands.length} marques
-                  </Link>
-                )}
-              </div>
+                {/*
+                  Le lien mène à la rubrique filtrée, pas à la page de la marque : depuis
+                  « Diy », cliquer « Pulp » doit montrer les concentrés Pulp, pas l'ensemble du
+                  catalogue Pulp, e-liquides compris.
+                */}
+                <ul className="mt-2.5 grid grid-cols-6 gap-2">
+                  {visibleBrands.map((brand) => (
+                    <li key={brand.value} className="min-w-0">
+                      <Link
+                        href={`${lienRubrique}?f_${MARQUE_SLUG}=${encodeURIComponent(brand.value)}#produits`}
+                        onClick={closeNow}
+                        title={`${brand.value} — ${brand.count} produit${brand.count > 1 ? "s" : ""}`}
+                        className="group flex flex-col items-center gap-1 rounded-[8px] border border-gv-border bg-gv-card p-1.5 transition-colors duration-150 hover:border-gv-border-strong hover:bg-gv-soft"
+                      >
+                        {/* Hauteur fixe et `contain` : les logos arrivent en formats très
+                            différents, seule une zone normalisée les aligne. */}
+                        <span className="relative flex h-9 w-full items-center justify-center overflow-hidden">
+                          {brand.image_url ? (
+                            <Image
+                              src={brand.image_url}
+                              alt=""
+                              fill
+                              sizes="88px"
+                              className="object-contain p-0.5"
+                            />
+                          ) : (
+                            <span className="font-display text-[13px] text-gv-text-muted">
+                              {initiales(brand.value)}
+                            </span>
+                          )}
+                        </span>
+                        <span className="w-full truncate text-center text-[11px] leading-tight text-gv-text-soft">
+                          {brand.value}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
           </div>
         </div>

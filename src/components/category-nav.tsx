@@ -64,11 +64,14 @@ export default function CategoryNav({
           </Link>
         </div>
 
-        {visible.map((category) => (
+        {/* Les panneaux des derniers items sont ancrés à droite : larges, ils déborderaient
+            de l'écran en s'ouvrant vers la droite. */}
+        {visible.map((category, index) => (
           <CategoryNavItem
             key={category.id}
             category={category}
             brands={categoryBrands[category.handle] ?? []}
+            alignRight={index >= visible.length / 2}
           />
         ))}
 
