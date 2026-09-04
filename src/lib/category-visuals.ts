@@ -97,10 +97,14 @@ const ILLUSTRATIONS: Record<string, string> = {
   déclinaisons de clearomiseur — le catalogue employant les deux graphies. Les familles sans
   dessin retombent sur leur symbole, aucune n'a besoin d'être déclarée ici.
 
-  Neuf de ces dessins sont dérivés des illustrations de `categories/page`, recadrées sur leur
-  contenu : la toile carrée d'origine est aux trois quarts vide et les aurait affichés deux
-  fois trop petits à côté des autres. Copiés et non déplacés — les en-têtes de catégorie
-  continuent d'employer les grands formats, ce sont deux usages distincts.
+  Neuf de ces dessins sont dérivés des illustrations de `categories/page`. Copiés et non
+  déplacés — les en-têtes de catégorie continuent d'employer les grands formats, ce sont deux
+  usages distincts.
+
+  Tous sont normalisés sur une toile carrée de 128 pixels, le dessin mis à l'échelle sur son
+  plus grand côté. Sans cela, recadrés au plus juste, un dessin large remplissait la largeur de
+  sa boîte et un dessin étroit sa hauteur : leurs tailles apparentes divergeaient d'une
+  pastille à l'autre.
 */
 const NAV_ICONS: Record<string, string> = {
   accessoires: "/navigation/accessoires.webp",
@@ -129,6 +133,9 @@ const NAV_ICONS: Record<string, string> = {
   kits: "/navigation/kit.webp",
   liquides: "/navigation/liquides.webp",
   mods: "/navigation/mods.webp",
+  // « Outils » n'a pas de dessin propre : celui d'Accessoires, une pince et un flacon, le
+  // représente aussi bien.
+  outils: "/navigation/accessoires.webp",
   "puffs rechargeables": "/navigation/puffs-rechargeables.webp",
   pyrex: "/navigation/pyrex.webp",
   "pyrex et reconstructibles": "/navigation/pyrex-reconstructibles.webp",

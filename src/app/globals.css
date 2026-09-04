@@ -35,8 +35,8 @@
 
   /* Relief des surfaces posées — cartes, tuiles, pastilles, champs. Il remplace le filet d'un
      pixel : un trait redécoupe la page en cases, l'ombre se contente de soulever. */
-  --gv-shadow-raised: 0 1px 2px rgb(68 54 46 / 0.10), 0 1px 6px rgb(68 54 46 / 0.06);
-  --gv-shadow-raised-strong: 0 2px 4px rgb(68 54 46 / 0.14), 0 4px 12px rgb(68 54 46 / 0.10);
+  --gv-shadow-raised: 0 1px 2px rgb(68 54 46 / 0.13), 0 2px 10px rgb(68 54 46 / 0.09);
+  --gv-shadow-raised-strong: 0 2px 4px rgb(68 54 46 / 0.17), 0 5px 16px rgb(68 54 46 / 0.13);
 
   --gv-hero-overlay: linear-gradient(
     90deg,
