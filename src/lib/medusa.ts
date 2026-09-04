@@ -515,6 +515,23 @@ export async function listCategoryFacets(
   )
 }
 
+export type CategoryBrand = { value: string; count: number }
+
+/**
+ * Marques présentes dans chaque catégorie racine, indexées par handle — une marque étant
+ * « présente » si un produit de la catégorie ou de sa descendance la porte.
+ *
+ * Une seule lecture pour toute la barre de navigation, qui est rendue sur chaque page : la
+ * demander catégorie par catégorie multiplierait le coût par le nombre de rubriques.
+ */
+export async function listCategoryBrands(): Promise<Record<string, CategoryBrand[]>> {
+  const { categories } = await medusaFetch<{
+    categories: Record<string, CategoryBrand[]>
+  }>("/store/catalog/category-brands", {})
+
+  return categories
+}
+
 export type ProductAttributeBrief = { value: string; type: string }
 
 /**

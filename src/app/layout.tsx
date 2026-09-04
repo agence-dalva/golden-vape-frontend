@@ -7,7 +7,7 @@ import CategoryNav from "@/components/category-nav";
 import SiteFooter from "@/components/site-footer";
 import AgeGate from "@/components/age-gate";
 import { AGE_STORAGE_KEY } from "@/lib/age-gate";
-import { listCategories, listBrands } from "@/lib/medusa";
+import { listCategories, listBrands, listCategoryBrands } from "@/lib/medusa";
 import { getCurrentCart } from "@/lib/cart-actions";
 import { getCurrentCustomer } from "@/lib/customer-actions";
 import "./globals.css";
@@ -37,9 +37,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [categories, brands, cart, customer] = await Promise.all([
+  const [categories, brands, categoryBrands, cart, customer] = await Promise.all([
     listCategories(),
     listBrands(),
+    // Les marques présentes dans chaque rubrique alimentent les menus déroulants. Une panne
+    // de cette lecture ne doit pas emporter le site : les menus se réduisent alors aux
+    // sous-catégories, comme avant.
+    listCategoryBrands().catch(() => ({})),
     getCurrentCart(),
     getCurrentCustomer(),
   ]);
@@ -75,7 +79,7 @@ export default async function RootLayout({
           customer={customer}
           itemCount={itemCount}
         />
-        <CategoryNav categories={categories} brands={brands} />
+        <CategoryNav categories={categories} brands={brands} categoryBrands={categoryBrands} />
         <main className="flex-1">{children}</main>
         <SiteFooter />
         <Toaster

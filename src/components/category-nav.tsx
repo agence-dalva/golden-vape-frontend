@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
-import type { MedusaCategory, MedusaBrand } from "@/lib/medusa";
+import type { MedusaCategory, MedusaBrand, CategoryBrand } from "@/lib/medusa";
 import { useHoverMenu, menuPanelClasses } from "@/lib/use-hover-menu";
 import CategoryNavItem from "./category-nav-item";
 import BrandMenu from "./brand-menu";
@@ -19,9 +19,12 @@ const MAX_VISIBLE = 7;
 export default function CategoryNav({
   categories,
   brands,
+  categoryBrands,
 }: {
   categories: MedusaCategory[];
   brands: MedusaBrand[];
+  /** Marques présentes dans chaque rubrique, indexées par handle. */
+  categoryBrands: Record<string, CategoryBrand[]>;
 }) {
   const brandsMenu = useHoverMenu();
   const moreMenu = useHoverMenu();
@@ -62,7 +65,11 @@ export default function CategoryNav({
         </div>
 
         {visible.map((category) => (
-          <CategoryNavItem key={category.id} category={category} />
+          <CategoryNavItem
+            key={category.id}
+            category={category}
+            brands={categoryBrands[category.handle] ?? []}
+          />
         ))}
 
         {overflow.length > 0 && (
