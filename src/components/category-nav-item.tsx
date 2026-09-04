@@ -91,7 +91,7 @@ export default function CategoryNavItem({
                         key={child.id}
                         href={`/categories/${child.handle}`}
                         onClick={closeNow}
-                        className="flex items-center gap-2 rounded-[8px] border border-gv-border bg-gv-card py-2 pl-2.5 pr-3 text-[13px] font-medium text-gv-text transition-colors duration-150 hover:border-gv-border-strong hover:bg-gv-soft"
+                        className="flex items-center gap-2 rounded-[8px] bg-gv-50 py-2 pl-2.5 pr-3 text-[13px] font-medium text-gv-text shadow-[0_1px_2px_rgb(68_54_46/0.10),0_1px_6px_rgb(68_54_46/0.06)] transition-shadow duration-150 hover:shadow-[0_2px_4px_rgb(68_54_46/0.14),0_4px_12px_rgb(68_54_46/0.10)]"
                       >
                         {/* Boîte carrée et `contain` : les dessins vont du flacon très étroit
                             au kit large, seule une zone normalisée les aligne sur une même
