@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Menu, X, ChevronDown } from "lucide-react";
 import Image from "next/image";
@@ -9,9 +9,9 @@ import { categoryVisual, categoryNavIcon } from "@/lib/category-visuals";
 import { filterSlug } from "@/lib/catalog-filters";
 import BrandMenu from "./brand-menu";
 import BrandTiles from "./brand-tiles";
+import { menuPanelClasses } from "@/lib/use-hover-menu";
 
 const BRANDS_SECTION_ID = "__brands__";
-const FADE_DURATION_MS = 150;
 
 /** Trois colonnes tiennent sur un téléphone sans que le nom de la marque ne soit tronqué. */
 const MAX_BRANDS = 9;
@@ -29,29 +29,14 @@ export default function MobileCategoryMenu({
   categoryBrands: Record<string, CategoryBrand[]>;
 }) {
   const [open, setOpen] = useState(false);
-  // Le panneau survit à la fermeture le temps du fondu de sortie, puis se démonte. Cet état
-  // n'est jamais posé depuis le corps d'un effet : il se déduit de l'ouverture, et seul le
-  // minuteur de sortie le remet à zéro.
-  const [lingering, setLingering] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const mounted = open || lingering;
 
-  const toggle = () => {
-    setOpen((wasOpen) => !wasOpen);
-    setLingering(true);
-  };
+  const toggle = () => setOpen((wasOpen) => !wasOpen);
 
   const close = () => {
     setOpen(false);
     setExpandedId(null);
   };
-
-  useEffect(() => {
-    if (open || !lingering) return;
-
-    const timeout = setTimeout(() => setLingering(false), FADE_DURATION_MS);
-    return () => clearTimeout(timeout);
-  }, [open, lingering]);
 
   return (
     <div className="contents lg:hidden">
@@ -65,10 +50,14 @@ export default function MobileCategoryMenu({
         <span className="hidden text-xs sm:block">Menu</span>
       </button>
 
-      {mounted && (
-        <div
-          className={`absolute left-0 right-0 top-full z-30 border-t border-gv-border bg-gv-soft shadow-gv-sm transition-opacity duration-150 ${open ? "opacity-100" : "opacity-0"}`}
-        >
+      {/*
+        Le panneau reste monté et s'anime en opacité, comme ceux du bureau. Monté au moment de
+        l'ouverture, il naissait déjà opaque : le navigateur n'avait aucun état de départ à
+        animer, et l'apparition était sèche là où la fermeture était fondue.
+      */}
+      <div
+        className={`absolute left-0 right-0 top-full z-30 max-h-[calc(100vh-var(--gv-header-h,140px))] overflow-y-auto border-t border-gv-border bg-gv-soft shadow-gv-sm ${menuPanelClasses(open)}`}
+      >
           {categories.map((category) => {
             const hasChildren = category.category_children.length > 0;
             const marques = (categoryBrands[category.handle] ?? []).slice(0, MAX_BRANDS);
@@ -80,7 +69,7 @@ export default function MobileCategoryMenu({
                   <Link
                     href={`/categories/${category.handle}`}
                     onClick={close}
-                    className="block px-6 py-3 text-sm font-medium text-brand-chocolate"
+                    className="block px-6 py-4 text-[15px] font-medium text-brand-chocolate"
                   >
                     {category.name}
                   </Link>
@@ -93,11 +82,11 @@ export default function MobileCategoryMenu({
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : category.id)}
                   aria-expanded={isExpanded}
-                  className="flex w-full cursor-pointer items-center justify-between px-6 py-3 text-sm font-medium text-brand-chocolate"
+                  className="flex w-full cursor-pointer items-center justify-between px-6 py-4 text-[15px] font-medium text-brand-chocolate"
                 >
                   {category.name}
                   <ChevronDown
-                    size={16}
+                    size={18}
                     className={`text-brand-chocolate/60 transition-transform ${isExpanded ? "rotate-180" : ""}`}
                   />
                 </button>
@@ -107,7 +96,7 @@ export default function MobileCategoryMenu({
                     <Link
                       href={`/categories/${category.handle}`}
                       onClick={close}
-                      className="block px-10 py-2 text-sm font-medium text-brand-chocolate"
+                      className="block px-10 py-3 text-[15px] font-medium text-brand-chocolate"
                     >
                       Voir tout {category.name}
                     </Link>
@@ -120,15 +109,15 @@ export default function MobileCategoryMenu({
                           key={child.id}
                           href={`/categories/${child.handle}`}
                           onClick={close}
-                          className="flex items-center gap-2.5 px-10 py-2 text-sm text-brand-chocolate/80"
+                          className="flex items-center gap-3 px-10 py-3 text-[15px] text-brand-chocolate/80"
                         >
                           {/* Même boîte normalisée que sur le bureau : les dessins vont du
                               flacon étroit au kit large. */}
-                          <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
+                          <span className="relative flex h-7 w-7 shrink-0 items-center justify-center">
                             {dessin ? (
-                              <Image src={dessin} alt="" fill sizes="20px" className="object-contain" />
+                              <Image src={dessin} alt="" fill sizes="28px" className="object-contain" />
                             ) : (
-                              <Icon size={15} strokeWidth={1.6} aria-hidden className="text-gv-800" />
+                              <Icon size={20} strokeWidth={1.6} aria-hidden className="text-gv-800" />
                             )}
                           </span>
                           {child.name}
@@ -162,11 +151,11 @@ export default function MobileCategoryMenu({
               <button
                 onClick={() => setExpandedId(expandedId === BRANDS_SECTION_ID ? null : BRANDS_SECTION_ID)}
                 aria-expanded={expandedId === BRANDS_SECTION_ID}
-                className="flex w-full cursor-pointer items-center justify-between px-6 py-3 text-sm font-medium text-brand-chocolate"
+                className="flex w-full cursor-pointer items-center justify-between px-6 py-4 text-[15px] font-medium text-brand-chocolate"
               >
                 Nos marques
                 <ChevronDown
-                  size={16}
+                  size={18}
                   className={`text-brand-chocolate/60 transition-transform ${expandedId === BRANDS_SECTION_ID ? "rotate-180" : ""}`}
                 />
               </button>
@@ -176,7 +165,7 @@ export default function MobileCategoryMenu({
                   <Link
                     href="/marques"
                     onClick={close}
-                    className="block py-2 text-sm font-medium text-brand-chocolate"
+                    className="block py-3 text-[15px] font-medium text-brand-chocolate"
                   >
                     Voir toutes les marques
                   </Link>
@@ -185,10 +174,9 @@ export default function MobileCategoryMenu({
                   </div>
                 </div>
               )}
-            </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
