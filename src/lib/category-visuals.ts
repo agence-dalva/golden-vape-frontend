@@ -96,8 +96,14 @@ const ILLUSTRATIONS: Record<string, string> = {
   Plusieurs noms partagent volontairement un fichier — « Fruité » et « Fruités », les trois
   déclinaisons de clearomiseur — le catalogue employant les deux graphies. Les familles sans
   dessin retombent sur leur symbole, aucune n'a besoin d'être déclarée ici.
+
+  Neuf de ces dessins sont dérivés des illustrations de `categories/page`, recadrées sur leur
+  contenu : la toile carrée d'origine est aux trois quarts vide et les aurait affichés deux
+  fois trop petits à côté des autres. Copiés et non déplacés — les en-têtes de catégorie
+  continuent d'employer les grands formats, ce sont deux usages distincts.
 */
 const NAV_ICONS: Record<string, string> = {
+  accessoires: "/navigation/accessoires.webp",
   accus: "/navigation/accu.webp",
   aromes: "/navigation/aromes.webp",
   bases: "/navigation/bases.webp",
@@ -105,9 +111,13 @@ const NAV_ICONS: Record<string, string> = {
   booster: "/navigation/booster.webp",
   "box et batteries": "/navigation/box-batterie.webp",
   "cartouches pods": "/navigation/cartouche-pods.webp",
+  cbd: "/navigation/cbd.webp",
+  chargeurs: "/navigation/chargeurs.webp",
+  "clearomiseurs et dripper": "/navigation/clearomiseurs-drippers.webp",
   "clearomiseurs et reconstructible": "/navigation/clearomiseur-reconstructible.webp",
   clearomiseurs: "/navigation/clearomiseur-reconstructible.webp",
   reconstructible: "/navigation/clearomiseur-reconstructible.webp",
+  destockage: "/navigation/destockage.webp",
   "fibres et cotons": "/navigation/fibres-cotons.webp",
   "fils resistifs": "/navigation/fils-resistifs.webp",
   flacons: "/navigation/flacon.webp",
@@ -117,7 +127,11 @@ const NAV_ICONS: Record<string, string> = {
   gourmand: "/navigation/gourmand.webp",
   gourmands: "/navigation/gourmand.webp",
   kits: "/navigation/kit.webp",
+  liquides: "/navigation/liquides.webp",
+  mods: "/navigation/mods.webp",
+  "puffs rechargeables": "/navigation/puffs-rechargeables.webp",
   pyrex: "/navigation/pyrex.webp",
+  "pyrex et reconstructibles": "/navigation/pyrex-reconstructibles.webp",
   resistances: "/navigation/resistance.webp",
   "sels de nicotine": "/navigation/sel-de-nicotine.webp",
   tabac: "/navigation/tabac.webp",
