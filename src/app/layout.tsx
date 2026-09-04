@@ -83,14 +83,20 @@ export default async function RootLayout({
         <CategoryNav categories={categories} brands={brands} categoryBrands={categoryBrands} />
         <main className="flex-1">{children}</main>
         <SiteFooter />
+        {/*
+          Ivoire et non plus brun : le brun est devenu la couleur des bandeaux fixes — en-tête,
+          navigation, pied de page. Une notification qui le reprenait se lisait comme un
+          morceau de l'interface plutôt que comme un message. Elle emprunte donc le fond des
+          panneaux, et se détache par son relief.
+        */}
         <Toaster
           position="top-right"
           toastOptions={{
             classNames: {
-              toast: "!bg-gv-800 !border-gv-800 !text-white",
-              title: "!text-white",
-              description: "!text-white/80",
-              icon: "!text-white",
+              toast: "!bg-gv-soft !border-transparent !text-gv-text !shadow-gv-md",
+              title: "!text-gv-text !font-semibold",
+              description: "!text-gv-text-soft",
+              icon: "!text-gv-800",
             },
           }}
         />
