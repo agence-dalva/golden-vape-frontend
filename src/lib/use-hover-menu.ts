@@ -59,9 +59,13 @@ export function useHoverMenu(closeDelay = 140) {
  * Panneau maintenu dans le DOM et animé en opacité : monter/démonter au survol ne laisse
  * aucune chance à une transition de s'exécuter. `visibility` fait partie des propriétés
  * animées pour que le panneau reste cliquable pendant toute la durée du fondu sortant.
+ *
+ * Fondu seul, sans déplacement. Le panneau montait auparavant de quatre pixels à l'ouverture :
+ * sur un menu qui s'ouvre au simple survol, ce glissement se lisait comme un sursaut plutôt
+ * que comme une animation — d'autant que le pointeur, lui, ne bouge pas.
  */
 export function menuPanelClasses(open: boolean) {
-  return `transition-[opacity,transform,visibility] duration-200 ease-out ${
-    open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-1 opacity-0"
+  return `transition-[opacity,visibility] duration-200 ease-out ${
+    open ? "visible opacity-100" : "invisible opacity-0"
   }`;
 }
