@@ -2,12 +2,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import type { MedusaCategory } from "@/lib/medusa";
-import { categoryVisual } from "@/lib/category-visuals";
+import { categoryVisual, categoryNavIcon } from "@/lib/category-visuals";
 
 const MAX_SUBCATEGORIES = 3;
 
 export default function CategoryTile({ category }: { category: MedusaCategory }) {
+  /*
+    Les pictogrammes de `navigation` sont préférés aux illustrations de page : ils couvrent
+    toutes les familles et sont tous recadrés de la même façon, là où la collection des
+    illustrations est partielle. Une famille absente des deux retombait sur un symbole
+    d'interface de 22 pixels, minuscule à côté d'un dessin qui remplit son cadre — d'où des
+    tuiles de tailles inégales.
+  */
   const { illustration, Icon } = categoryVisual(category.name);
+  const dessin = categoryNavIcon(category.name) ?? illustration;
   const children = category.category_children ?? [];
   const visible = children.slice(0, MAX_SUBCATEGORIES);
   const hidden = children.length - visible.length;
@@ -23,10 +31,10 @@ export default function CategoryTile({ category }: { category: MedusaCategory })
         aria-hidden
         className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-gv-50 text-gv-800"
       >
-        {illustration ? (
-          <Image src={illustration} alt="" fill sizes="56px" className="object-contain p-1.5" />
+        {dessin ? (
+          <Image src={dessin} alt="" fill sizes="56px" className="object-contain p-1.5" />
         ) : (
-          <Icon size={22} strokeWidth={1.5} />
+          <Icon size={30} strokeWidth={1.5} />
         )}
       </span>
 
