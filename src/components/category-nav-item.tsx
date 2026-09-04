@@ -13,14 +13,27 @@ const MAX_BRANDS = 12;
 
 const MARQUE_SLUG = filterSlug("Marque");
 
-/** Repli quand la marque n'a pas été illustrée : ses initiales, dans la police d'affichage. */
-function initiales(value: string): string {
-  return value
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((mot) => mot[0] ?? "")
-    .join("")
-    .toUpperCase();
+/**
+ * Repli lorsqu'une marque n'a pas encore de logo : un visuel, et non des initiales — du texte
+ * ferait un trou dans la grille de vignettes. Le nuage reprend le motif du logotype, en teinte
+ * sourde : il tient le rythme sans prétendre représenter la marque.
+ *
+ * Dessiné en ligne plutôt que servi comme fichier : `next/image` refuse les SVG tant que
+ * `dangerouslyAllowSVG` n'est pas activé, et ce réglage vaudrait aussi pour les images
+ * distantes — trop cher payé pour un visuel de repli.
+ */
+function LogoAbsent() {
+  return (
+    <svg viewBox="0 0 72 44" fill="none" aria-hidden className="h-full w-full p-0.5">
+      <path
+        d="M23 32h27a8.5 8.5 0 0 0 .8-16.96A12 12 0 0 0 27.6 12.4 9.8 9.8 0 0 0 23 32Z"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
 }
 
 export default function CategoryNavItem({
@@ -128,7 +141,7 @@ export default function CategoryNavItem({
                       >
                         {/* Hauteur fixe et `contain` : les logos arrivent en formats très
                             différents, seule une zone normalisée les aligne. */}
-                        <span className="relative flex h-9 w-full items-center justify-center overflow-hidden">
+                        <span className="relative flex h-9 w-full items-center justify-center overflow-hidden text-gv-300">
                           {brand.image_url ? (
                             <Image
                               src={brand.image_url}
@@ -138,9 +151,7 @@ export default function CategoryNavItem({
                               className="object-contain p-0.5"
                             />
                           ) : (
-                            <span className="font-display text-[13px] text-gv-text-muted">
-                              {initiales(brand.value)}
-                            </span>
+                            <LogoAbsent />
                           )}
                         </span>
                         <span className="w-full truncate text-center text-[11px] leading-tight text-gv-text-soft">
