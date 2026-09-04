@@ -585,7 +585,10 @@ export async function listProductsByBrand(value: string, attributeTypeId: string
     return { products: [] as MedusaProduct[], count: 0 }
   }
 
-  return listProductsByIds(product_ids, limit, offset)
+  // Classement par titre, et non selon l'ordre des identifiants : celui-ci suit l'ordre de
+  // rattachement à la marque, si bien que la troisième page pouvait s'ouvrir sur des produits
+  // alphabétiquement premiers. Les pages sont ainsi cohérentes entre elles.
+  return listProductsByIds(product_ids, limit, offset, "title")
 }
 
 /**
@@ -594,7 +597,13 @@ export async function listProductsByBrand(value: string, attributeTypeId: string
  * reste ainsi au même endroit pour tout le site, et les prix ne divergent pas d'une section
  * à l'autre.
  */
-export async function listProductsByIds(ids: string[], limit = 24, offset = 0) {
+export async function listProductsByIds(
+  ids: string[],
+  limit = 24,
+  offset = 0,
+  /** Classement demandé à l'API. À défaut, l'ordre des identifiants fait foi. */
+  order?: string
+) {
   if (ids.length === 0) {
     return { products: [] as MedusaProduct[], count: 0 }
   }
@@ -607,6 +616,9 @@ export async function listProductsByIds(ids: string[], limit = 24, offset = 0) {
   url.searchParams.set("fields", PRODUCT_LIST_FIELDS)
   url.searchParams.set("limit", String(limit))
   url.searchParams.set("offset", String(offset))
+  if (order) {
+    url.searchParams.set("order", order)
+  }
 
   const res = await fetch(url, {
     headers: { "x-publishable-api-key": MEDUSA_PUBLISHABLE_KEY },
@@ -617,9 +629,16 @@ export async function listProductsByIds(ids: string[], limit = 24, offset = 0) {
   }
 
   const { products, count } = (await res.json()) as { products: MedusaProduct[]; count: number }
-  // /store/products ne garantit pas l'ordre demandé : on le rétablit, la pertinence des
-  // suggestions étant portée par leur rang.
-  const byId = new Map(products.map((product) => [product.id, withOrderedVariants(product)]))
+  const ordered = products.map(withOrderedVariants)
+
+  // Sans classement demandé, l'ordre des identifiants fait foi — un classement par prix, par
+  // exemple, est porté par leur rang et /store/products ne le préserve pas. Avec un
+  // classement explicite, au contraire, rétablir cet ordre le défairait.
+  if (order) {
+    return { products: ordered, count }
+  }
+
+  const byId = new Map(ordered.map((product) => [product.id, product]))
   return { products: ids.map((id) => byId.get(id)).filter((p): p is MedusaProduct => Boolean(p)), count }
 }
 
