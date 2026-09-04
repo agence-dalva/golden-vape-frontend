@@ -108,6 +108,11 @@ const ILLUSTRATIONS: Record<string, string> = {
 */
 const NAV_ICONS: Record<string, string> = {
   accessoires: "/navigation/accessoires.webp",
+  // Deux rubriques empruntent le dessin d'une autre faute d'avoir le leur : la box pour la
+  // cigarette électronique, le flacon pour le DIY. Ils les représentent bien, et un dessin
+  // dédié pourra prendre leur place sans rien changer d'autre.
+  "cigarette electronique": "/navigation/box-batterie.webp",
+  diy: "/navigation/flacon.webp",
   accus: "/navigation/accu.webp",
   aromes: "/navigation/aromes.webp",
   bases: "/navigation/bases.webp",
