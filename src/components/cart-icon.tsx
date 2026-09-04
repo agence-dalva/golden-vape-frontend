@@ -5,12 +5,12 @@ export default function CartIcon({ itemCount }: { itemCount: number }) {
   return (
     <Link
       href="/cart"
-      className="group relative flex min-h-11 min-w-11 flex-col items-center justify-center gap-1 text-gv-text transition-[color,transform] duration-200 hover:-translate-y-px hover:text-gv-800"
+      className="group relative flex min-h-11 min-w-11 flex-col items-center justify-center gap-1 text-white transition-[color,transform] duration-200 hover:-translate-y-px hover:text-gv-200"
     >
       <span className="relative">
         <ShoppingBag size={24} strokeWidth={1.6} aria-hidden />
         {itemCount > 0 && (
-          <span className="absolute -right-2 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gv-800 px-1 text-[10px] font-semibold text-white">
+          <span className="absolute -right-2 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-white px-1 text-[10px] font-semibold text-gv-900">
             {itemCount}
           </span>
         )}

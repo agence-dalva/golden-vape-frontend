@@ -76,6 +76,7 @@ export default async function RootLayout({
         <MainHeader
           categories={categories}
           brands={brands}
+          categoryBrands={categoryBrands}
           customer={customer}
           itemCount={itemCount}
         />

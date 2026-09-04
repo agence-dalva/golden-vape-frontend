@@ -54,7 +54,7 @@ export default function CategoryNav({
         défilement — étendent le document et font apparaître une barre horizontale dès le
         chargement, avant tout survol.
       */
-      className="relative z-20 hidden overflow-x-clip border-b border-gv-border bg-gv-card lg:block"
+      className="relative z-20 hidden overflow-x-clip border-b border-white/10 bg-gv-800 lg:block"
     >
       <div className="gv-container flex min-h-12 items-center justify-between gap-x-4">
         {/*
@@ -65,7 +65,7 @@ export default function CategoryNav({
         <div {...brandsHoverProps}>
           <Link
             href="/marques"
-            className="flex items-center gap-1 whitespace-nowrap py-3 text-sm font-medium tracking-[-0.01em] text-gv-text transition-colors duration-200 hover:text-gv-800"
+            className="flex items-center gap-1 whitespace-nowrap py-3 text-sm font-medium tracking-[-0.01em] text-white transition-colors duration-200 hover:text-gv-200"
           >
             Nos marques
           </Link>
@@ -84,7 +84,7 @@ export default function CategoryNav({
             <button
               onClick={moreMenu.toggle}
               aria-expanded={moreMenu.open}
-              className="flex cursor-pointer items-center gap-1 whitespace-nowrap py-3 text-sm font-medium tracking-[-0.01em] text-gv-text transition-colors duration-200 hover:text-gv-800"
+              className="flex cursor-pointer items-center gap-1 whitespace-nowrap py-3 text-sm font-medium tracking-[-0.01em] text-white transition-colors duration-200 hover:text-gv-200"
             >
               Plus
               <ChevronDown
@@ -101,7 +101,7 @@ export default function CategoryNav({
               donc il compte dans la largeur même fermé.
             */}
             <div className={`absolute right-0 top-full z-100 min-w-52 pt-1 ${menuPanelClasses(moreMenu.open)}`}>
-              <div className="rounded-[10px] border border-gv-border bg-white py-2 shadow-gv-sm">
+              <div className="rounded-[10px] border border-gv-border bg-gv-soft py-2 shadow-gv-sm">
                 {overflow.map((category) => (
                   <Link
                     key={category.id}
@@ -121,7 +121,7 @@ export default function CategoryNav({
 
       {brands.length > 0 && (
         <div
-          className={`absolute left-0 right-0 top-full z-100 border-t border-gv-border bg-white shadow-gv-sm ${menuPanelClasses(brandsMenu.open)}`}
+          className={`absolute left-0 right-0 top-full z-100 border-t border-gv-border bg-gv-soft shadow-gv-sm ${menuPanelClasses(brandsMenu.open)}`}
           {...brandsHoverProps}
         >
           <div className="gv-container py-6">{brandsRendered && <BrandMenu brands={brands} />}</div>

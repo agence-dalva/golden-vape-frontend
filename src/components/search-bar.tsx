@@ -249,8 +249,11 @@ export default function SearchBar() {
                 return (
                   <li key={suggestion.key}>
                     {startsSection && (
-                      <p className="px-5 pb-1 pt-3 text-[11px] font-bold uppercase tracking-[0.08em] text-gv-text-muted">
+                      <p className="flex items-baseline gap-1.5 px-5 pb-1 pt-3 text-[11px] font-bold uppercase tracking-[0.08em] text-gv-text-muted">
                         {suggestion.kind === "brand" ? "Marques" : "Produits"}
+                        <span className="font-semibold normal-case tracking-normal text-gv-text-soft">
+                          {suggestion.kind === "brand" ? results.brands.length : results.products.length}
+                        </span>
                       </p>
                     )}
                     <button

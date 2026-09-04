@@ -21,7 +21,7 @@ export default function AccountMenu({ customer }: { customer: MedusaCustomer | n
     return (
       <Link
         href="/compte/connexion"
-        className="flex min-h-11 min-w-11 cursor-pointer flex-col items-center justify-center gap-1 text-gv-text transition-[color,transform] duration-200 hover:-translate-y-px hover:text-gv-800"
+        className="flex min-h-11 min-w-11 cursor-pointer flex-col items-center justify-center gap-1 text-white transition-[color,transform] duration-200 hover:-translate-y-px hover:text-gv-200"
       >
         <UserRound size={24} strokeWidth={1.6} aria-hidden />
         <span className="hidden text-xs sm:block">Compte</span>
@@ -37,14 +37,14 @@ export default function AccountMenu({ customer }: { customer: MedusaCustomer | n
         onClick={toggle}
         aria-label="Mon compte"
         aria-expanded={open}
-        className="flex min-h-11 min-w-11 cursor-pointer flex-col items-center justify-center gap-1 text-gv-text transition-[color,transform] duration-200 hover:-translate-y-px hover:text-gv-800"
+        className="flex min-h-11 min-w-11 cursor-pointer flex-col items-center justify-center gap-1 text-white transition-[color,transform] duration-200 hover:-translate-y-px hover:text-gv-200"
       >
         <UserRound size={24} strokeWidth={1.6} aria-hidden />
         <span className="hidden text-xs sm:block">Compte</span>
       </button>
 
       <div className={`absolute right-0 top-full z-40 min-w-48 max-w-[280px] pt-1.5 ${menuPanelClasses(open)}`}>
-        <div className="rounded-[10px] border border-gv-border bg-white py-2 shadow-gv-sm">
+        <div className="rounded-[10px] border border-gv-border bg-gv-soft py-2 shadow-gv-sm">
           <p className="truncate px-4 py-2 text-sm text-gv-text-soft">
             {customer.first_name ? `Bonjour ${customer.first_name}` : customer.email}
           </p>
