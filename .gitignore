@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Sources des pictogrammes de navigation : seules les WebP dérivées sont versionnées.
+# 3,2 Mo de PNG resteraient dans l'historique pour toujours, sans jamais être servis.
+public/navigation/*.png
