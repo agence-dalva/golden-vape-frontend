@@ -430,6 +430,22 @@ export async function listProductsByCategory(
 export async function listCategoryPriceIndex(
   categoryIds: string | string[]
 ): Promise<{ id: string; price: number | null }[]> {
+  return indexerPrix({ category_id: categoryIds })
+}
+
+/**
+ * Même index, pour un ensemble d'identifiants déjà connu — ce que rend la route des facettes.
+ * C'est le chemin des pages de marque, qui n'ont pas de catégorie à donner.
+ */
+export async function listPriceIndexByIds(
+  ids: string[]
+): Promise<{ id: string; price: number | null }[]> {
+  return ids.length ? indexerPrix({ id: ids }) : []
+}
+
+async function indexerPrix(
+  cible: Record<string, string | string[]>
+): Promise<{ id: string; price: number | null }[]> {
   const regionId = await getDefaultRegionId()
   const pageSize = 1000
   // Garde-fou : au-delà, la page de catégorie doit revoir sa stratégie plutôt que
@@ -443,7 +459,7 @@ export async function listCategoryPriceIndex(
       products: Pick<MedusaProduct, "id" | "variants">[]
       count: number
     }>("/store/products", {
-      category_id: categoryIds,
+      ...cible,
       region_id: regionId,
       country_code: DEFAULT_COUNTRY_CODE,
       fields: "id,*variants.calculated_price",
@@ -473,7 +489,6 @@ export type CatalogFacet = {
 }
 
 export type CatalogFacets = {
-  handle: string
   total: number
   product_ids: string[]
   facets: CatalogFacet[]
@@ -514,6 +529,38 @@ export async function listCategoryFacets(
 
   return medusaFetch<CatalogFacets>(
     `/store/categories/${encodeURIComponent(handle)}/facets`,
+    params
+  )
+}
+
+/**
+ * Les mêmes critères, pour tous les produits d'une marque. La page de marque emprunte le
+ * panneau des rubriques : elle a besoin exactement de la même réponse.
+ */
+export async function listBrandFacets(
+  value: string,
+  options: {
+    filters?: Record<string, string[]>
+    limit?: number
+    offset?: number
+    order?: string
+  } = {}
+): Promise<CatalogFacets> {
+  const { filters = {}, limit = 24, offset = 0, order } = options
+
+  const params: Record<string, string> = {
+    limit: String(limit),
+    offset: String(offset),
+    ...(order ? { order } : {}),
+  }
+  for (const [slug, values] of Object.entries(filters)) {
+    if (values.length > 0) {
+      params[`filters[${slug}]`] = values.join(",")
+    }
+  }
+
+  return medusaFetch<CatalogFacets>(
+    `/store/brands/${encodeURIComponent(value)}/facets`,
     params
   )
 }
