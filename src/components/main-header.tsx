@@ -59,8 +59,10 @@ export default function MainHeader({
           />
         </Link>
 
+        {/* Les rubriques sont déjà chargées pour la navigation : les passer à la recherche lui
+            permet d'y renvoyer directement, sans requête supplémentaire. */}
         <div className="order-3 col-span-2 lg:order-none lg:col-span-1">
-          <SearchBar />
+          <SearchBar categories={categories} />
         </div>
 
         <div className="flex items-center justify-end gap-5 sm:gap-7">

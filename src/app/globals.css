@@ -232,6 +232,27 @@ html:not([data-age-ok]) {
 }
 
 /*
+  Panneau de résultats de la recherche.
+
+  Il naît déjà ouvert : la frappe qui l'ouvre est aussi celle qui le crée, et une transition
+  de classes n'aurait rien à faire varier à l'apparition — le navigateur ne verrait que
+  l'état final. L'animation couvre donc l'entrée ; la transition posée sur le panneau reprend
+  la main pour la fermeture et les réouvertures suivantes, où l'élément reste monté.
+*/
+@keyframes gv-search-panel-in {
+  from {
+    opacity: 0;
+    translate: 0 -6px;
+  }
+}
+
+/* `backwards` : l'état de départ s'applique avant la première image, mais l'animation ne fige
+   pas l'opacité à l'arrivée — le fondu de fermeture peut partir de la valeur de base. */
+.gv-search-panel-in {
+  animation: gv-search-panel-in 200ms ease-out backwards;
+}
+
+/*
   Titres de fiche produit, à peine épaissis.
 
   Michroma n'existe qu'en 400 : demander une graisse supérieure ferait grossir le tracé par
