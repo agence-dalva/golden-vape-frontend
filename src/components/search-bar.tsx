@@ -22,6 +22,17 @@ const DEBOUNCE_MS = 250;
 const MIN_TERM_LENGTH = 3;
 const MAX_CATEGORIES = 4;
 /*
+  Nombre de recherches gardées en mémoire dans l'onglet.
+
+  Une frappe hésitante revient sans cesse sur ses pas — une lettre de trop, effacée, retapée —
+  et chaque retour relançait un appel complet pour un résultat déjà reçu. Vingt entrées
+  couvrent largement une session de saisie ; au-delà, la plus ancienne sort.
+
+  Cette mémoire double le cache du backend sans faire double emploi : celui-ci épargne la base
+  à tout le monde, celle-là épargne le trajet à ce visiteur.
+*/
+const MEMO_MAX = 20;
+/*
   Le panneau part du bord gauche du champ et s'étend jusqu'au bord droit de la page, sans
   dépasser cette largeur. La place est là — à droite du champ il n'y a que du vide — et la
   liste étroite d'avant gaspillait les cent résultats que le backend renvoie déjà. Au-delà de
@@ -109,13 +120,15 @@ export default function SearchBar({ categories = [] }: { categories?: MedusaCate
   const listboxId = useId();
 
   const [term, setTerm] = useState("");
-  // Les résultats sont conservés avec le terme qui les a produits : tant que la frappe a
+  // Les résultats sont conservés avec la clé qui les a produits : tant que la frappe a
   // avancé, on sait qu'ils sont périmés sans avoir à les effacer — et on peut continuer à
   // les montrer, en retrait, plutôt que de vider le panneau à chaque lettre.
-  const [answered, setAnswered] = useState<{ term: string; results: SearchResults }>({
-    term: "",
+  const [answered, setAnswered] = useState<{ key: string; results: SearchResults }>({
+    key: "",
     results: EMPTY,
   });
+  // Recherches déjà obtenues, indexées par leur clé repliée.
+  const [memo, setMemo] = useState<Map<string, SearchResults>>(() => new Map());
   const [open, setOpen] = useState(false);
   const [cursor, setCursor] = useState<Cursor>(null);
 
@@ -124,7 +137,15 @@ export default function SearchBar({ categories = [] }: { categories?: MedusaCate
 
   const trimmed = term.trim();
   const active = trimmed.length >= MIN_TERM_LENGTH;
-  const loading = active && answered.term !== trimmed;
+
+  /*
+    La clé est le terme replié — minuscules, sans accents ni ponctuation — et non la saisie :
+    « Fraise » et « fraise » donnent les mêmes résultats, autant les reconnaître comme une
+    seule recherche. C'est exactement la clé que le backend construit de son côté.
+  */
+  const key = useMemo(() => searchWords(trimmed).join(" "), [trimmed]);
+  const cached = active && key ? memo.get(key) : undefined;
+  const loading = active && !cached && answered.key !== key;
 
   /*
     Le panneau est monté dès que le terme est cherchable, et non seulement quand il est
@@ -133,18 +154,26 @@ export default function SearchBar({ categories = [] }: { categories?: MedusaCate
   */
   const showPanel = open && active;
 
-  const words = useMemo(() => searchWords(answered.term), [answered.term]);
+  /*
+    Ce qui est à l'écran : la recherche en mémoire si on l'a, sinon la dernière obtenue —
+    affichée en retrait le temps que la nouvelle arrive, pour que le panneau ne clignote pas
+    à chaque lettre.
+  */
+  const results = cached ?? answered.results;
+  const shownKey = cached ? key : answered.key;
+
+  const words = useMemo(() => shownKey.split(" ").filter(Boolean), [shownKey]);
   const rubriques = useMemo(() => flatten(categories), [categories]);
 
   const railItems = useMemo(
     () =>
       toRailItems(
-        answered.results.brands,
+        results.brands,
         rubriques.filter((rubrique) => matchesTerm(rubrique.name, words)).slice(0, MAX_CATEGORIES)
       ),
-    [answered.results.brands, rubriques, words]
+    [results.brands, rubriques, words]
   );
-  const productItems = useMemo(() => toProductItems(answered.results.products), [answered.results]);
+  const productItems = useMemo(() => toProductItems(results.products), [results]);
 
   // Le curseur peut désigner une carte que la réponse suivante n'a plus : on le tient pour nul
   // plutôt que d'ouvrir un produit disparu de l'écran.
@@ -157,8 +186,10 @@ export default function SearchBar({ categories = [] }: { categories?: MedusaCate
 
   // La frappe est temporisée, et chaque nouvelle requête annule la précédente : sans cela une
   // réponse lente arrivée après une plus récente écraserait les bons résultats par des périmés.
+  // Une recherche déjà en mémoire ne déclenche ni temporisation ni appel : elle est à l'écran
+  // au rendu suivant.
   useEffect(() => {
-    if (!active) return;
+    if (!active || cached) return;
 
     const controller = new AbortController();
 
@@ -168,7 +199,14 @@ export default function SearchBar({ categories = [] }: { categories?: MedusaCate
           signal: controller.signal,
         });
         const results = (await res.json()) as SearchResults;
-        setAnswered({ term: trimmed, results });
+        setAnswered({ key, results });
+        setMemo((precedent) => {
+          const suivant = new Map(precedent);
+          suivant.set(key, results);
+          // Map conserve l'ordre d'insertion : la première clé est la plus ancienne.
+          if (suivant.size > MEMO_MAX) suivant.delete(suivant.keys().next().value!);
+          return suivant;
+        });
         setCursor(null);
       } catch {
         // Requête annulée par une frappe plus récente : rien à signaler.
@@ -179,7 +217,7 @@ export default function SearchBar({ categories = [] }: { categories?: MedusaCate
       clearTimeout(timer);
       controller.abort();
     };
-  }, [trimmed, active]);
+  }, [trimmed, key, active, cached]);
 
   useEffect(() => {
     const onPointerDown = (event: MouseEvent) => {
@@ -344,7 +382,7 @@ export default function SearchBar({ categories = [] }: { categories?: MedusaCate
           loading={loading}
           // Les résultats de la frappe précédente restent affichés, en retrait, le temps que
           // les nouveaux arrivent : les effacer ferait clignoter le panneau à chaque lettre.
-          stale={loading && answered.term.length > 0}
+          stale={loading && shownKey.length > 0}
           cursor={safeCursor}
           open={showPanel}
           listboxId={listboxId}
