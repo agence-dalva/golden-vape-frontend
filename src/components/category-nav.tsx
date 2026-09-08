@@ -121,8 +121,15 @@ export default function CategoryNav({
 
       {brands.length > 0 && (
         <div
-          className={`absolute left-0 right-0 top-full z-100 pt-1 ${menuPanelClasses(brandsMenu.open)}`}
-          {...brandsHoverProps}
+          /*
+            Ce bloc va d'un bord à l'autre de la fenêtre, alors que le panneau s'arrête aux
+            marges de la page. Les deux bandes de quarante-huit pixels ainsi laissées de chaque
+            côté restaient sensibles au survol : sortir du panneau par la droite ou par la
+            gauche ne le fermait pas, alors que sortir par le bas fonctionnait. Le pointeur est
+            donc rendu au seul conteneur du gabarit, qui a exactement la largeur du panneau
+            visible — ce qui rend aussi ces bandes cliquables à travers.
+          */
+          className={`pointer-events-none absolute left-0 right-0 top-full z-100 ${menuPanelClasses(brandsMenu.open)}`}
         >
           {/*
             Panneau flottant à la largeur de la page, et non plus bandeau bord à bord : même
@@ -132,8 +139,11 @@ export default function CategoryNav({
 
             Borné en hauteur, avec la grille qui défile à l'intérieur pour que le lien de pied
             reste atteignable sur un écran de portable.
+
+            `pt-1` est porté ici et non par le bloc au-dessus : ces quatre pixels font le pont
+            entre la barre et le panneau, ils doivent rester sensibles au survol.
           */}
-          <div className="gv-container">
+          <div className="gv-container pointer-events-auto pt-1" {...brandsHoverProps}>
             <div className="flex max-h-[min(72vh,660px)] flex-col rounded-[14px] border border-[rgba(68,54,46,0.10)] bg-gv-soft p-6 shadow-[0_12px_30px_rgba(68,54,46,0.08)]">
               {brandsRendered && <BrandMenu brands={brands} />}
             </div>
