@@ -129,7 +129,21 @@ export default async function CategoryPage({
     products = ids
       .map((id) => byId.get(id))
       .filter((product): product is MedusaProduct => Boolean(product));
-  } else if (filtering && facetting) {
+  } else if ((filtering || sort.order === "-created_at") && facetting) {
+    /*
+      Le tri par nouveauté passe par la route des facettes même sans filtre, parce qu'elle
+      seule sait départager.
+
+      L'import a créé les produits par lots : quarante-quatre horodatages pour mille quatre
+      cent huit références, soit des centaines de produits à la milliseconde près. Un
+      `ORDER BY created_at DESC` sans second critère ne définit alors aucun ordre, et deux
+      requêtes paginées successives découpent des fenêtres qui se chevauchent — mesuré, sept
+      produits apparaissaient deux fois sur les trois premières pages, et autant restaient
+      introuvables. La route des facettes, elle, départage sur le titre.
+
+      Les autres tris n'en ont pas besoin : le titre et le prix sont assez distincts pour
+      ordonner à eux seuls, et « pertinence » n'envoie aucun tri.
+    */
     count = facetting.total;
     const ids = facetting.product_ids;
     const fetched = ids.length ? (await listProductsByIds(ids, PAGE_SIZE)).products : [];
