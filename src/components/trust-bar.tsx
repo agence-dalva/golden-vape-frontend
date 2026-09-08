@@ -1,9 +1,8 @@
-import { Truck, ShieldCheck, Headset, BadgeCheck } from "lucide-react";
+import { Truck, ShieldCheck, BadgeCheck } from "lucide-react";
 
 const ITEMS = [
   { icon: Truck, title: "Expédition 24/48h", detail: "Rapide et soignée" },
   { icon: ShieldCheck, title: "Paiement sécurisé", detail: "Transactions 100 % sécurisées" },
-  { icon: Headset, title: "Conseils d'experts", detail: "À votre écoute" },
   { icon: BadgeCheck, title: "Produits authentiques", detail: "Marques officielles et certifiées" },
 ];
 
@@ -13,7 +12,9 @@ export default function TrustBar() {
       aria-label="Nos engagements"
       className="border-y border-gv-border bg-gv-card"
     >
-      <ul className="gv-container grid grid-cols-2 gap-y-5 py-5 lg:grid-cols-4 lg:gap-0 lg:py-0">
+      {/* Une colonne par engagement : à deux colonnes, le troisième restait seul sur sa
+          rangée. */}
+      <ul className="gv-container grid grid-cols-1 gap-y-5 py-5 sm:grid-cols-3 lg:gap-0 lg:py-0">
         {ITEMS.map(({ icon: Icon, title, detail }, index) => (
           <li
             key={title}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShoppingBag, Truck, ShieldCheck, Headset, Lock, ArrowRight } from "lucide-react";
+import { ShoppingBag, Truck, ShieldCheck, Lock, ArrowRight } from "lucide-react";
 import { getCurrentCart } from "@/lib/cart-actions";
 import { getCurrentCustomer } from "@/lib/customer-actions";
 import { formatPrice, listLatestProducts } from "@/lib/medusa";
@@ -14,7 +14,6 @@ import PromoCode from "./promo-code";
 const BENEFITS = [
   { icon: Truck, label: "Expédition sous 24/48h" },
   { icon: ShieldCheck, label: "Paiement sécurisé" },
-  { icon: Headset, label: "Conseils d'experts" },
 ];
 
 export default async function CartPage() {

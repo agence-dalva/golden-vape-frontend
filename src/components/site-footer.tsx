@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Truck, ShieldCheck, Headset } from "lucide-react";
+import { Truck, ShieldCheck } from "lucide-react";
 import { listCategories } from "@/lib/medusa";
 
 const ACCOUNT_LINKS = [
@@ -13,7 +13,6 @@ const ACCOUNT_LINKS = [
 const SERVICES = [
   { icon: Truck, label: "Expédition sous 24/48h" },
   { icon: ShieldCheck, label: "Paiement 100 % sécurisé" },
-  { icon: Headset, label: "Conseils d'experts" },
 ];
 
 export default async function SiteFooter() {

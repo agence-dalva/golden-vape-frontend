@@ -1,6 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
-import { Headset, ArrowRight, FolderOpen } from "lucide-react";
+import { FolderOpen } from "lucide-react";
 import type { Metadata } from "next";
 import { listCategories } from "@/lib/medusa";
 import Breadcrumbs from "@/components/breadcrumbs";
@@ -17,7 +16,14 @@ export default async function CataloguePage() {
   const categories = await listCategories().catch(() => []);
 
   return (
-    <div>
+    /*
+      La marge haute du pied de page laissait une bande claire orpheline sous la grille, dont
+      le fond ivoire descend maintenant jusqu'en bas. Elle est reprise ici et rendue à la
+      section, qui la porte en marge intérieure : le pied vient se poser directement sur
+      l'ivoire, sans que le pied ait à changer pour les autres pages, où cette marge tombe sur
+      un fond de page et ne se voit pas.
+    */
+    <div className="-mb-20">
       <div className="gv-container">
         <Breadcrumbs trail={[{ label: "Accueil", href: "/" }, { label: "Catalogue" }]} />
 
@@ -56,12 +62,15 @@ export default async function CataloguePage() {
 
       {/*
         Sol ivoire sous la grille, d'un bord à l'autre. Les tuiles sont blanches : sur un fond de
-        page à deux points du blanc, elles ne se détachaient de rien et la section se lisait comme
-        un vide entre le bandeau et le bloc d'aide. Le fond traverse toute la largeur, sans quoi la
-        bande n'aurait pas de tenue.
+        page à deux points du blanc, elles ne se détachaient de rien. Le fond traverse toute la
+        largeur, sans quoi la bande n'aurait pas de tenue.
+
+        Il descend jusqu'au pied de page, d'où le filet du haut seulement et la marge basse
+        généreuse : la grille était le dernier bloc de la page, la refermer par un trait
+        laissait une bande claire orpheline entre elle et le pied.
       */}
-      <section className="mt-14 border-y border-gv-border bg-gv-soft">
-        <div className="gv-container py-12">
+      <section className="mt-14 border-t border-gv-border bg-gv-soft">
+        <div className="gv-container pb-20 pt-12">
           <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="gv-eyebrow">Tout le catalogue</p>
@@ -92,32 +101,6 @@ export default async function CataloguePage() {
 
         </div>
       </section>
-
-      <div className="gv-container">
-        <aside className="mt-12 flex flex-wrap items-center justify-between gap-4 rounded-[14px] border border-gv-border bg-gv-card px-6 py-6">
-          <div className="flex items-center gap-4">
-            <span aria-hidden className="text-gv-800">
-              <Headset size={28} strokeWidth={1.5} />
-            </span>
-            <div>
-              <p className="font-display text-xl font-normal text-gv-text">
-                Besoin d&apos;aide pour choisir ?
-              </p>
-              <p className="mt-0.5 text-sm text-gv-text-soft">
-                Notre équipe vous accompagne vers le matériel adapté à vos besoins.
-              </p>
-            </div>
-          </div>
-
-          <Link
-            href="/marques"
-            className="group inline-flex items-center gap-1.5 text-sm font-semibold text-gv-800"
-          >
-            Parcourir nos marques
-            <ArrowRight size={15} aria-hidden className="transition-transform duration-200 group-hover:translate-x-[3px]" />
-          </Link>
-        </aside>
-      </div>
     </div>
   );
 }

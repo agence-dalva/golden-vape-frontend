@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Minus, Plus, ShoppingBag, Loader2, ShieldCheck, Truck, Headset, Package } from "lucide-react";
+import { Minus, Plus, ShoppingBag, Loader2, ShieldCheck, Truck, Package } from "lucide-react";
 import type { MedusaProduct } from "@/lib/medusa";
 import { formatPrice, getDisplayAmount } from "@/lib/medusa";
 import { addToCartAction } from "@/lib/cart-actions";
@@ -13,7 +13,6 @@ const LOW_STOCK_THRESHOLD = 5;
 const BENEFITS = [
   { icon: ShieldCheck, label: "Paiement 100 % sécurisé" },
   { icon: Truck, label: "Expédition sous 24/48h" },
-  { icon: Headset, label: "Conseils d'experts" },
 ];
 
 export default function PurchasePanel({
