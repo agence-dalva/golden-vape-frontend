@@ -124,7 +124,12 @@ export default function CategoryNav({
           className={`absolute left-0 right-0 top-full z-100 border-t border-gv-border bg-gv-soft shadow-gv-sm ${menuPanelClasses(brandsMenu.open)}`}
           {...brandsHoverProps}
         >
-          <div className="gv-container py-6">{brandsRendered && <BrandMenu brands={brands} />}</div>
+          {/* Borné en hauteur : trois rangées de vignettes désormais deux fois plus hautes
+              passeraient sous le bas d'un écran de portable. C'est la grille qui défile à
+              l'intérieur, pour que le lien de pied reste atteignable. */}
+          <div className="gv-container flex max-h-[78vh] flex-col py-6">
+            {brandsRendered && <BrandMenu brands={brands} />}
+          </div>
         </div>
       )}
     </nav>

@@ -10,12 +10,8 @@ import { categoryVisual, categoryNavIcon } from "@/lib/category-visuals";
 import { filterSlug } from "@/lib/catalog-filters";
 import BrandTiles from "./brand-tiles";
 
-/** Deux rangées de six vignettes : au-delà, le panneau devient plus haut qu'utile. */
-const MAX_BRANDS = 12;
-
-/** Doit suivre la largeur déclarée sur le panneau : elle sert à décider de son ancrage. */
-const PANEL_WIDTH = 620;
-const MARGE = 16;
+/** Trois rangées de six vignettes : au-delà, le panneau devient plus haut qu'utile. */
+const MAX_BRANDS = 18;
 
 const MARQUE_SLUG = filterSlug("Marque");
 
@@ -30,17 +26,25 @@ export default function CategoryNavItem({
   const { open, openMenu, closeMenu, closeNow } = useHoverMenu();
 
   /*
-    L'ancrage est décidé à l'ouverture, en mesurant. Un rang dans la barre ne dit rien de
-    fiable : les libellés ont des largeurs très différentes, si bien qu'un item du milieu peut
-    déjà être trop à droite pour un panneau de 620 pixels — ce qui arrivait à « Diy ».
+    Le panneau occupe toute la largeur de la page, pas celle d'un menu accroché à son item.
+
+    Il ne peut donc pas être positionné en CSS : il faut reculer du bord de l'item jusqu'à
+    celui du gabarit, distance qui change d'un item à l'autre. Elle est mesurée à l'ouverture
+    sur le conteneur du gabarit lui-même, plutôt que redéclarée ici — ses marges changent
+    trois fois selon la largeur de l'écran.
+
+    Avantage sur l'ancrage à gauche ou à droite d'avant : le panneau ne saute plus d'un côté
+    à l'autre quand la souris passe d'une rubrique à la suivante, il reste exactement en
+    place et seul son contenu change.
   */
   const conteneur = useRef<HTMLDivElement>(null);
-  const [ancreADroite, setAncreADroite] = useState(false);
+  const [ancrage, setAncrage] = useState<{ left: number; width: number } | null>(null);
 
   const ouvrir = () => {
     const boite = conteneur.current?.getBoundingClientRect();
-    if (boite) {
-      setAncreADroite(boite.left + PANEL_WIDTH > window.innerWidth - MARGE);
+    const page = conteneur.current?.closest(".gv-container")?.getBoundingClientRect();
+    if (boite && page) {
+      setAncrage({ left: page.left - boite.left, width: page.width });
     }
     openMenu();
   };
@@ -71,17 +75,23 @@ export default function CategoryNavItem({
 
       {hasPanel && (
         <div
-          className={`absolute top-full z-100 pt-1 ${ancreADroite ? "right-0" : "left-0"} ${menuPanelClasses(open)}`}
+          style={ancrage ? { left: ancrage.left, width: ancrage.width } : undefined}
+          className={`absolute left-0 top-full z-100 pt-1 ${menuPanelClasses(open)}`}
         >
-          <div className="w-[min(620px,calc(100vw-64px))] rounded-[10px] border border-gv-border bg-gv-soft p-4 shadow-gv-sm">
+          {/* Borné en hauteur : une rubrique à beaucoup de rayons passerait sous le bas de
+              l'écran sur un portable. */}
+          <div className="max-h-[min(72vh,660px)] overflow-y-auto overscroll-contain rounded-[12px] border border-gv-border bg-gv-soft p-6 shadow-gv-md">
             {hasChildren && (
               <>
-                <p className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.08em] text-gv-text-muted">
+                <p className="mb-3 flex items-baseline gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-gv-text-muted">
                   Rayons
+                  <span className="font-semibold normal-case tracking-normal text-gv-text-soft">
+                    {children.length}
+                  </span>
                 </p>
-                {/* En rangée et non en colonne : quatre à six rayons tiennent sur une ligne, et
-                    la hauteur reste disponible pour les marques. */}
-                <div className="flex flex-wrap gap-2">
+                {/* En grille et non en rangée libre : à cette largeur, des pastilles de
+                    tailles inégales laissaient des trous en fin de ligne. */}
+                <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 xl:grid-cols-6">
                   {children.map((child) => {
                     const dessin = categoryNavIcon(child.name);
                     const { Icon } = categoryVisual(child.name);
@@ -91,19 +101,22 @@ export default function CategoryNavItem({
                         key={child.id}
                         href={`/categories/${child.handle}`}
                         onClick={closeNow}
-                        className="flex items-center gap-2 rounded-[8px] bg-gv-50 py-2 pl-2.5 pr-3 text-[13px] font-medium text-gv-text shadow-gv-raised transition-shadow duration-150 hover:shadow-gv-raised-strong"
+                        className="flex items-center gap-3 rounded-[10px] bg-gv-50 p-3 text-[14px] font-medium text-gv-text shadow-gv-raised transition-shadow duration-150 hover:shadow-gv-raised-strong"
                       >
                         {/* Boîte carrée et `contain` : les dessins vont du flacon très étroit
                             au kit large, seule une zone normalisée les aligne sur une même
                             ligne de base. */}
-                        <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
+                        <span className="relative flex h-10 w-10 shrink-0 items-center justify-center">
                           {dessin ? (
-                            <Image src={dessin} alt="" fill sizes="20px" className="object-contain" />
+                            <Image src={dessin} alt="" fill sizes="40px" className="object-contain" />
                           ) : (
-                            <Icon size={15} strokeWidth={1.6} aria-hidden className="text-gv-800" />
+                            <Icon size={26} strokeWidth={1.5} aria-hidden className="text-gv-800" />
                           )}
                         </span>
-                        {child.name}
+                        {/* Deux lignes plutôt qu'une coupure : « Clearomiseurs et
+                            reconstructible » ne rentre pas, et un rayon tronqué ne se
+                            reconnaît plus. La rangée s'aligne sur la pastille la plus haute. */}
+                        <span className="min-w-0 line-clamp-2 leading-snug">{child.name}</span>
                       </Link>
                     );
                   })}
@@ -115,17 +128,20 @@ export default function CategoryNavItem({
               <>
                 <div
                   className={`flex items-baseline justify-between gap-4 ${
-                    hasChildren ? "mt-4 border-t border-gv-border pt-4" : ""
+                    hasChildren ? "mt-6 border-t border-gv-border pt-5" : ""
                   }`}
                 >
-                  <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-gv-text-muted">
+                  <p className="flex items-baseline gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-gv-text-muted">
                     Marques
+                    <span className="font-semibold normal-case tracking-normal text-gv-text-soft">
+                      {brands.length}
+                    </span>
                   </p>
                   {brands.length > visibleBrands.length && (
                     <Link
                       href={`${lienRubrique}#produits`}
                       onClick={closeNow}
-                      className="text-[12px] font-medium text-gv-800 transition-colors hover:underline"
+                      className="text-[13px] font-medium text-gv-800 transition-colors hover:underline"
                     >
                       Les {brands.length} marques
                     </Link>
@@ -137,9 +153,10 @@ export default function CategoryNavItem({
                   « Diy », cliquer « Pulp » doit montrer les concentrés Pulp, pas l'ensemble du
                   catalogue Pulp, e-liquides compris.
                 */}
-                <div className="mt-2.5">
+                <div className="mt-3">
                   <BrandTiles
                     brands={visibleBrands}
+                    className="grid-cols-4 sm:grid-cols-5 xl:grid-cols-6"
                     hrefFor={(brand) =>
                       `${lienRubrique}?f_${MARQUE_SLUG}=${encodeURIComponent(brand.value)}#produits`
                     }

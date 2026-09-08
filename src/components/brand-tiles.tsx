@@ -32,6 +32,10 @@ function LogoAbsent() {
  * blanc incrusté dans l'image, qui ferait une tache sur de l'ivoire. Ce qui détache la
  * vignette du panneau reste l'ombre portée, non un filet — un trait coloré redécouperait le
  * panneau en autant de cases.
+ *
+ * Les tailles doublent à partir de `lg`, et seulement là : en dessous, cette grille n'est
+ * plus rendue que par le menu du mobile, qui dispose d'une largeur d'écran. Le point de
+ * rupture sépare donc exactement les deux usages, sans variante à passer en propriété.
  */
 export default function BrandTiles({
   brands,
@@ -53,18 +57,24 @@ export default function BrandTiles({
             href={hrefFor(brand)}
             onClick={onNavigate}
             title={`${brand.value} — ${brand.count} produit${brand.count > 1 ? "s" : ""}`}
-            className="flex flex-col items-center gap-1 rounded-[8px] bg-gv-card p-1.5 shadow-gv-raised transition-shadow duration-150 hover:shadow-gv-raised-strong"
+            className="flex flex-col items-center gap-1 rounded-[8px] bg-gv-card p-1.5 shadow-gv-raised transition-shadow duration-150 hover:shadow-gv-raised-strong lg:gap-2 lg:rounded-[10px] lg:p-2.5"
           >
             {/* Hauteur fixe et `contain` : les logos arrivent en formats très différents,
                 seule une zone normalisée les aligne. */}
-            <span className="relative flex h-9 w-full items-center justify-center overflow-hidden text-gv-300">
+            <span className="relative flex h-9 w-full items-center justify-center overflow-hidden text-gv-300 lg:h-[68px]">
               {brand.image_url ? (
-                <Image src={brand.image_url} alt="" fill sizes="88px" className="object-contain p-0.5" />
+                <Image
+                  src={brand.image_url}
+                  alt=""
+                  fill
+                  sizes="(min-width: 1024px) 200px, 88px"
+                  className="object-contain p-0.5 lg:p-2"
+                />
               ) : (
                 <LogoAbsent />
               )}
             </span>
-            <span className="w-full truncate text-center text-[12px] font-semibold leading-tight text-gv-text">
+            <span className="w-full truncate text-center text-[12px] font-semibold leading-tight text-gv-text lg:text-[13px]">
               {brand.value}
             </span>
           </Link>
