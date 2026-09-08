@@ -10,8 +10,9 @@ import { categoryVisual, categoryNavIcon } from "@/lib/category-visuals";
 import { filterSlug } from "@/lib/catalog-filters";
 import BrandTiles from "./brand-tiles";
 
-/** Trois rangées de six vignettes : au-delà, le panneau devient plus haut qu'utile. */
-const MAX_BRANDS = 18;
+/** Deux rangées de six : le quadrillage de `BrandTiles` en finition `bare` compte sur ce
+    format, et au-delà le panneau devient plus haut qu'utile. */
+const MAX_BRANDS = 12;
 
 const MARQUE_SLUG = filterSlug("Marque");
 
@@ -78,9 +79,16 @@ export default function CategoryNavItem({
           style={ancrage ? { left: ancrage.left, width: ancrage.width } : undefined}
           className={`absolute left-0 top-full z-100 pt-1 ${menuPanelClasses(open)}`}
         >
-          {/* Borné en hauteur : une rubrique à beaucoup de rayons passerait sous le bas de
-              l'écran sur un portable. */}
-          <div className="max-h-[min(72vh,660px)] overflow-y-auto overscroll-contain rounded-[12px] border border-gv-border bg-gv-soft p-6 shadow-gv-md">
+          {/*
+            Fond ivoire et non blanc, filet à peine visible, ombre large et très diffuse : le
+            panneau se pose sur la page au lieu de s'y découper. Ces trois valeurs sont
+            littérales et non tirées des jetons — elles décrivent une surface flottante, que
+            le reste du site n'a pas.
+
+            Borné en hauteur : une rubrique à beaucoup de rayons passerait sous le bas de
+            l'écran sur un portable.
+          */}
+          <div className="max-h-[min(72vh,660px)] overflow-y-auto overscroll-contain rounded-[14px] border border-[rgba(68,54,46,0.10)] bg-gv-soft p-6 shadow-[0_12px_30px_rgba(68,54,46,0.08)]">
             {hasChildren && (
               <>
                 <p className="mb-3 flex items-baseline gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-gv-text-muted">
@@ -101,7 +109,9 @@ export default function CategoryNavItem({
                         key={child.id}
                         href={`/categories/${child.handle}`}
                         onClick={closeNow}
-                        className="flex items-center gap-3 rounded-[10px] bg-gv-50 p-3 text-[14px] font-medium text-gv-text shadow-gv-raised transition-shadow duration-150 hover:shadow-gv-raised-strong"
+                        /* Fond plus clair que le panneau : `gv-50` s'en distinguait d'un
+                           point, la pastille ne tenait que par son ombre. */
+                        className="flex items-center gap-3 rounded-[10px] bg-gv-page p-3 text-[14px] font-medium text-gv-text shadow-gv-xs transition-shadow duration-150 hover:shadow-gv-raised"
                       >
                         {/* Boîte carrée et `contain` : les dessins vont du flacon très étroit
                             au kit large, seule une zone normalisée les aligne sur une même
@@ -124,13 +134,13 @@ export default function CategoryNavItem({
               </>
             )}
 
+            {hasChildren && hasBrands && (
+              <div className="my-[18px] h-px bg-[rgba(68,54,46,0.12)]" />
+            )}
+
             {hasBrands && (
               <>
-                <div
-                  className={`flex items-baseline justify-between gap-4 ${
-                    hasChildren ? "mt-6 border-t border-gv-border pt-5" : ""
-                  }`}
-                >
+                <div className="flex items-baseline justify-between gap-4">
                   <p className="flex items-baseline gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-gv-text-muted">
                     Marques
                     <span className="font-semibold normal-case tracking-normal text-gv-text-soft">
@@ -156,7 +166,8 @@ export default function CategoryNavItem({
                 <div className="mt-3">
                   <BrandTiles
                     brands={visibleBrands}
-                    className="grid-cols-4 sm:grid-cols-5 xl:grid-cols-6"
+                    finition="bare"
+                    className="grid-cols-6"
                     hrefFor={(brand) =>
                       `${lienRubrique}?f_${MARQUE_SLUG}=${encodeURIComponent(brand.value)}#produits`
                     }

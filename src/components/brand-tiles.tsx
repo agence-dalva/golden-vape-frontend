@@ -24,57 +24,86 @@ function LogoAbsent() {
   );
 }
 
-/**
- * Grille de vignettes de marque, partagée par le menu de bureau et celui du mobile — sans
- * quoi les deux rendus divergeraient au premier ajustement.
- *
- * Fond blanc, à la différence des pastilles de rayon : beaucoup de logos portent un cadre
- * blanc incrusté dans l'image, qui ferait une tache sur de l'ivoire. Ce qui détache la
- * vignette du panneau reste l'ombre portée, non un filet — un trait coloré redécouperait le
- * panneau en autant de cases.
- *
- * Les tailles doublent à partir de `lg`, et seulement là : en dessous, cette grille n'est
- * plus rendue que par le menu du mobile, qui dispose d'une largeur d'écran. Le point de
- * rupture sépare donc exactement les deux usages, sans variante à passer en propriété.
- */
+/*
+  Deux finitions, pour deux surfaces qui n'ont rien à voir.
+
+  `card` — le menu du mobile. Chaque marque est une vignette blanche posée sur l'ivoire :
+  beaucoup de logos portent un cadre blanc incrusté dans l'image, qui ferait une tache sur un
+  fond teinté. Ce qui détache la vignette reste l'ombre portée, non un filet.
+
+  `bare` — le panneau déroulant du bureau. Les marques y sont assez nombreuses et assez
+  grandes pour que quinze cartes blanches redécoupent le panneau en autant de boîtes. Elles
+  reposent donc à même le fond, et ce sont de fins filets qui les séparent — le quadrillage
+  se lit comme une grille, pas comme un tas de cases.
+*/
+type Finition = "card" | "bare";
+
 export default function BrandTiles({
   brands,
   hrefFor,
   onNavigate,
   className = "grid-cols-6",
+  finition = "card",
 }: {
   brands: CategoryBrand[];
   hrefFor: (brand: CategoryBrand) => string;
   onNavigate?: () => void;
   /** Nombre de colonnes, à adapter à la largeur du panneau qui accueille la grille. */
   className?: string;
+  finition?: Finition;
 }) {
+  const bare = finition === "bare";
+
   return (
-    <ul className={`grid gap-2 ${className}`}>
+    /* Aucun écart entre les cases en finition `bare` : les filets ne formeraient pas des
+       lignes continues s'ils étaient séparés par une gouttière. */
+    <ul className={`grid ${bare ? "" : "gap-2"} ${className}`}>
       {brands.map((brand) => (
-        <li key={brand.value} className="min-w-0">
+        <li
+          key={brand.value}
+          className={
+            bare
+              /* Le quadrillage suppose six colonnes : pas de filet à droite de la sixième,
+                 filet sous la première rangée seulement. Le panneau qui l'emploie doit donc
+                 s'en tenir à six colonnes et douze marques. */
+              ? "min-w-0 border-[rgba(68,54,46,0.10)] not-nth-[6n]:border-r nth-[-n+6]:border-b"
+              : "min-w-0"
+          }
+        >
           <Link
             href={hrefFor(brand)}
             onClick={onNavigate}
             title={`${brand.value} — ${brand.count} produit${brand.count > 1 ? "s" : ""}`}
-            className="flex flex-col items-center gap-1 rounded-[8px] bg-gv-card p-1.5 shadow-gv-raised transition-shadow duration-150 hover:shadow-gv-raised-strong lg:gap-2 lg:rounded-[10px] lg:p-2.5"
+            className={
+              bare
+                ? "flex h-full min-h-[110px] flex-col items-center justify-center gap-2.5 rounded-[10px] px-2 transition-colors duration-150 hover:bg-white/60"
+                : "flex flex-col items-center gap-1 rounded-lg bg-gv-card p-1.5 shadow-gv-raised transition-shadow duration-150 hover:shadow-gv-raised-strong"
+            }
           >
             {/* Hauteur fixe et `contain` : les logos arrivent en formats très différents,
                 seule une zone normalisée les aligne. */}
-            <span className="relative flex h-9 w-full items-center justify-center overflow-hidden text-gv-300 lg:h-[68px]">
+            <span
+              className={`relative flex w-full items-center justify-center overflow-hidden text-gv-300 ${
+                bare ? "h-[66px]" : "h-9"
+              }`}
+            >
               {brand.image_url ? (
                 <Image
                   src={brand.image_url}
                   alt=""
                   fill
-                  sizes="(min-width: 1024px) 200px, 88px"
-                  className="object-contain p-0.5 lg:p-2"
+                  sizes={bare ? "200px" : "88px"}
+                  className={`object-contain ${bare ? "p-1" : "p-0.5"}`}
                 />
               ) : (
                 <LogoAbsent />
               )}
             </span>
-            <span className="w-full truncate text-center text-[12px] font-semibold leading-tight text-gv-text lg:text-[13px]">
+            <span
+              className={`w-full truncate text-center font-semibold leading-tight text-gv-text ${
+                bare ? "text-[13px]" : "text-[12px]"
+              }`}
+            >
               {brand.value}
             </span>
           </Link>
