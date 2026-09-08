@@ -121,14 +121,22 @@ export default function CategoryNav({
 
       {brands.length > 0 && (
         <div
-          className={`absolute left-0 right-0 top-full z-100 border-t border-gv-border bg-gv-soft shadow-gv-sm ${menuPanelClasses(brandsMenu.open)}`}
+          className={`absolute left-0 right-0 top-full z-100 pt-1 ${menuPanelClasses(brandsMenu.open)}`}
           {...brandsHoverProps}
         >
-          {/* Borné en hauteur : trois rangées de vignettes désormais deux fois plus hautes
-              passeraient sous le bas d'un écran de portable. C'est la grille qui défile à
-              l'intérieur, pour que le lien de pied reste atteignable. */}
-          <div className="gv-container flex max-h-[78vh] flex-col py-6">
-            {brandsRendered && <BrandMenu brands={brands} />}
+          {/*
+            Panneau flottant à la largeur de la page, et non plus bandeau bord à bord : même
+            surface que les panneaux de rubrique — fond ivoire, filet à peine visible, rayon
+            de 14 pixels, ombre large et diffuse. Les deux menus de la barre se ressemblent
+            désormais au pixel près.
+
+            Borné en hauteur, avec la grille qui défile à l'intérieur pour que le lien de pied
+            reste atteignable sur un écran de portable.
+          */}
+          <div className="gv-container">
+            <div className="flex max-h-[min(72vh,660px)] flex-col rounded-[14px] border border-[rgba(68,54,46,0.10)] bg-gv-soft p-6 shadow-[0_12px_30px_rgba(68,54,46,0.08)]">
+              {brandsRendered && <BrandMenu brands={brands} />}
+            </div>
           </div>
         </div>
       )}

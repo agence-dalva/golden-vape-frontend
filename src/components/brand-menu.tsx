@@ -1,8 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import type { MedusaBrand } from "@/lib/medusa";
 import { sortBrands } from "@/lib/brands";
+import BrandTiles from "./brand-tiles";
 
 // Au-delà, le panneau deviendrait plus haut que l'écran. Le lien de bas de panneau mène à
 // l'index complet.
@@ -32,43 +32,21 @@ export default function BrandMenu({ brands }: { brands: MedusaBrand[] }) {
         </p>
       </div>
 
-      {/* Cinq colonnes et non six : à quinze marques, la grille tombe juste en trois rangées,
-          et la vignette gagne cinquante pixels de large — ce qui profite aux logotypes
-          allongés autant que la hauteur profite aux autres. */}
-      {/* `content-start` : sans lui, la grille étirée par le flex répartirait la place libre
-          entre ses rangées et grandirait les vignettes au-delà de leur taille voulue. */}
-      <ul className="grid min-h-0 flex-1 content-start grid-cols-3 gap-3.5 overflow-y-auto overscroll-contain sm:grid-cols-4 lg:grid-cols-5">
-        {visible.map((brand) => (
-          <li key={brand.value} className="min-w-0">
-            <Link
-              href={`/marques/${encodeURIComponent(brand.value)}`}
-              className="group flex h-full flex-col overflow-hidden rounded-[10px] bg-gv-card shadow-gv-raised transition-shadow duration-200 hover:shadow-[0_10px_24px_rgba(68,54,46,0.10)]"
-            >
-              {/* Zone normalisée : `contain` préserve proportions et couleurs officielles. */}
-              <span className="relative flex h-[128px] items-center justify-center">
-                {brand.image_url ? (
-                  <Image
-                    src={brand.image_url}
-                    alt={brand.value}
-                    fill
-                    sizes="280px"
-                    className="object-contain p-5"
-                  />
-                ) : (
-                  <span className="px-3 text-center font-display text-lg text-gv-text-soft">
-                    {brand.value}
-                  </span>
-                )}
-              </span>
-              <span className="truncate px-3 pb-3.5 text-center text-[13px] font-semibold text-gv-text">
-                {brand.value}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {/*
+        Même grille que les panneaux de rubrique — six colonnes, quadrillage à filets fins,
+        marques posées à même le fond. Les deux menus de la barre se répondent, il n'y a
+        aucune raison que celui-ci ait sa propre écriture.
+      */}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <BrandTiles
+          brands={visible}
+          finition="bare"
+          className="grid-cols-6"
+          hrefFor={(brand) => `/marques/${encodeURIComponent(brand.value)}`}
+        />
+      </div>
 
-      <div className="mt-5 flex shrink-0 justify-end border-t border-gv-border pt-4">
+      <div className="mt-5 flex shrink-0 justify-end border-t border-[rgba(68,54,46,0.12)] pt-4">
         <Link
           href="/marques"
           className="group inline-flex items-center gap-1.5 text-[13px] font-semibold text-gv-800"

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { CategoryBrand } from "@/lib/medusa";
 
 /**
  * Repli lorsqu'une marque n'a pas encore de logo : un visuel, et non des initiales — du texte
@@ -24,6 +23,13 @@ function LogoAbsent() {
   );
 }
 
+/**
+ * Le minimum dont une vignette a besoin. Les deux sources de marques du site le satisfont :
+ * celles du catalogue, qui comptent leurs produits, et celles de l'index, qui ne les comptent
+ * pas — d'où le générique, qui laisse ce supplément au `titleFor` de l'appelant.
+ */
+type Vignette = { value: string; image_url: string | null };
+
 /*
   Deux finitions, pour deux surfaces qui n'ont rien à voir.
 
@@ -31,22 +37,37 @@ function LogoAbsent() {
   beaucoup de logos portent un cadre blanc incrusté dans l'image, qui ferait une tache sur un
   fond teinté. Ce qui détache la vignette reste l'ombre portée, non un filet.
 
-  `bare` — le panneau déroulant du bureau. Les marques y sont assez nombreuses et assez
-  grandes pour que quinze cartes blanches redécoupent le panneau en autant de boîtes. Elles
-  reposent donc à même le fond, et ce sont de fins filets qui les séparent — le quadrillage
-  se lit comme une grille, pas comme un tas de cases.
+  `bare` — les panneaux déroulants du bureau. Les marques y sont assez nombreuses et assez
+  grandes pour qu'autant de cartes blanches redécoupent le panneau en boîtes. Elles reposent
+  donc à même le fond, et de fins filets les séparent : le quadrillage se lit comme une
+  grille, pas comme un tas de cases.
 */
 type Finition = "card" | "bare";
 
-export default function BrandTiles({
+/*
+  Le quadrillage ne trace que ses lignes intérieures, quels que soient le nombre de colonnes
+  et le nombre de marques.
+
+  Chaque case porte un filet à droite et en dessous ; la grille remonte d'un pixel à droite et
+  en bas, et son conteneur rogne ce qui dépasse — ce qui efface d'un coup la colonne de droite
+  et la rangée du bas, sans avoir à les compter. Reste le cas d'une dernière rangée
+  incomplète, où le filet droit de la toute dernière case pendrait dans le vide : `last:` le
+  retire.
+*/
+const CASE_BARE = "border-b border-r border-[rgba(68,54,46,0.10)] last:border-r-0";
+
+export default function BrandTiles<T extends Vignette>({
   brands,
   hrefFor,
+  titleFor,
   onNavigate,
   className = "grid-cols-6",
   finition = "card",
 }: {
-  brands: CategoryBrand[];
-  hrefFor: (brand: CategoryBrand) => string;
+  brands: T[];
+  hrefFor: (brand: T) => string;
+  /** Infobulle facultative : seules les marques du catalogue savent compter leurs produits. */
+  titleFor?: (brand: T) => string;
   onNavigate?: () => void;
   /** Nombre de colonnes, à adapter à la largeur du panneau qui accueille la grille. */
   className?: string;
@@ -54,29 +75,21 @@ export default function BrandTiles({
 }) {
   const bare = finition === "bare";
 
-  return (
-    /* Aucun écart entre les cases en finition `bare` : les filets ne formeraient pas des
-       lignes continues s'ils étaient séparés par une gouttière. */
-    <ul className={`grid ${bare ? "" : "gap-2"} ${className}`}>
+  const grille = (
+    /* Aucune gouttière en finition `bare` : les filets ne formeraient pas des lignes
+       continues s'ils étaient séparés par un écart. */
+    <ul className={`grid ${bare ? "-mb-px -mr-px" : "gap-2"} ${className}`}>
       {brands.map((brand) => (
-        <li
-          key={brand.value}
-          className={
-            bare
-              /* Le quadrillage suppose six colonnes : pas de filet à droite de la sixième,
-                 filet sous la première rangée seulement. Le panneau qui l'emploie doit donc
-                 s'en tenir à six colonnes et douze marques. */
-              ? "min-w-0 border-[rgba(68,54,46,0.10)] not-nth-[6n]:border-r nth-[-n+6]:border-b"
-              : "min-w-0"
-          }
-        >
+        <li key={brand.value} className={`min-w-0 ${bare ? CASE_BARE : ""}`}>
           <Link
             href={hrefFor(brand)}
             onClick={onNavigate}
-            title={`${brand.value} — ${brand.count} produit${brand.count > 1 ? "s" : ""}`}
+            title={titleFor?.(brand)}
+            /* Pas de coin arrondi sur le fond de survol en finition `bare` : les filets
+               dessinent des cases carrées, un fond arrondi y laissait quatre encoches. */
             className={
               bare
-                ? "flex h-full min-h-[110px] flex-col items-center justify-center gap-2.5 rounded-[10px] px-2 transition-colors duration-150 hover:bg-white/60"
+                ? "flex h-full min-h-[110px] flex-col items-center justify-center gap-2.5 px-2 transition-colors duration-150 hover:bg-white/60"
                 : "flex flex-col items-center gap-1 rounded-lg bg-gv-card p-1.5 shadow-gv-raised transition-shadow duration-150 hover:shadow-gv-raised-strong"
             }
           >
@@ -111,4 +124,7 @@ export default function BrandTiles({
       ))}
     </ul>
   );
+
+  // Le conteneur qui rogne le pixel de trop : voir `CASE_BARE`.
+  return bare ? <div className="overflow-hidden">{grille}</div> : grille;
 }

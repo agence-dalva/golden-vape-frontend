@@ -166,6 +166,9 @@ export default function CategoryNavItem({
                 <div className="mt-3">
                   <BrandTiles
                     brands={visibleBrands}
+                    titleFor={(brand) =>
+                      `${brand.value} — ${brand.count} produit${brand.count > 1 ? "s" : ""}`
+                    }
                     finition="bare"
                     className="grid-cols-6"
                     hrefFor={(brand) =>

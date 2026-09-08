@@ -132,6 +132,9 @@ export default function MobileCategoryMenu({
                         </p>
                         <BrandTiles
                           brands={marques}
+                          titleFor={(brand) =>
+                            `${brand.value} — ${brand.count} produit${brand.count > 1 ? "s" : ""}`
+                          }
                           className="grid-cols-3"
                           hrefFor={(brand) =>
                             `/categories/${category.handle}?f_${MARQUE_SLUG}=${encodeURIComponent(brand.value)}#produits`
