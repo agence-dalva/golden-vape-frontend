@@ -357,10 +357,13 @@ export type SearchResults = {
   brands: SearchResultBrand[]
 }
 
+/** En dessous, la recherche ne part pas — même borne que le composant et que la route Medusa. */
+const MIN_SEARCH_LENGTH = 3
+
 // Chaque frappe produit une requête différente : les mettre en cache remplirait le cache de
-// données pour rien, d'où `fresh`. Le backend répond en une vingtaine de millisecondes.
+// données pour rien, d'où `fresh`. Le backend, lui, met la réponse en cache.
 export async function searchCatalog(term: string): Promise<SearchResults> {
-  if (term.trim().length < 2) {
+  if (term.trim().length < MIN_SEARCH_LENGTH) {
     return { products: [], brands: [] }
   }
 

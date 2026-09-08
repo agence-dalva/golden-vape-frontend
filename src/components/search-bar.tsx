@@ -9,7 +9,17 @@ import { matchesTerm, searchWords } from "@/lib/search-terms";
 import SearchPanel, { toProductItems, toRailItems, type Cursor } from "./search-panel";
 
 const DEBOUNCE_MS = 250;
-const MIN_TERM_LENGTH = 2;
+/*
+  Trois caractères, et non deux.
+
+  Mesuré sur ce catalogue : « te » ramenait cent produits et 27,7 Ko pour deux lettres qui
+  n'expriment aucune intention, « ten » en ramène huit et 2,0 Ko. La frappe qui suit arrive
+  de toute façon dans les 250 ms de temporisation.
+
+  La même borne existe dans la route Medusa, et doit y rester : celle-ci n'économise que le
+  trajet, celle-là protège la base de ce qui contourne le frontend.
+*/
+const MIN_TERM_LENGTH = 3;
 const MAX_CATEGORIES = 4;
 /*
   Le panneau part du bord gauche du champ et s'étend jusqu'au bord droit de la page, sans
