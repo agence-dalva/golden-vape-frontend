@@ -41,7 +41,12 @@ export default function CheckoutStepper({
       <ArrowLeft size={17} />
     </button>
   ) : backHref ? (
-    <Link href={backHref} aria-label={backLabel} className={classeRetour}>
+    <Link
+      href={backHref}
+      aria-label={backLabel}
+      transitionTypes={["nav-back"]}
+      className={classeRetour}
+    >
       <ArrowLeft size={17} />
     </Link>
   ) : null;

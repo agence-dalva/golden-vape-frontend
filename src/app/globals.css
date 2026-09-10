@@ -283,3 +283,103 @@ html:not([data-age-ok]) {
 .gv-delivery-panel-in {
   animation: gv-delivery-panel-in 180ms ease-out backwards;
 }
+
+/*
+  Transitions de page du tunnel de commande.
+
+  Le fondu croisé est assuré par le navigateur, sur son compositeur : rien à animer en
+  JavaScript, et la transition tient même pendant un chargement de données.
+
+  Les durées sont dissymétriques à dessein. L'ancien contenu part vite — il n'a plus rien
+  à dire et ne doit pas disputer l'attention au nouveau. Le nouveau arrive plus lentement,
+  et son fondu attend que le départ soit terminé, faute de quoi les deux se superposent en
+  un instant trouble.
+*/
+::view-transition-old(.gv-nav-forward) {
+  --gv-slide: -48px;
+  animation:
+    140ms ease-in both gv-nav-fade reverse,
+    360ms ease-in-out both gv-nav-slide reverse;
+}
+::view-transition-new(.gv-nav-forward) {
+  --gv-slide: 48px;
+  animation:
+    200ms ease-out 140ms both gv-nav-fade,
+    360ms ease-in-out both gv-nav-slide;
+}
+
+::view-transition-old(.gv-nav-back) {
+  --gv-slide: 48px;
+  animation:
+    140ms ease-in both gv-nav-fade reverse,
+    360ms ease-in-out both gv-nav-slide reverse;
+}
+::view-transition-new(.gv-nav-back) {
+  --gv-slide: -48px;
+  animation:
+    200ms ease-out 140ms both gv-nav-fade,
+    360ms ease-in-out both gv-nav-slide;
+}
+
+/* Sans direction — bouton précédent du navigateur, rafraîchissement — le fondu seul. */
+::view-transition-old(.gv-fade) {
+  animation: 140ms ease-in both gv-nav-fade reverse;
+}
+::view-transition-new(.gv-fade) {
+  animation: 200ms ease-out 140ms both gv-nav-fade;
+}
+
+@keyframes gv-nav-fade {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes gv-nav-slide {
+  from {
+    translate: var(--gv-slide);
+  }
+  to {
+    translate: 0;
+  }
+}
+
+/*
+  L'en-tête ne bouge pas pendant la transition : c'est le point d'ancrage qui dit à l'œil
+  que le contenu a changé, pas la fenêtre. Sans `display: none` sur l'ancien instantané,
+  les deux en-têtes se chevauchent brièvement.
+*/
+::view-transition-group(gv-site-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(gv-site-header) {
+  display: none;
+}
+::view-transition-new(gv-site-header) {
+  animation: none;
+}
+
+/* La surcouche de transition intercepte les clics : un clic pendant l'animation serait
+   perdu, alors que la page dessous est déjà en place. */
+::view-transition {
+  pointer-events: none;
+}
+
+/*
+  La règle globale de réduction de mouvement plus haut ne porte pas sur ces
+  pseudo-éléments, que le sélecteur `*` n'atteint pas : il faut les viser nommément.
+*/
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}

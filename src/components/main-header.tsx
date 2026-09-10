@@ -22,7 +22,11 @@ export default function MainHeader({
   itemCount: number;
 }) {
   return (
-    <header className="relative z-30 border-b border-white/10 bg-gv-800">
+    <header
+      className="relative z-30 border-b border-white/10 bg-gv-800"
+      // L'en-tete sert de point d'ancrage : il ne bouge pas pendant une transition.
+      style={{ viewTransitionName: "gv-site-header" }}
+    >
       {/*
         La recherche occupe sa propre ligne en dessous de 1100px : la comprimer sur la même
         ligne que le logo et les actions la rendrait inutilisable bien avant le mobile.

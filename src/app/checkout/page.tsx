@@ -3,6 +3,7 @@ import { getCurrentCart } from "@/lib/cart-actions";
 import { getCurrentCustomer } from "@/lib/customer-actions";
 import { listShippingOptionsForCart } from "@/lib/medusa-checkout";
 import CheckoutForm from "./checkout-form";
+import PageTransition from "@/components/page-transition";
 
 export default async function CheckoutPage({
   searchParams,
@@ -30,8 +31,10 @@ export default async function CheckoutPage({
   const shippingOptions = await listShippingOptionsForCart(cart.id);
 
   return (
+    <PageTransition>
     <div className="mx-auto max-w-5xl px-6 py-10">
       <CheckoutForm cart={cart} customer={customer} shippingOptions={shippingOptions} />
     </div>
+    </PageTransition>
   );
 }

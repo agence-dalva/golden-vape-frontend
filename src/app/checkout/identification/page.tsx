@@ -4,6 +4,7 @@ import { UserRound, UserPlus, ShoppingBag } from "lucide-react";
 import { getCurrentCart } from "@/lib/cart-actions";
 import { getCurrentCustomer } from "@/lib/customer-actions";
 import CheckoutStepper from "@/components/checkout-stepper";
+import PageTransition from "@/components/page-transition";
 
 // Écran de choix présenté juste après le panier. Un client déjà connecté n'a rien à
 // décider : il passe directement au tunnel.
@@ -19,6 +20,7 @@ export default async function CheckoutIdentificationPage() {
   }
 
   return (
+    <PageTransition>
     <div className="mx-auto max-w-2xl px-6 py-10">
       <CheckoutStepper current={2} backHref="/cart" backLabel="Revenir au panier" />
 
@@ -64,6 +66,7 @@ export default async function CheckoutIdentificationPage() {
           </p>
           <Link
             href="/checkout?invite=1"
+            transitionTypes={["nav-forward"]}
             className="flex w-full items-center justify-center gap-2 rounded-lg border border-brand-chocolate/20 px-6 py-3 text-sm font-medium text-brand-chocolate transition-colors hover:border-brand-gold-dark"
           >
             <ShoppingBag size={18} />
@@ -72,5 +75,6 @@ export default async function CheckoutIdentificationPage() {
         </section>
       </div>
     </div>
+    </PageTransition>
   );
 }

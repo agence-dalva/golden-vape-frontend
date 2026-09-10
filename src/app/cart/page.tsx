@@ -10,6 +10,7 @@ import SectionHeading from "@/components/section-heading";
 import ProductSlider from "@/components/product-slider";
 import CartItem from "./cart-item";
 import PromoCode from "./promo-code";
+import PageTransition from "@/components/page-transition";
 
 const BENEFITS = [
   { icon: Truck, label: "Expédition sous 24/48h" },
@@ -54,6 +55,7 @@ export default async function CartPage() {
   const itemCount = items.reduce((total, item) => total + item.quantity, 0);
 
   return (
+    <PageTransition>
     <div className="gv-container pb-16">
       <Breadcrumbs trail={[{ label: "Accueil", href: "/" }, { label: "Panier" }]} />
       <CheckoutStepper current={1} />
@@ -144,6 +146,7 @@ export default async function CartPage() {
 
             <Link
               href={checkoutHref}
+              transitionTypes={["nav-forward"]}
               className="mt-6 flex min-h-[54px] items-center justify-center rounded-[7px] border border-gv-800 bg-gv-800 px-6 text-[15px] font-semibold text-white shadow-[0_9px_24px_rgb(68_54_46/0.16)] transition-all duration-200 hover:-translate-y-px hover:bg-gv-900"
             >
               Passer la commande
@@ -159,5 +162,6 @@ export default async function CartPage() {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 }

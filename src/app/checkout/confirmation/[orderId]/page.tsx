@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getOrder } from "@/lib/medusa-checkout";
 import { formatPrice } from "@/lib/medusa";
+import PageTransition from "@/components/page-transition";
 
 export default async function OrderConfirmationPage({
   params,
@@ -16,6 +17,7 @@ export default async function OrderConfirmationPage({
   }
 
   return (
+    <PageTransition>
     <div className="mx-auto max-w-2xl px-6 py-16 text-center">
       <h1 className="mb-2 text-2xl font-semibold tracking-tight text-brand-chocolate">
         Merci pour votre commande !
@@ -64,5 +66,6 @@ export default async function OrderConfirmationPage({
         Retour à la boutique
       </Link>
     </div>
+    </PageTransition>
   );
 }
