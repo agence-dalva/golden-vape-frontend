@@ -11,6 +11,9 @@ import { formatPrice } from "@/lib/medusa";
 import { setAddressesAction, setShippingMethodAction, startMoneticoPaymentAction } from "@/lib/checkout-actions";
 import AddressForm from "@/components/address-form";
 import MoneticoPaymentForm from "@/components/monetico-payment-form";
+import CheckoutStepper from "@/components/checkout-stepper";
+import ServicePointPicker from "@/components/service-point-picker";
+import type { ServicePoint } from "@/lib/service-points";
 
 const EMPTY_ADDRESS: MedusaAddress = {
   first_name: "",
@@ -75,9 +78,24 @@ export default function CheckoutForm({
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(
     cart.shipping_methods[0]?.shipping_option_id ?? null
   );
+  const [servicePoint, setServicePoint] = useState<ServicePoint | null>(null);
 
   const addressesSaved = Boolean(cart.shipping_address && cart.email);
   const shippingSelected = cart.shipping_methods.length > 0;
+
+  const selectedOption = shippingOptions.find((o) => o.id === selectedOptionId) ?? null;
+  const besoinPointRelais = Boolean(selectedOption?.data?.is_service_point_required);
+  // Le transporteur du service choisi : inutile de proposer des points Chronopost a qui
+  // vient de selectionner un service Colissimo.
+  const transporteurs = selectedOption?.data?.carrier_code
+    ? [selectedOption.data.carrier_code]
+    : [];
+
+  // Le repere de progression doit dire la verite : choisir un point relais est une etape
+  // de plus, et la masquer promettrait un paiement immediat qui n'arrive pas.
+  const etapes = besoinPointRelais
+    ? ["Panier", "Livraison", "Point relais", "Paiement"]
+    : ["Panier", "Livraison", "Paiement"];
 
   // Une adresse déjà connue — celle du compte, ou celle que le panier porte déjà — est
   // affichée en résumé plutôt qu'en formulaire complet. Le visiteur invité qui commande
@@ -99,10 +117,44 @@ export default function CheckoutForm({
 
   const handleSelectShipping = (optionId: string) => {
     setSelectedOptionId(optionId);
+
+    const option = shippingOptions.find((o) => o.id === optionId);
+
+    // Une livraison en point relais ne peut pas etre posee tant que le point n'est pas
+    // choisi : Medusa la refuserait. On attend donc la selection dans le selecteur.
+    if (option?.data?.is_service_point_required) {
+      setServicePoint(null);
+      return;
+    }
+
     startTransition(async () => {
       const result = await setShippingMethodAction(optionId);
       if (result.error) {
         toast.error(result.error);
+      }
+    });
+  };
+
+  const handleSelectServicePoint = (point: ServicePoint) => {
+    setServicePoint(point);
+
+    if (!selectedOptionId) return;
+
+    // L'identifiant retenu est celui du reseau correspondant au service choisi — un meme
+    // commerce peut servir les deux, avec un identifiant different pour chacun.
+    const reseau =
+      point.carriers.find((c) => c.code === selectedOption?.data?.carrier_code) ??
+      point.carriers[0];
+
+    startTransition(async () => {
+      const result = await setShippingMethodAction(selectedOptionId, {
+        service_point_id: reseau.sendcloud_id,
+        service_point_name: point.name,
+        service_point_carrier: reseau.code,
+      });
+      if (result.error) {
+        toast.error(result.error);
+        setServicePoint(null);
       }
     });
   };
@@ -120,10 +172,17 @@ export default function CheckoutForm({
     });
   };
 
-  const canPay = addressesSaved && shippingSelected;
+  const canPay = addressesSaved && shippingSelected && (!besoinPointRelais || Boolean(servicePoint));
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
+    <>
+      <CheckoutStepper current={besoinPointRelais ? 3 : 2} steps={etapes} />
+
+      <h1 className="mb-8 text-2xl font-semibold tracking-tight text-brand-chocolate">
+        Commander
+      </h1>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
       {/* Colonne gauche — adresse */}
       <section className={cardClass}>
         <div className="mb-4 flex items-center justify-between gap-4">
@@ -272,6 +331,30 @@ export default function CheckoutForm({
               ))}
             </div>
           )}
+
+          {besoinPointRelais && addressesSaved && (
+            <div className="mt-5 border-t border-brand-chocolate/10 pt-5">
+              <h3 className="mb-1 text-sm font-semibold text-brand-chocolate">
+                Choisissez votre point relais
+              </h3>
+              {servicePoint ? (
+                <p className="mb-3 text-xs text-brand-chocolate/70">
+                  Retrait chez <span className="font-medium">{servicePoint.name}</span>.
+                </p>
+              ) : (
+                <p className="mb-3 text-xs text-brand-chocolate/60">
+                  Le paiement s&apos;ouvrira une fois le point sélectionné.
+                </p>
+              )}
+              <ServicePointPicker
+                carriers={transporteurs}
+                defaultPostalCode={shippingAddress.postal_code ?? undefined}
+                defaultCity={shippingAddress.city ?? undefined}
+                selected={servicePoint}
+                onSelect={handleSelectServicePoint}
+              />
+            </div>
+          )}
         </section>
 
         <section className={cardClass}>
@@ -334,6 +417,7 @@ export default function CheckoutForm({
           )}
         </section>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
