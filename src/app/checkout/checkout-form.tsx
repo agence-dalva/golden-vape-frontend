@@ -81,6 +81,9 @@ export default function CheckoutForm({
     cart.shipping_methods[0]?.shipping_option_id ?? null
   );
   const [servicePoint, setServicePoint] = useState<ServicePoint | null>(null);
+  // Vue de l'etape « transporteur ». Elle vit ici et non dans le composant parce que la
+  // fleche de retour du repere de progression doit pouvoir y ramener.
+  const [vueLivraison, setVueLivraison] = useState<"options" | "relais">("options");
 
   const addressesSaved = Boolean(cart.shipping_address && cart.email);
   const shippingSelected = cart.shipping_methods.length > 0;
@@ -172,7 +175,16 @@ export default function CheckoutForm({
 
   return (
     <>
-      <CheckoutStepper current={besoinPointRelais ? 3 : 2} steps={etapes} />
+      <CheckoutStepper
+        current={besoinPointRelais && vueLivraison === "relais" ? 3 : 2}
+        steps={etapes}
+        {...(vueLivraison === "relais"
+          ? {
+              onBack: () => setVueLivraison("options"),
+              backLabel: "Revenir au choix du transporteur",
+            }
+          : { backHref: "/cart", backLabel: "Revenir au panier" })}
+      />
 
       <h1 className="mb-8 text-2xl font-semibold tracking-tight text-brand-chocolate">
         Commander
@@ -312,6 +324,8 @@ export default function CheckoutForm({
             disabled={isPending}
             postalCode={shippingAddress.postal_code ?? undefined}
             city={shippingAddress.city ?? undefined}
+            vue={vueLivraison}
+            onChangeVue={setVueLivraison}
           />
         )}
       </section>

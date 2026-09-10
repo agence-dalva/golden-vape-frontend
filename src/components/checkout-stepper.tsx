@@ -1,4 +1,5 @@
-import { Check } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, Check } from "lucide-react";
 
 const STEPS_PAR_DEFAUT = ["Panier", "Livraison", "Paiement"];
 
@@ -16,14 +17,44 @@ const STEPS_PAR_DEFAUT = ["Panier", "Livraison", "Paiement"];
 export default function CheckoutStepper({
   current,
   steps = STEPS_PAR_DEFAUT,
+  onBack,
+  backHref,
+  backLabel = "Revenir a l'etape precedente",
 }: {
   current: number;
   steps?: string[];
+  /** Retour geré dans la page — revenir d'une sous-etape sans changer d'URL. */
+  onBack?: () => void;
+  /** Retour vers une autre page. Un lien, pour que le clic milieu et le survol marchent. */
+  backHref?: string;
+  backLabel?: string;
 }) {
   const STEPS = steps;
+
+  // Le meme bouton sous deux formes : lien quand on change de page, bouton quand on
+  // revient sur une sous-etape de la page courante.
+  const classeRetour =
+    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gv-text-soft transition-colors hover:bg-gv-800/8 hover:text-gv-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gv-800";
+
+  const retour = onBack ? (
+    <button type="button" onClick={onBack} aria-label={backLabel} className={classeRetour}>
+      <ArrowLeft size={17} />
+    </button>
+  ) : backHref ? (
+    <Link href={backHref} aria-label={backLabel} className={classeRetour}>
+      <ArrowLeft size={17} />
+    </Link>
+  ) : null;
   return (
-    <nav aria-label="Progression de la commande" className="mx-auto mb-9 mt-[18px] max-w-[620px]">
-      <ol className="flex items-center gap-2 sm:gap-3">
+    <nav
+      aria-label="Progression de la commande"
+      className="mx-auto mb-9 mt-[18px] flex max-w-[660px] items-center gap-2 sm:gap-3"
+    >
+      {/* Reserve la place meme sans retour : sans cela le fil d'etapes se decalerait
+          lateralement d'une etape a l'autre, ce qui se remarque plus que la fleche. */}
+      <span className="h-8 w-8 shrink-0">{retour}</span>
+
+      <ol className="flex flex-1 items-center gap-2 sm:gap-3">
         {STEPS.map((label, index) => {
           const step = index + 1;
           const done = step < current;

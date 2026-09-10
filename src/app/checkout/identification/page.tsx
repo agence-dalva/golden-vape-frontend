@@ -20,7 +20,7 @@ export default async function CheckoutIdentificationPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <CheckoutStepper current={2} />
+      <CheckoutStepper current={2} backHref="/cart" backLabel="Revenir au panier" />
 
       <h1 className="mb-8 text-2xl font-semibold tracking-tight text-brand-chocolate">
         Comment souhaitez-vous commander ?

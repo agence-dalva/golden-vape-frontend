@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { ArrowLeft, Check, MapPin } from "lucide-react";
 import type { MedusaShippingOption } from "@/lib/medusa-checkout";
 import { formatPrice } from "@/lib/medusa";
@@ -17,6 +16,12 @@ type Props = {
   disabled?: boolean;
   postalCode?: string;
   city?: string;
+  /**
+   * Vue affichée, pilotée par la page : la flèche de retour du repère de progression doit
+   * pouvoir ramener à la liste des transporteurs, ce qu'un état interne lui interdirait.
+   */
+  vue: "options" | "relais";
+  onChangeVue: (vue: "options" | "relais") => void;
 };
 
 /**
@@ -37,8 +42,9 @@ export default function DeliveryPicker({
   disabled,
   postalCode,
   city,
+  vue,
+  onChangeVue,
 }: Props) {
-  const [vue, setVue] = useState<"options" | "relais">("options");
 
   const optionChoisie = options.find((o) => o.id === selectedOptionId) ?? null;
   const besoinPointRelais = Boolean(optionChoisie?.data?.is_service_point_required);
@@ -52,22 +58,14 @@ export default function DeliveryPicker({
     // Basculer aussitôt vers le choix du point évite un clic supplémentaire sur ce qui
     // est, de toute façon, obligatoire pour continuer.
     if (option.data?.is_service_point_required) {
-      setVue("relais");
+      onChangeVue("relais");
     }
   };
 
   if (vue === "relais" && besoinPointRelais) {
     return (
       <div key="relais" className="gv-delivery-panel-in">
-        <div className="mb-4 flex items-start gap-3">
-          <button
-            type="button"
-            onClick={() => setVue("options")}
-            className="mt-0.5 rounded-lg p-1 text-brand-chocolate/60 transition-colors hover:bg-brand-chocolate/5 hover:text-brand-chocolate"
-            aria-label="Revenir au choix du transporteur"
-          >
-            <ArrowLeft size={18} />
-          </button>
+        <div className="mb-4 flex items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-brand-chocolate">
               Choisissez votre point relais
@@ -79,6 +77,16 @@ export default function DeliveryPicker({
                 : ""}
             </p>
           </div>
+          {/* Second retour, au plus pres du contenu : la fleche du repere de progression
+              est en haut de page, hors du regard quand on manipule la carte. */}
+          <button
+            type="button"
+            onClick={() => onChangeVue("options")}
+            className="flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-brand-chocolate/60 transition-colors hover:bg-brand-chocolate/5 hover:text-brand-chocolate"
+          >
+            <ArrowLeft size={14} />
+            Transporteurs
+          </button>
         </div>
 
         <ServicePointPicker
@@ -134,7 +142,7 @@ export default function DeliveryPicker({
               {actif && relais && servicePoint && (
                 <button
                   type="button"
-                  onClick={() => setVue("relais")}
+                  onClick={() => onChangeVue("relais")}
                   className="mt-2 flex w-full items-start gap-2 rounded-lg bg-brand-cream/60 px-4 py-2.5 text-left"
                 >
                   <MapPin size={14} className="mt-0.5 shrink-0 text-brand-gold-dark" />
@@ -155,7 +163,7 @@ export default function DeliveryPicker({
               {actif && relais && !servicePoint && (
                 <button
                   type="button"
-                  onClick={() => setVue("relais")}
+                  onClick={() => onChangeVue("relais")}
                   className="mt-2 flex w-full items-center gap-2 rounded-lg bg-brand-cream/60 px-4 py-2.5 text-left text-xs font-medium text-brand-chocolate"
                 >
                   <MapPin size={14} className="text-brand-gold-dark" />
