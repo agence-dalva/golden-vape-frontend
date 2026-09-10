@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Home, Store, Truck } from "lucide-react";
 import type { MedusaShippingOption } from "@/lib/medusa-checkout";
 import { formatPrice } from "@/lib/medusa";
@@ -114,7 +115,6 @@ export default function DeliveryPicker({
         {options.map((option) => {
           const actif = selectedOptionId === option.id;
           const relais = Boolean(option.data?.is_service_point_required);
-          const Icone = relais ? Store : Home;
 
           return (
             <label
@@ -134,16 +134,23 @@ export default function DeliveryPicker({
                 disabled={disabled}
                 className="h-4 w-4 shrink-0 cursor-pointer accent-gv-800"
               />
-              <Icone size={18} className={actif ? "shrink-0 text-gv-800" : "shrink-0 text-gv-500"} />
+              <PastilleTransporteur
+                iconUrl={option.data?.carrier_icon_url}
+                nom={option.data?.carrier_name}
+                relais={relais}
+                actif={actif}
+              />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[15px] font-medium text-gv-text">
                   {option.name}
                 </span>
-                {option.type?.description && (
-                  <span className="block truncate text-[13px] text-gv-text-soft">
-                    {option.type.description}
-                  </span>
-                )}
+                {/* Le transporteur est nomme : les tarifs different d'un reseau a l'autre,
+                    et c'est ce qui justifie l'ecart de prix d'une ligne a la suivante. */}
+                <span className="block truncate text-[13px] text-gv-text-soft">
+                  {[option.data?.carrier_name, option.type?.description]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
               </span>
               <span className="shrink-0 text-[15px] font-medium text-gv-text">
                 {prixTTC(option)}
@@ -183,5 +190,42 @@ export default function DeliveryPicker({
           </div>
         </div>
     </>
+  );
+}
+
+/**
+ * Pastille du transporteur.
+ *
+ * L'URL du logo est reconstruite a partir du motif du CDN Sendcloud, que leur endpoint des
+ * points relais expose mais pas celui des options : un motif non documente peut changer
+ * sans preavis. En cas d'echec on retombe sur l'icone du mode de livraison, qui reste
+ * juste, plutot que sur un cadre vide.
+ */
+function PastilleTransporteur({
+  iconUrl,
+  nom,
+  relais,
+  actif,
+}: {
+  iconUrl?: string | null;
+  nom?: string | null;
+  relais: boolean;
+  actif: boolean;
+}) {
+  const [echec, setEchec] = useState(false);
+  const Repli = relais ? Store : Home;
+
+  if (!iconUrl || echec) {
+    return <Repli size={18} className={actif ? "shrink-0 text-gv-800" : "shrink-0 text-gv-500"} />;
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={iconUrl}
+      alt={nom ?? ""}
+      onError={() => setEchec(true)}
+      className="h-6 w-6 shrink-0 object-contain"
+    />
   );
 }
