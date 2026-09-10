@@ -53,7 +53,7 @@ export default function CheckoutStepper({
   return (
     <nav
       aria-label="Progression de la commande"
-      className="mx-auto mb-9 mt-[18px] flex max-w-[660px] items-center gap-2 sm:gap-3"
+      className="mb-8 mt-[18px] flex w-full items-center gap-3 sm:gap-4"
     >
       {/* Reserve la place meme sans retour : sans cela le fil d'etapes se decalerait
           lateralement d'une etape a l'autre, ce qui se remarque plus que la fleche. */}

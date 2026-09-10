@@ -383,3 +383,60 @@ html:not([data-age-ok]) {
     animation-delay: 0s !important;
   }
 }
+
+/*
+  Étiquette du point relais retenu sur la carte.
+
+  Leaflet impose son propre habillage aux infobulles — fond blanc, bordure, flèche — qu'il
+  faut neutraliser avant de poser le nôtre.
+*/
+.leaflet-tooltip.gv-relay-tip {
+  padding: 5px 9px;
+  border: 1px solid rgba(68, 54, 46, 0.12);
+  border-radius: 7px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgb(40 30 25 / 0.14);
+  font: inherit;
+  white-space: nowrap;
+}
+
+.leaflet-tooltip.gv-relay-tip::before {
+  display: none; /* la fleche de Leaflet, dont le trace ignore notre bordure */
+}
+
+.gv-relay-tip strong {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--gv-text);
+}
+
+.gv-relay-tip span {
+  display: block;
+  font-size: 11px;
+  color: var(--gv-text-soft);
+}
+
+/*
+  Barre de défilement de la liste des points relais.
+
+  La barre native de Windows, large et grise, traverserait la carte d'un trait qui n'a rien
+  à voir avec le reste. Firefox n'accepte que la forme courte, d'ou les deux ecritures.
+*/
+.gv-relay-list {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gv-border-strong) transparent;
+}
+
+.gv-relay-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.gv-relay-list::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: var(--gv-border-strong);
+}
+
+.gv-relay-list::-webkit-scrollbar-track {
+  background: transparent;
+}

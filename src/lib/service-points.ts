@@ -23,12 +23,17 @@ export type ServicePoint = {
   position?: { latitude: number; longitude: number };
   shop_type?: string;
   opening_times?: Record<string, { start_time: string; end_time: string }[] | null>;
+  /** En mètres, depuis le lieu cherché. */
   distance?: number;
+  is_open_tomorrow?: boolean;
+  next_open_at?: string | null;
   carriers: ServicePointCarrier[];
 };
 
 export type ServicePointSearch = {
-  center: { latitude?: number; longitude?: number } | null;
+  /** Adresse reconnue par Sendcloud. Il ne rend pas de coordonnées : la carte se cadre
+      sur les points eux-mêmes. */
+  place: string | null;
   points: ServicePoint[];
 };
 
@@ -121,4 +126,41 @@ export function formatOpeningTimes(
 export function formatAddress(point: ServicePoint): string {
   const rue = [point.address.house_number, point.address.street].filter(Boolean).join(" ");
   return `${rue}, ${point.address.postal_code} ${point.address.city}`;
+}
+
+/** « 650 m » en deçà du kilomètre, « 2,1 km » au-delà : la précision au mètre n'aide plus. */
+export function formatDistance(metres?: number): string {
+  if (metres === undefined) return "";
+  if (metres < 1000) return `${Math.round(metres)} m`;
+  return `${(metres / 1000).toFixed(1).replace(".", ",")} km`;
+}
+
+const CLES_JOURS = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+];
+
+/**
+ * Ouverture du jour, telle qu'on l'annonce dans la liste.
+ *
+ * On ne montre que l'heure de fermeture : devant choisir un point où passer ce soir, on
+ * cherche jusqu'à quand il reste ouvert, pas la liste de ses créneaux.
+ */
+export function horaireDuJour(point: ServicePoint): { ouvert: boolean; texte: string } {
+  const creneaux = point.opening_times?.[CLES_JOURS[new Date().getDay()]];
+
+  if (!creneaux || creneaux.length === 0) {
+    return {
+      ouvert: false,
+      texte: point.is_open_tomorrow ? "Fermé · ouvre demain" : "Fermé aujourd'hui",
+    };
+  }
+
+  const fermeture = creneaux[creneaux.length - 1].end_time.replace(":", "h");
+  return { ouvert: true, texte: `Ouvert aujourd'hui · jusqu'à ${fermeture}` };
 }

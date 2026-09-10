@@ -66,6 +66,9 @@ export type MedusaCart = {
   items: MedusaCartLineItem[];
   item_total: number;
   shipping_total: number;
+  /** Sous-totaux hors taxes, dont se deduit le taux applique par la region. */
+  item_subtotal: number;
+  shipping_subtotal: number;
   discount_total: number;
   total: number;
   promotions: { id: string; code: string | null }[];
@@ -82,7 +85,7 @@ export type MedusaCart = {
 // Champs checkout (adresses, shipping_methods, payment_collection) inclus systématiquement :
 // le panier est relu à chaque étape du checkout, plus simple qu'un second jeu de champs dédié.
 const CART_FIELDS =
-  "id,currency_code,region_id,customer_id,email,completed_at,total,item_total,shipping_total,discount_total,*promotions,*items,*items.total,*items.subtotal,*items.thumbnail,*items.variant.images.url,*items.product.images.url,*shipping_address,*billing_address,*shipping_methods,*shipping_methods.shipping_option,*payment_collection.payment_sessions"
+  "id,currency_code,region_id,customer_id,email,completed_at,total,item_total,shipping_total,item_subtotal,shipping_subtotal,discount_total,*promotions,*items,*items.total,*items.subtotal,*items.thumbnail,*items.variant.images.url,*items.product.images.url,*shipping_address,*billing_address,*shipping_methods,*shipping_methods.shipping_option,*payment_collection.payment_sessions"
 
 async function cartFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${MEDUSA_BACKEND_URL}${path}`, {
@@ -194,4 +197,20 @@ export async function removePromoCode(cartId: string, code: string): Promise<Med
 
 export async function removeLineItem(cartId: string, lineId: string): Promise<void> {
   await cartFetch(`/store/carts/${cartId}/line-items/${lineId}`, { method: "DELETE" });
+}
+
+/**
+ * Coefficient de passage du hors-taxes au toutes taxes comprises, tel que la région du
+ * panier l'applique réellement.
+ *
+ * Les prix rendus par le calcul d'une option de livraison sont hors taxes, alors que le
+ * récapitulatif compte en TTC : afficher les deux côte à côte donnerait deux montants
+ * différents pour la même livraison. Le rapport se lit sur les frais de port quand une
+ * méthode est déjà posée, sinon sur les articles ; à défaut, on ne majore rien plutôt que
+ * d'inventer un taux.
+ */
+export function tauxToutesTaxes(cart: MedusaCart): number {
+  if (cart.shipping_subtotal > 0) return cart.shipping_total / cart.shipping_subtotal;
+  if (cart.item_subtotal > 0) return cart.item_total / cart.item_subtotal;
+  return 1;
 }

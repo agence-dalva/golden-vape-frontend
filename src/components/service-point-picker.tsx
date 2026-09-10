@@ -2,39 +2,47 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { MapPin, Search, Clock, Check } from "lucide-react";
+import { Check, MapPin, Search, X } from "lucide-react";
 import {
-  formatAddress,
-  formatOpeningTimes,
+  formatDistance,
+  horaireDuJour,
   searchServicePoints,
   type ServicePoint,
 } from "@/lib/service-points";
 
 // Leaflet touche à `window` dès son évaluation : la carte ne peut pas être rendue côté
-// serveur. Le squelette occupe sa place pour éviter que la page ne saute au chargement.
+// serveur. Le squelette occupe sa place pour éviter que la mise en page ne saute.
 const ServicePointMap = dynamic(() => import("./service-point-map"), {
   ssr: false,
   loading: () => (
-    <div className="h-[320px] w-full animate-pulse rounded-lg bg-brand-chocolate/5 sm:h-[380px]" />
+    <div className="h-[260px] animate-pulse rounded-lg bg-brand-chocolate/5 sm:h-[300px]" />
   ),
 });
 
 type Props = {
-  /** Codes des réseaux desservis par le service choisi, pour ne montrer que ses points. */
   carriers: string[];
-  /** Code postal de l'adresse de livraison, point de départ de la recherche. */
   defaultPostalCode?: string;
   defaultCity?: string;
   selected: ServicePoint | null;
   onSelect: (point: ServicePoint) => void;
+  /** Prix du service, rappelé en regard du titre. */
+  priceLabel?: string;
+  /**
+   * Faux quand le sélecteur est replié — livraison à domicile choisie.
+   *
+   * Il reste monté pour que le repli s'anime dans les deux sens, mais il ne doit alors
+   * ni chercher ni consommer de quota : une recherche pour un mode que le client vient
+   * d'écarter ne servirait personne.
+   */
+  active: boolean;
 };
 
 /**
  * Sélecteur de point relais : recherche, carte et liste.
  *
- * La liste reste l'interface principale — elle porte l'adresse et les horaires, elle est
- * navigable au clavier et lisible par un lecteur d'écran. La carte l'accompagne pour
- * situer les points les uns par rapport aux autres.
+ * La liste porte l'information — nom, distance, adresse, horaires — et reste navigable au
+ * clavier ; la carte l'accompagne pour situer les points les uns par rapport aux autres.
+ * Les deux se répondent : choisir dans l'une met l'autre à jour.
  */
 export default function ServicePointPicker({
   carriers,
@@ -42,17 +50,19 @@ export default function ServicePointPicker({
   defaultCity,
   selected,
   onSelect,
+  priceLabel,
+  active,
 }: Props) {
-  const [recherche, setRecherche] = useState(defaultPostalCode ?? "");
+  const rechercheInitiale = [defaultPostalCode, defaultCity].filter(Boolean).join(" ");
+  const [recherche, setRecherche] = useState(rechercheInitiale);
   const [points, setPoints] = useState<ServicePoint[]>([]);
-  const [center, setCenter] = useState<{ latitude?: number; longitude?: number } | null>(null);
   const [chargement, setChargement] = useState(Boolean(defaultPostalCode));
   const [erreur, setErreur] = useState<string | null>(null);
-  const [detailOuvert, setDetailOuvert] = useState<string | null>(null);
 
-  // Une frappe rapide ou un déplacement de carte peuvent enchaîner les requêtes : seule
-  // la dernière doit aboutir, sinon un résultat périmé écraserait le plus récent.
+  // Une frappe rapide ou un déplacement de carte peuvent enchaîner les requêtes : seule la
+  // dernière doit aboutir, sinon un résultat périmé écraserait le plus récent.
   const enCours = useRef<AbortController | null>(null);
+  const codesTransporteurs = carriers.join(",");
 
   const lancer = useCallback(
     async (query: Parameters<typeof searchServicePoints>[0]) => {
@@ -64,13 +74,13 @@ export default function ServicePointPicker({
       setErreur(null);
 
       try {
-        const resultat = await searchServicePoints({ ...query, carriers }, controleur.signal);
+        const resultat = await searchServicePoints(
+          { ...query, carriers: codesTransporteurs ? codesTransporteurs.split(",") : undefined },
+          controleur.signal
+        );
         if (controleur.signal.aborted) return;
         setPoints(resultat.points);
-        setCenter(resultat.center);
-        if (resultat.points.length === 0) {
-          setErreur("Aucun point relais trouvé dans cette zone.");
-        }
+        if (resultat.points.length === 0) setErreur("Aucun point relais dans cette zone.");
       } catch (e) {
         if ((e as Error).name === "AbortError") return;
         setErreur((e as Error).message);
@@ -78,18 +88,16 @@ export default function ServicePointPicker({
         if (!controleur.signal.aborted) setChargement(false);
       }
     },
-    [carriers]
+    [codesTransporteurs]
   );
 
-  // Première recherche depuis l'adresse de livraison : le client n'a rien à saisir dans
-  // le cas courant.
+  // Recherche d'ouverture depuis l'adresse de livraison : dans le cas courant, le client
+  // n'a rien à saisir ni à cliquer.
   //
-  // L'appel n'emprunte pas `lancer`, qui pose son état de chargement de façon synchrone :
-  // le faire depuis un effet déclencherait un rendu en cascade. Ici, l'état n'est touché
-  // qu'une fois la réponse revenue, et `chargement` part déjà à vrai à l'initialisation.
-  const codesTransporteurs = carriers.join(",");
+  // L'appel n'emprunte pas `lancer`, qui pose son état de chargement de façon synchrone —
+  // le faire depuis un effet déclencherait un rendu en cascade.
   useEffect(() => {
-    if (!defaultPostalCode) return;
+    if (!active || !defaultPostalCode) return;
 
     const controleur = new AbortController();
     enCours.current = controleur;
@@ -105,8 +113,7 @@ export default function ServicePointPicker({
       .then((resultat) => {
         if (controleur.signal.aborted) return;
         setPoints(resultat.points);
-        setCenter(resultat.center);
-        setErreur(resultat.points.length === 0 ? "Aucun point relais trouvé dans cette zone." : null);
+        setErreur(resultat.points.length === 0 ? "Aucun point relais dans cette zone." : null);
       })
       .catch((e: Error) => {
         if (e.name === "AbortError" || controleur.signal.aborted) return;
@@ -117,147 +124,152 @@ export default function ServicePointPicker({
       });
 
     return () => controleur.abort();
-  }, [defaultPostalCode, defaultCity, codesTransporteurs]);
+  }, [active, defaultPostalCode, defaultCity, codesTransporteurs]);
+
+  const lieu = defaultCity ?? defaultPostalCode;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="mt-5 rounded-lg border border-brand-chocolate/10 p-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="flex items-start gap-2.5">
+          <MapPin size={17} className="mt-0.5 shrink-0 text-gv-800" />
+          <div>
+            <h3 className="text-[15px] font-semibold text-gv-text">
+              Choisissez votre point relais
+            </h3>
+            <p className="mt-0.5 text-[13px] text-gv-text-soft">
+              {chargement && points.length === 0
+                ? "Recherche en cours…"
+                : `${points.length} point${points.length > 1 ? "s" : ""} disponible${points.length > 1 ? "s" : ""}${lieu ? ` autour de ${lieu}` : ""}`}
+            </p>
+          </div>
+        </div>
+        {priceLabel && (
+          <span className="shrink-0 rounded-md bg-gv-50 px-2.5 py-1 text-[13px] font-medium text-gv-800">
+            {priceLabel}
+          </span>
+        )}
+      </div>
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
           if (recherche.trim()) void lancer({ postalCode: recherche.trim() });
         }}
-        className="flex gap-2"
+        className="mb-3 flex gap-2"
       >
-        <label className="sr-only" htmlFor="recherche-point-relais">
-          Code postal
-        </label>
-        <input
-          id="recherche-point-relais"
-          value={recherche}
-          onChange={(e) => setRecherche(e.target.value)}
-          inputMode="numeric"
-          placeholder="Code postal"
-          className="flex-1 rounded-lg border border-brand-chocolate/20 px-3 py-2 text-sm text-brand-chocolate placeholder:text-brand-chocolate/40 focus:border-brand-gold-dark focus:outline-none"
-        />
+        <div className="relative flex-1">
+          <Search
+            size={15}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gv-text-soft"
+          />
+          <label className="sr-only" htmlFor="recherche-point-relais">
+            Code postal ou ville
+          </label>
+          <input
+            id="recherche-point-relais"
+            value={recherche}
+            onChange={(e) => setRecherche(e.target.value)}
+            placeholder="Code postal ou ville"
+            className="h-10 w-full rounded-md border border-gv-border bg-white pl-9 pr-8 text-sm text-gv-text placeholder:text-gv-text-soft/70 focus:border-gv-800 focus:outline-none"
+          />
+          {recherche && (
+            <button
+              type="button"
+              onClick={() => setRecherche("")}
+              aria-label="Effacer la recherche"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gv-text-soft transition-colors hover:text-gv-text"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
         <button
           type="submit"
           disabled={chargement}
-          className="flex items-center gap-2 rounded-lg bg-brand-chocolate px-4 py-2 text-sm font-medium text-brand-cream disabled:opacity-50"
+          className="h-10 shrink-0 rounded-md bg-gv-800 px-5 text-sm font-medium text-white transition-colors hover:bg-gv-900 disabled:opacity-50"
         >
-          <Search size={15} />
-          Chercher
+          Rechercher
         </button>
       </form>
 
-      {erreur && <p className="text-sm text-brand-chocolate/70">{erreur}</p>}
+      {erreur && <p className="mb-3 text-[13px] text-gv-text-soft">{erreur}</p>}
 
-      {/* Carte et liste cote a cote des que la place le permet : on lit une adresse tout
-          en la situant, sans faire defiler de l'une a l'autre. */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      {/* Carte et liste côte à côte : on lit une adresse tout en la situant, sans faire
+          défiler de l'une à l'autre. Elles s'empilent sous 768 px. */}
+      <div className="grid gap-3 md:grid-cols-[52%_1fr]">
         <ServicePointMap
           points={points}
           selectedKey={selected?.key ?? null}
-          center={center}
           onSelect={onSelect}
           onSearchArea={(bounds) => void lancer({ bounds })}
         />
 
-        {chargement && points.length === 0 ? (
-          <p className="text-sm text-brand-chocolate/60">Recherche des points relais…</p>
-        ) : (
-          <ul className="flex max-h-[320px] flex-col gap-2 overflow-y-auto pr-1 sm:max-h-[380px]">
+        <ul className="gv-relay-list flex max-h-[260px] flex-col gap-2 overflow-y-auto pr-1 sm:max-h-[300px]">
           {points.map((point) => {
             const actif = point.key === selected?.key;
-            const horaires = formatOpeningTimes(point.opening_times);
+            const horaire = horaireDuJour(point);
 
             return (
               <li key={point.key}>
-                <div
+                <button
+                  type="button"
+                  onClick={() => onSelect(point)}
+                  aria-pressed={actif}
                   className={[
-                    "rounded-lg border px-4 py-3 transition-colors",
+                    "w-full rounded-lg border p-3 text-left transition-colors",
                     actif
-                      ? "border-brand-gold-dark bg-brand-gold-dark/5"
-                      : "border-brand-chocolate/15",
+                      ? "border-gv-800 bg-[#fdfbf9]"
+                      : "border-brand-chocolate/10 hover:border-brand-chocolate/25",
                   ].join(" ")}
                 >
-                  <button
-                    type="button"
-                    onClick={() => onSelect(point)}
-                    className="flex w-full items-start gap-3 text-left"
-                    aria-pressed={actif}
-                  >
+                  <div className="flex items-start gap-2.5">
                     <MapPin
-                      size={16}
-                      className={actif ? "mt-0.5 text-brand-gold-dark" : "mt-0.5 text-brand-chocolate/40"}
+                      size={15}
+                      className={actif ? "mt-0.5 shrink-0 text-gv-800" : "mt-0.5 shrink-0 text-gv-500"}
                     />
-                    <span className="flex-1">
-                      <span className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-brand-chocolate">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <span className="truncate text-[13.5px] font-semibold text-gv-text">
                           {point.name}
                         </span>
-                        {actif && <Check size={14} className="text-brand-gold-dark" />}
-                      </span>
-                      <span className="mt-0.5 block text-xs text-brand-chocolate/60">
-                        {formatAddress(point)}
-                      </span>
-                      {/* Les logos viennent du CDN Sendcloud : rien à héberger, et ils
-                          suivent l'identité du transporteur si elle change. */}
-                      <span className="mt-1.5 flex items-center gap-1.5">
-                        {point.carriers.map((transporteur) =>
-                          transporteur.icon_url ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              key={transporteur.code}
-                              src={transporteur.icon_url}
-                              alt={transporteur.name}
-                              title={transporteur.name}
-                              className="h-4 w-auto"
-                            />
-                          ) : (
-                            <span
-                              key={transporteur.code}
-                              className="rounded bg-brand-chocolate/10 px-1.5 py-0.5 text-[10px] uppercase text-brand-chocolate/70"
-                            >
-                              {transporteur.name}
-                            </span>
-                          )
-                        )}
-                      </span>
+                        <span className="shrink-0 text-[12.5px] font-medium text-gv-text-soft">
+                          {formatDistance(point.distance)}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-[11.5px] uppercase leading-snug tracking-[0.02em] text-gv-text-soft">
+                        {point.address.house_number} {point.address.street}
+                        <br />
+                        {point.address.postal_code} {point.address.city}
+                      </p>
+                      <p className="mt-1.5 flex items-center gap-1.5 text-[11.5px]">
+                        <span
+                          aria-hidden
+                          className={[
+                            "h-1.5 w-1.5 shrink-0 rounded-full",
+                            horaire.ouvert ? "bg-emerald-500" : "bg-gv-500",
+                          ].join(" ")}
+                        />
+                        <span className={horaire.ouvert ? "text-emerald-700" : "text-gv-text-soft"}>
+                          {horaire.texte}
+                        </span>
+                      </p>
+                    </div>
+                    <span
+                      aria-hidden
+                      className={[
+                        "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors",
+                        actif ? "border-gv-800 bg-gv-800 text-white" : "border-gv-border-strong",
+                      ].join(" ")}
+                    >
+                      {actif && <Check size={12} strokeWidth={3} />}
                     </span>
-                  </button>
-
-                  {horaires.length > 0 && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setDetailOuvert(detailOuvert === point.key ? null : point.key)
-                        }
-                        className="mt-2 flex items-center gap-1.5 text-xs text-brand-chocolate/60 hover:text-brand-chocolate"
-                        aria-expanded={detailOuvert === point.key}
-                      >
-                        <Clock size={13} />
-                        {detailOuvert === point.key ? "Masquer" : "Voir"} les horaires
-                      </button>
-
-                      {detailOuvert === point.key && (
-                        <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-0.5 text-xs text-brand-chocolate/70">
-                          {horaires.map((ligne) => (
-                            <div key={ligne.jour} className="contents">
-                              <dt>{ligne.jour}</dt>
-                              <dd className="tabular-nums">{ligne.creneaux}</dd>
-                            </div>
-                          ))}
-                        </dl>
-                      )}
-                    </>
-                  )}
-                </div>
+                  </div>
+                </button>
               </li>
             );
-            })}
-          </ul>
-        )}
+          })}
+        </ul>
       </div>
     </div>
   );

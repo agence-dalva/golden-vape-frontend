@@ -32,7 +32,7 @@ export default async function CheckoutPage({
 
   return (
     <PageTransition>
-    <div className="mx-auto max-w-5xl px-6 py-10">
+    <div className="mx-auto max-w-[1180px] px-6 pb-20 pt-8">
       <CheckoutForm cart={cart} customer={customer} shippingOptions={shippingOptions} />
     </div>
     </PageTransition>

@@ -16,6 +16,8 @@ export type MedusaShippingOption = {
     carrier_code?: string;
     is_service_point_required?: boolean;
   } | null;
+  /** Libelle et description saisis a la creation de l'option, cote administration. */
+  type?: { label?: string; description?: string } | null;
 };
 
 export type MedusaOrder = {
@@ -35,7 +37,7 @@ export type MedusaOrder = {
 };
 
 const CART_FIELDS =
-  "id,currency_code,region_id,customer_id,email,total,item_total,shipping_total,*items,*items.total,*items.subtotal,*items.thumbnail,*items.variant.images.url,*items.product.images.url,*shipping_address,*billing_address,*shipping_methods,*shipping_methods.shipping_option,payment_collection.id,*payment_collection.payment_sessions";
+  "id,currency_code,region_id,customer_id,email,total,item_total,shipping_total,item_subtotal,shipping_subtotal,*items,*items.total,*items.subtotal,*items.thumbnail,*items.variant.images.url,*items.product.images.url,*shipping_address,*billing_address,*shipping_methods,*shipping_methods.shipping_option,payment_collection.id,*payment_collection.payment_sessions";
 
 const ORDER_FIELDS =
   "id,display_id,email,currency_code,total,*items,*items.total,*shipping_address";
@@ -77,7 +79,7 @@ export async function updateCartAddresses(
 
 export async function listShippingOptionsForCart(cartId: string): Promise<MedusaShippingOption[]> {
   const { shipping_options } = await checkoutFetch<{ shipping_options: MedusaShippingOption[] }>(
-    `/store/shipping-options?cart_id=${cartId}&fields=id,name,price_type,*calculated_price,data`
+    `/store/shipping-options?cart_id=${cartId}&fields=id,name,price_type,*calculated_price,data,*type`
   );
 
   // Une option a tarif calcule revient sans prix : la liste ne declenche pas le calcul,
