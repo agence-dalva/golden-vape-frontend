@@ -15,7 +15,7 @@ import {
 const ServicePointMap = dynamic(() => import("./service-point-map"), {
   ssr: false,
   loading: () => (
-    <div className="h-[260px] animate-pulse rounded-lg bg-brand-chocolate/5 sm:h-[300px]" />
+    <div className="h-[300px] animate-pulse rounded-lg bg-brand-chocolate/5 sm:h-[360px]" />
   ),
 });
 
@@ -134,10 +134,10 @@ export default function ServicePointPicker({
         <div className="flex items-start gap-2.5">
           <MapPin size={17} className="mt-0.5 shrink-0 text-gv-800" />
           <div>
-            <h3 className="text-[15px] font-semibold text-gv-text">
+            <h3 className="text-[16px] font-semibold text-gv-text">
               Choisissez votre point relais
             </h3>
-            <p className="mt-0.5 text-[13px] text-gv-text-soft">
+            <p className="mt-0.5 text-[13.5px] text-gv-text-soft">
               {chargement && points.length === 0
                 ? "Recherche en cours…"
                 : `${points.length} point${points.length > 1 ? "s" : ""} disponible${points.length > 1 ? "s" : ""}${lieu ? ` autour de ${lieu}` : ""}`}
@@ -205,7 +205,7 @@ export default function ServicePointPicker({
           onSearchArea={(bounds) => void lancer({ bounds })}
         />
 
-        <ul className="gv-relay-list flex max-h-[260px] flex-col gap-2 overflow-y-auto pr-1 sm:max-h-[300px]">
+        <ul className="gv-relay-list flex max-h-[300px] flex-col gap-2 overflow-y-auto pr-1 sm:max-h-[360px]">
           {points.map((point) => {
             const actif = point.key === selected?.key;
             const horaire = horaireDuJour(point);
@@ -217,7 +217,7 @@ export default function ServicePointPicker({
                   onClick={() => onSelect(point)}
                   aria-pressed={actif}
                   className={[
-                    "w-full rounded-lg border p-3 text-left transition-colors",
+                    "w-full rounded-lg border p-3.5 text-left transition-colors",
                     actif
                       ? "border-gv-800 bg-[#fdfbf9]"
                       : "border-brand-chocolate/10 hover:border-brand-chocolate/25",
@@ -230,19 +230,19 @@ export default function ServicePointPicker({
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-2">
-                        <span className="truncate text-[13.5px] font-semibold text-gv-text">
+                        <span className="truncate text-[15px] font-semibold text-gv-text">
                           {point.name}
                         </span>
-                        <span className="shrink-0 text-[12.5px] font-medium text-gv-text-soft">
+                        <span className="shrink-0 text-[13.5px] font-medium text-gv-text-soft">
                           {formatDistance(point.distance)}
                         </span>
                       </div>
-                      <p className="mt-0.5 text-[11.5px] uppercase leading-snug tracking-[0.02em] text-gv-text-soft">
+                      <p className="mt-0.5 text-[12.5px] uppercase leading-snug tracking-[0.02em] text-gv-text-soft">
                         {point.address.house_number} {point.address.street}
                         <br />
                         {point.address.postal_code} {point.address.city}
                       </p>
-                      <p className="mt-1.5 flex items-center gap-1.5 text-[11.5px]">
+                      <p className="mt-1.5 flex items-center gap-1.5 text-[12.5px]">
                         <span
                           aria-hidden
                           className={[

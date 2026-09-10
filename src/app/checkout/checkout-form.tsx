@@ -200,9 +200,9 @@ export default function CheckoutForm({
       {/* Colonne gauche — les etapes a completer, dans l'ordre */}
       <div className="flex flex-col gap-5">
       <section className={cardClass}>
-        <h2 className="mb-4 text-[15px] font-semibold text-gv-text">1. Livraison</h2>
+        <h2 className="mb-4 text-[16px] font-semibold text-gv-text">1. Livraison</h2>
         {!addressesSaved ? (
-          <p className="text-[13.5px] text-gv-text-soft">
+          <p className="text-[14px] text-gv-text-soft">
             Validez d&apos;abord votre adresse de livraison.
           </p>
         ) : (
@@ -233,7 +233,7 @@ export default function CheckoutForm({
       {!(besoinPointRelais && addressesSaved && !editingAddress) && (
       <section className={cardClass}>
         <div className="mb-4 flex items-center justify-between gap-4">
-          <h2 className="text-[15px] font-semibold text-gv-text">{besoinPointRelais ? '2. Vos coordonnées' : '2. Adresse de livraison'}</h2>
+          <h2 className="text-[16px] font-semibold text-gv-text">{besoinPointRelais ? '2. Vos coordonnées' : '2. Adresse de livraison'}</h2>
           {addressesSaved && !editingAddress && (
             <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[12px] font-medium text-emerald-700">
               <Check size={12} strokeWidth={3} />
@@ -251,7 +251,7 @@ export default function CheckoutForm({
               <MapPin size={16} className="text-gv-800" />
             </span>
 
-            <address className="min-w-0 flex-1 not-italic text-[13.5px] leading-[1.55] text-gv-text-soft">
+            <address className="min-w-0 flex-1 not-italic text-[14.5px] leading-[1.55] text-gv-text-soft">
               <span className="block font-semibold text-gv-text">
                 {shippingAddress.first_name} {shippingAddress.last_name}
               </span>
@@ -374,7 +374,7 @@ export default function CheckoutForm({
       {/* Colonne droite — recapitulatif et reassurance, qui suivent le defilement */}
       <div className="flex flex-col gap-4 lg:sticky lg:top-6">
         <section className={cardClass}>
-          <h2 className="mb-4 text-[15px] font-semibold text-gv-text">Récapitulatif</h2>
+          <h2 className="mb-4 text-[16px] font-semibold text-gv-text">Récapitulatif</h2>
 
           <ul className="flex flex-col gap-3">
             {cart.items.map((item) => (
@@ -389,19 +389,19 @@ export default function CheckoutForm({
                 ) : (
                   <span className="h-12 w-12 shrink-0 rounded-md bg-gv-50" />
                 )}
-                <span className="min-w-0 flex-1 text-[13px] leading-snug text-gv-text">
+                <span className="min-w-0 flex-1 text-[14px] leading-snug text-gv-text">
                   {item.product_title}
                   {item.variant_title ? ` — ${item.variant_title}` : ""}
                   <span className="mt-0.5 block text-gv-text-soft">× {item.quantity}</span>
                 </span>
-                <span className="shrink-0 text-[13px] font-medium tabular-nums text-gv-text">
+                <span className="shrink-0 text-[14px] font-medium tabular-nums text-gv-text">
                   {formatPrice(item.total, cart.currency_code)}
                 </span>
               </li>
             ))}
           </ul>
 
-          <div className="mt-4 flex flex-col gap-1.5 border-t border-brand-chocolate/10 pt-4 text-[13px]">
+          <div className="mt-4 flex flex-col gap-1.5 border-t border-brand-chocolate/10 pt-4 text-[14px]">
             <div className="flex justify-between text-gv-text-soft">
               <span>Sous-total</span>
               <span className="tabular-nums">{formatPrice(cart.item_total, cart.currency_code)}</span>
@@ -430,7 +430,7 @@ export default function CheckoutForm({
                 <span className="block text-[11.5px] text-gv-text-soft">
                   Point relais sélectionné
                 </span>
-                <span className="block truncate text-[13px] font-semibold text-gv-text">
+                <span className="block truncate text-[14px] font-semibold text-gv-text">
                   {servicePoint.name}
                 </span>
                 <span className="block text-[11.5px] uppercase leading-snug text-gv-text-soft">
@@ -442,9 +442,9 @@ export default function CheckoutForm({
           )}
 
           <div className="mt-4 flex items-baseline justify-between border-t border-brand-chocolate/10 pt-4">
-            <span className="text-[17px] font-semibold text-gv-text">Total</span>
+            <span className="text-[18px] font-semibold text-gv-text">Total</span>
             <span className="text-right">
-              <span className="block text-[19px] font-semibold tabular-nums text-gv-text">
+              <span className="block text-[21px] font-semibold tabular-nums text-gv-text">
                 {formatPrice(cart.total, cart.currency_code)}
               </span>
               <span className="block text-[11px] text-gv-text-soft">TTC</span>
@@ -459,7 +459,7 @@ export default function CheckoutForm({
             <button
               onClick={handlePay}
               disabled={!canPay || isPending}
-              className="mt-5 flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gv-800 text-[14px] font-medium text-white transition-colors hover:bg-gv-900 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-5 flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gv-800 text-[15px] font-medium text-white transition-colors hover:bg-gv-900 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isPending ? "Traitement…" : "Continuer vers le paiement"}
               {!isPending && <ArrowRight size={16} />}

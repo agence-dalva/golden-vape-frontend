@@ -118,8 +118,14 @@ export default function ServicePointMap({ points, selectedKey, onSelect, onSearc
         epingles.current.set(point.key, marker);
       }
 
-      if (positions.length > 0) {
-        carte.current.fitBounds(L.latLngBounds(positions), { padding: [34, 34], maxZoom: 14 });
+      // Cadrage sur les seuls points proches. Une recherche par code postal rend jusqu'a
+      // cent adresses etalees sur des dizaines de kilometres : cadrer sur toutes obligeait
+      // a reculer jusqu'a la region, et le client ne reconnaissait plus sa commune. Les
+      // points arrivent classes par distance, les premiers suffisent a situer la zone.
+      const proches = positions.slice(0, 8);
+
+      if (proches.length > 0) {
+        carte.current.fitBounds(L.latLngBounds(proches), { padding: [30, 30], maxZoom: 15 });
       }
     });
 
@@ -138,7 +144,7 @@ export default function ServicePointMap({ points, selectedKey, onSelect, onSearc
   }, [selectedKey, points]);
 
   return (
-    <div className="relative h-[260px] overflow-hidden rounded-lg border border-brand-chocolate/10 sm:h-[300px]">
+    <div className="relative h-[300px] overflow-hidden rounded-lg border border-brand-chocolate/10 sm:h-[360px]">
       <div ref={conteneur} className="h-full w-full" role="application" aria-label="Carte des points relais" />
       <button
         type="button"

@@ -120,7 +120,7 @@ export default function DeliveryPicker({
             <label
               key={option.id}
               className={[
-                "flex cursor-pointer items-center gap-3 rounded-lg border p-3.5 transition-colors",
+                "flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors",
                 actif
                   ? "border-gv-800 bg-gv-800/[0.025]"
                   : "border-brand-chocolate/10 hover:border-brand-chocolate/25",
@@ -136,16 +136,16 @@ export default function DeliveryPicker({
               />
               <Icone size={18} className={actif ? "shrink-0 text-gv-800" : "shrink-0 text-gv-500"} />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[14px] font-medium text-gv-text">
+                <span className="block truncate text-[15px] font-medium text-gv-text">
                   {option.name}
                 </span>
                 {option.type?.description && (
-                  <span className="block truncate text-[12px] text-gv-text-soft">
+                  <span className="block truncate text-[13px] text-gv-text-soft">
                     {option.type.description}
                   </span>
                 )}
               </span>
-              <span className="shrink-0 text-[14px] font-medium text-gv-text">
+              <span className="shrink-0 text-[15px] font-medium text-gv-text">
                 {prixTTC(option)}
               </span>
             </label>
