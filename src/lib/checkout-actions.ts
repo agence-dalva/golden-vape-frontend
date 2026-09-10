@@ -34,12 +34,22 @@ export async function setAddressesAction(
   }
 }
 
-export async function setShippingMethodAction(optionId: string): Promise<{ error?: string }> {
+/**
+ * Rattache un transporteur au panier.
+ *
+ * `data` porte le choix du client jusqu'au provider. Pour une livraison en point relais,
+ * Medusa refuse la methode tant qu'aucun point n'y figure : c'est voulu, un colis sans
+ * destination ne s'affranchit pas — et mieux vaut le refus ici qu'apres le debit.
+ */
+export async function setShippingMethodAction(
+  optionId: string,
+  data?: Record<string, unknown>
+): Promise<{ error?: string }> {
   const cart = await getCurrentCart();
   if (!cart) return { error: "Aucun panier actif" };
 
   try {
-    await addShippingMethod(cart.id, optionId);
+    await addShippingMethod(cart.id, optionId, data);
     revalidatePath("/checkout");
     return {};
   } catch (e) {

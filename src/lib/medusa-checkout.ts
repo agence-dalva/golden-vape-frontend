@@ -6,6 +6,16 @@ export type MedusaShippingOption = {
   name: string;
   price_type: string;
   calculated_price: { calculated_amount: number } | null;
+  /**
+   * Donnees deposees par le provider de fulfillment a la creation de l'option.
+   * Pour Sendcloud : le code du service, et le drapeau qui dit si un point relais doit
+   * etre choisi avant de pouvoir payer.
+   */
+  data?: {
+    shipping_option_code?: string;
+    carrier_code?: string;
+    is_service_point_required?: boolean;
+  } | null;
 };
 
 export type MedusaOrder = {
@@ -67,15 +77,25 @@ export async function updateCartAddresses(
 
 export async function listShippingOptionsForCart(cartId: string): Promise<MedusaShippingOption[]> {
   const { shipping_options } = await checkoutFetch<{ shipping_options: MedusaShippingOption[] }>(
-    `/store/shipping-options?cart_id=${cartId}&fields=id,name,price_type,*calculated_price`
+    `/store/shipping-options?cart_id=${cartId}&fields=id,name,price_type,*calculated_price,data`
   );
   return shipping_options;
 }
 
-export async function addShippingMethod(cartId: string, optionId: string): Promise<MedusaCart> {
+/**
+ * Rattache une methode de livraison au panier.
+ *
+ * `data` transporte le choix du client jusqu'au provider : pour une livraison en point
+ * relais, l'identifiant du point retenu, que Medusa valide avant d'accepter la methode.
+ */
+export async function addShippingMethod(
+  cartId: string,
+  optionId: string,
+  data?: Record<string, unknown>
+): Promise<MedusaCart> {
   const { cart } = await checkoutFetch<{ cart: MedusaCart }>(
     withFields(`/store/carts/${cartId}/shipping-methods`, CART_FIELDS),
-    { method: "POST", body: JSON.stringify({ option_id: optionId }) }
+    { method: "POST", body: JSON.stringify({ option_id: optionId, data }) }
   );
   return cart;
 }
