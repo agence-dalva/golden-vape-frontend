@@ -200,8 +200,39 @@ export default function CheckoutForm({
       {/* Colonne gauche — les etapes a completer, dans l'ordre */}
       <div className="flex flex-col gap-5">
       <section className={cardClass}>
+        <h2 className="mb-4 text-[15px] font-semibold text-gv-text">1. Livraison</h2>
+        {!addressesSaved ? (
+          <p className="text-[13.5px] text-gv-text-soft">
+            Validez d&apos;abord votre adresse de livraison.
+          </p>
+        ) : (
+          <DeliveryPicker
+            options={shippingOptions}
+            currencyCode={cart.currency_code}
+            selectedOptionId={selectedOptionId}
+            servicePoint={servicePoint}
+            onSelectOption={handleSelectShipping}
+            onSelectServicePoint={handleSelectServicePoint}
+            disabled={isPending}
+            postalCode={shippingAddress.postal_code ?? undefined}
+            city={shippingAddress.city ?? undefined}
+            taxRate={tauxToutesTaxes(cart)}
+          />
+        )}
+      </section>
+
+      {/*
+        L'adresse passe apres le mode : c'est lui qui commande, et en point relais la rue
+        du client ne sert plus a rien. On ne la masque toutefois que si elle est deja
+        connue — c'est ce formulaire qui recueille le nom et l'e-mail d'un invite, sans
+        lesquels aucune commande ne part.
+
+        Masquee, elle reste intacte sur le panier : rien n'est efface.
+      */}
+      {!(besoinPointRelais && addressesSaved && !editingAddress) && (
+      <section className={cardClass}>
         <div className="mb-4 flex items-center justify-between gap-4">
-          <h2 className="text-[15px] font-semibold text-gv-text">1. Adresse de livraison</h2>
+          <h2 className="text-[15px] font-semibold text-gv-text">{besoinPointRelais ? '2. Vos coordonnées' : '2. Adresse de livraison'}</h2>
           {addressesSaved && !editingAddress && (
             <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[12px] font-medium text-emerald-700">
               <Check size={12} strokeWidth={3} />
@@ -315,28 +346,28 @@ export default function CheckoutForm({
           </form>
         )}
       </section>
+      )}
 
-      <section className={cardClass}>
-        <h2 className="mb-4 text-[15px] font-semibold text-gv-text">2. Livraison</h2>
-        {!addressesSaved ? (
-          <p className="text-[13.5px] text-gv-text-soft">
-            Validez d&apos;abord votre adresse de livraison.
-          </p>
-        ) : (
-          <DeliveryPicker
-            options={shippingOptions}
-            currencyCode={cart.currency_code}
-            selectedOptionId={selectedOptionId}
-            servicePoint={servicePoint}
-            onSelectOption={handleSelectShipping}
-            onSelectServicePoint={handleSelectServicePoint}
-            disabled={isPending}
-            postalCode={shippingAddress.postal_code ?? undefined}
-            city={shippingAddress.city ?? undefined}
-            taxRate={tauxToutesTaxes(cart)}
-          />
-        )}
-      </section>
+      {/* Rappel des coordonnees quand la carte est masquee : sans lui, une faute de frappe
+          dans l'e-mail de confirmation deviendrait irrattrapable. */}
+      {besoinPointRelais && addressesSaved && !editingAddress && (
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 px-1 text-[12.5px] text-gv-text-soft">
+          <span>
+            Commande au nom de{" "}
+            <span className="font-medium text-gv-text">
+              {shippingAddress.first_name} {shippingAddress.last_name}
+            </span>
+            {email ? ` · ${email}` : ""}
+          </span>
+          <button
+            type="button"
+            onClick={() => setEditingAddress(true)}
+            className="cursor-pointer font-medium text-gv-800 underline underline-offset-2"
+          >
+            Modifier
+          </button>
+        </p>
+      )}
       </div>
 
       {/* Colonne droite — recapitulatif et reassurance, qui suivent le defilement */}

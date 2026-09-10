@@ -49,6 +49,33 @@ export type ServicePointQuery = {
 };
 
 /**
+ * Résultats déjà obtenus, gardés le temps d'une visite.
+ *
+ * Basculer entre « point relais » et « à domicile » remonte le sélecteur et relancerait la
+ * même recherche à chaque aller-retour. Les points relais d'une zone ne bougent pas d'une
+ * minute à l'autre : les reservir de mémoire épargne autant d'appels au quota Sendcloud,
+ * et l'affichage est instantané.
+ *
+ * Le cache vit au niveau du module, donc survit au démontage du composant, et meurt avec
+ * l'onglet — ce qui est la bonne durée pour une donnée de cette fraîcheur.
+ */
+const CACHE_MS = 5 * 60 * 1000;
+const cache = new Map<string, { at: number; valeur: ServicePointSearch }>();
+
+function cleDeCache(query: ServicePointQuery): string {
+  return JSON.stringify({
+    p: query.postalCode ?? null,
+    v: query.city ?? null,
+    lat: query.latitude ?? null,
+    lng: query.longitude ?? null,
+    r: query.radius ?? null,
+    b: query.bounds ?? null,
+    c: [...(query.carriers ?? [])].sort(),
+    pays: query.countryCode ?? null,
+  });
+}
+
+/**
  * Interroge la recherche de points relais du backend.
  *
  * Le front ne parle jamais à Sendcloud directement : la clé secrète resterait exposée à
@@ -58,6 +85,13 @@ export async function searchServicePoints(
   query: ServicePointQuery,
   signal?: AbortSignal
 ): Promise<ServicePointSearch> {
+  const cle = cleDeCache(query);
+  const enCache = cache.get(cle);
+
+  if (enCache && Date.now() - enCache.at < CACHE_MS) {
+    return enCache.valeur;
+  }
+
   const params = new URLSearchParams();
 
   if (query.countryCode) params.set("country_code", query.countryCode);
@@ -91,7 +125,10 @@ export async function searchServicePoints(
     throw new Error(`Recherche de points relais indisponible (${res.status}).`);
   }
 
-  return res.json();
+  const resultat: ServicePointSearch = await res.json();
+  cache.set(cle, { at: Date.now(), valeur: resultat });
+
+  return resultat;
 }
 
 const JOURS: [string, string][] = [
