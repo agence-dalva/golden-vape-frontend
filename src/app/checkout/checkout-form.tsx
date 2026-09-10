@@ -217,6 +217,7 @@ export default function CheckoutForm({
             postalCode={shippingAddress.postal_code ?? undefined}
             city={shippingAddress.city ?? undefined}
             taxRate={tauxToutesTaxes(cart)}
+            subtotal={cart.item_total}
           />
         )}
       </section>
@@ -413,7 +414,11 @@ export default function CheckoutForm({
                 {selectedOption ? ` (${selectedOption.name})` : ""}
               </span>
               <span className="tabular-nums">
-                {formatPrice(cart.shipping_total, cart.currency_code)}
+                {shippingSelected && cart.shipping_total === 0 ? (
+                  <span className="font-medium text-emerald-700">Offerte</span>
+                ) : (
+                  formatPrice(cart.shipping_total, cart.currency_code)
+                )}
               </span>
             </div>
           </div>
@@ -488,25 +493,6 @@ export default function CheckoutForm({
               </span>
             </div>
           ))}
-        </div>
-
-        <div className="rounded-[10px] border border-brand-chocolate/10 bg-gv-50/50 p-4">
-          <div className="flex items-start gap-2.5">
-            <Leaf size={15} className="mt-0.5 shrink-0 text-gv-500" />
-            <div>
-              <p className="text-[13px] font-semibold text-gv-text">Une question ?</p>
-              <p className="mt-0.5 text-[12px] leading-snug text-gv-text-soft">
-                Notre équipe est à votre écoute du lundi au vendredi de 9h à 18h.
-              </p>
-              <Link
-                href="/contact"
-                className="mt-1.5 inline-flex items-center gap-1 text-[12px] font-medium text-gv-800 hover:underline"
-              >
-                Nous contacter
-                <ArrowRight size={12} />
-              </Link>
-            </div>
-          </div>
         </div>
       </div>
       </div>

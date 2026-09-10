@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Store } from "lucide-react";
+import { Home, Store, Truck } from "lucide-react";
 import type { MedusaShippingOption } from "@/lib/medusa-checkout";
 import { formatPrice } from "@/lib/medusa";
 import type { ServicePoint } from "@/lib/service-points";
@@ -19,6 +19,8 @@ type Props = {
   /** Coefficient HT → TTC, deduit du panier : les prix rendus par Medusa sont hors taxes,
    *  le recapitulatif compte en TTC. Sans lui, la meme livraison afficherait deux montants. */
   taxRate: number;
+  /** Montant des articles, toutes taxes comprises — celui que le client lit. */
+  subtotal: number;
 };
 
 /**
@@ -38,12 +40,21 @@ export default function DeliveryPicker({
   postalCode,
   city,
   taxRate,
+  subtotal,
 }: Props) {
   const optionChoisie = options.find((o) => o.id === selectedOptionId) ?? null;
   const besoinPointRelais = Boolean(optionChoisie?.data?.is_service_point_required);
   const transporteurs = optionChoisie?.data?.carrier_code
     ? [optionChoisie.data.carrier_code]
     : [];
+
+  // Le seuil vient de la configuration du provider, transporte dans les donnees de chaque
+  // option : il n'existe qu'a un seul endroit, et l'interface n'en decide pas.
+  const seuilHT = options.find((o) => o.data?.free_shipping_from_subtotal)?.data
+    ?.free_shipping_from_subtotal;
+  const seuilTTC = seuilHT ? seuilHT * taxRate : null;
+  const franchiseAtteinte = seuilTTC !== null && subtotal >= seuilTTC;
+  const reste = seuilTTC !== null ? Math.max(0, seuilTTC - subtotal) : 0;
 
   const prixTTC = (option: MedusaShippingOption) =>
     option.calculated_price
@@ -52,6 +63,53 @@ export default function DeliveryPicker({
 
   return (
     <>
+      {seuilTTC !== null && (
+        <div
+          className={[
+            "mb-4 rounded-lg border px-3.5 py-3",
+            franchiseAtteinte
+              ? "border-emerald-200 bg-emerald-50/60"
+              : "border-brand-chocolate/10 bg-gv-50/60",
+          ].join(" ")}
+        >
+          <p className="flex items-center gap-2 text-[13px]">
+            <Truck
+              size={15}
+              className={franchiseAtteinte ? "shrink-0 text-emerald-600" : "shrink-0 text-gv-500"}
+            />
+            {franchiseAtteinte ? (
+              <span className="font-medium text-emerald-800">
+                Livraison offerte sur cette commande.
+              </span>
+            ) : (
+              <span className="text-gv-text">
+                Plus que{" "}
+                <span className="font-semibold">{formatPrice(reste, currencyCode)}</span> pour
+                bénéficier de la livraison offerte.
+              </span>
+            )}
+          </p>
+
+          {/* La barre traduit d'un coup d'oeil ce que la phrase dit en toutes lettres. */}
+          <div
+            className="mt-2 h-1 overflow-hidden rounded-full bg-brand-chocolate/10"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={Math.round(seuilTTC)}
+            aria-valuenow={Math.round(Math.min(subtotal, seuilTTC))}
+            aria-label="Progression vers la livraison offerte"
+          >
+            <span
+              className={[
+                "block h-full rounded-full transition-[width] duration-500 ease-out motion-reduce:transition-none",
+                franchiseAtteinte ? "bg-emerald-500" : "bg-gv-800",
+              ].join(" ")}
+              style={{ width: `${Math.min(100, (subtotal / seuilTTC) * 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-3 sm:grid-cols-2">
         {options.map((option) => {
           const actif = selectedOptionId === option.id;

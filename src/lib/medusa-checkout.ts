@@ -15,6 +15,8 @@ export type MedusaShippingOption = {
     shipping_option_code?: string;
     carrier_code?: string;
     is_service_point_required?: boolean;
+    /** Montant HT du panier a partir duquel la livraison est offerte, ou null. */
+    free_shipping_from_subtotal?: number | null;
   } | null;
   /** Libelle et description saisis a la creation de l'option, cote administration. */
   type?: { label?: string; description?: string } | null;
