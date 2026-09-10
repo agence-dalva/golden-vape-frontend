@@ -12,7 +12,7 @@ import { setAddressesAction, setShippingMethodAction, startMoneticoPaymentAction
 import AddressForm from "@/components/address-form";
 import MoneticoPaymentForm from "@/components/monetico-payment-form";
 import CheckoutStepper from "@/components/checkout-stepper";
-import ServicePointPicker from "@/components/service-point-picker";
+import DeliveryPicker from "@/components/delivery-picker";
 import type { ServicePoint } from "@/lib/service-points";
 
 const EMPTY_ADDRESS: MedusaAddress = {
@@ -26,7 +26,9 @@ const EMPTY_ADDRESS: MedusaAddress = {
   country_code: "fr",
 };
 
-const cardClass = "rounded-xl border border-brand-chocolate/10 bg-white p-6";
+// Meme traitement que les cartes de l'accueil : une ombre portee plutot qu'un filet,
+// qui detache le bloc du fond creme au lieu de le cerner.
+const cardClass = "rounded-xl bg-white p-6 shadow-gv-raised";
 
 function isComplete(address: MedusaAddress): boolean {
   return Boolean(
@@ -85,12 +87,6 @@ export default function CheckoutForm({
 
   const selectedOption = shippingOptions.find((o) => o.id === selectedOptionId) ?? null;
   const besoinPointRelais = Boolean(selectedOption?.data?.is_service_point_required);
-  // Le transporteur du service choisi : inutile de proposer des points Chronopost a qui
-  // vient de selectionner un service Colissimo.
-  const transporteurs = selectedOption?.data?.carrier_code
-    ? [selectedOption.data.carrier_code]
-    : [];
-
   // Le repere de progression doit dire la verite : choisir un point relais est une etape
   // de plus, et la masquer promettrait un paiement immediat qui n'arrive pas.
   const etapes = besoinPointRelais
@@ -298,62 +294,27 @@ export default function CheckoutForm({
       </section>
 
       <section className={cardClass}>
-          <h2 className="mb-4 text-lg font-semibold text-brand-chocolate">2. Transporteur</h2>
-          {!addressesSaved ? (
+        {!addressesSaved ? (
+          <>
+            <h2 className="mb-4 text-lg font-semibold text-brand-chocolate">2. Transporteur</h2>
             <p className="text-sm text-brand-chocolate/60">
               Validez d&apos;abord votre adresse de livraison.
             </p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {shippingOptions.map((option) => (
-                <label
-                  key={option.id}
-                  className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-brand-chocolate/15 px-4 py-3 has-[:checked]:border-brand-gold-dark"
-                >
-                  <span className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="shipping_option"
-                      checked={selectedOptionId === option.id}
-                      onChange={() => handleSelectShipping(option.id)}
-                      disabled={isPending}
-                      className="cursor-pointer"
-                    />
-                    <span className="text-sm font-medium text-brand-chocolate">{option.name}</span>
-                  </span>
-                  <span className="shrink-0 text-sm text-brand-chocolate/70">
-                    {option.calculated_price
-                      ? formatPrice(option.calculated_price.calculated_amount, cart.currency_code)
-                      : "—"}
-                  </span>
-                </label>
-              ))}
-            </div>
-          )}
-
-        </section>
-
-      {besoinPointRelais && addressesSaved && (
-        <section className={cardClass}>
-          <h2 className="mb-1 text-lg font-semibold text-brand-chocolate">3. Point relais</h2>
-          {servicePoint ? (
-            <p className="mb-4 text-sm text-brand-chocolate/70">
-              Retrait chez <span className="font-medium">{servicePoint.name}</span>.
-            </p>
-          ) : (
-            <p className="mb-4 text-sm text-brand-chocolate/60">
-              Le paiement s&apos;ouvrira une fois le point sélectionné.
-            </p>
-          )}
-          <ServicePointPicker
-            carriers={transporteurs}
-            defaultPostalCode={shippingAddress.postal_code ?? undefined}
-            defaultCity={shippingAddress.city ?? undefined}
-            selected={servicePoint}
-            onSelect={handleSelectServicePoint}
+          </>
+        ) : (
+          <DeliveryPicker
+            options={shippingOptions}
+            currencyCode={cart.currency_code}
+            selectedOptionId={selectedOptionId}
+            servicePoint={servicePoint}
+            onSelectOption={handleSelectShipping}
+            onSelectServicePoint={handleSelectServicePoint}
+            disabled={isPending}
+            postalCode={shippingAddress.postal_code ?? undefined}
+            city={shippingAddress.city ?? undefined}
           />
-        </section>
-      )}
+        )}
+      </section>
       </div>
 
       {/* Colonne droite — recapitulatif, qui suit le defilement */}

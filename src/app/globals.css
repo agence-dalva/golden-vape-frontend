@@ -264,3 +264,22 @@ html:not([data-age-ok]) {
   -webkit-text-stroke: 0.4px currentColor;
   paint-order: stroke fill;
 }
+
+/*
+  Bascule entre la liste des transporteurs et le choix du point relais.
+
+  Les deux vues occupent la même carte : sans fondu, le contenu changerait d'un coup et
+  l'on croirait à un rechargement plutôt qu'à un déplacement dans une même étape. Le léger
+  décalage horizontal donne le sens de la navigation — la vue entre par la droite quand on
+  avance, la réduction de mouvement globale plus haut neutralisant le tout si besoin.
+*/
+@keyframes gv-delivery-panel-in {
+  from {
+    opacity: 0;
+    translate: 8px 0;
+  }
+}
+
+.gv-delivery-panel-in {
+  animation: gv-delivery-panel-in 180ms ease-out backwards;
+}

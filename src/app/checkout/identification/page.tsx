@@ -27,7 +27,7 @@ export default async function CheckoutIdentificationPage() {
       </h1>
 
       <div className="flex flex-col gap-4">
-        <section className="rounded-xl border border-brand-chocolate/10 bg-white p-6">
+        <section className="rounded-xl bg-white shadow-gv-raised p-6">
           <h2 className="mb-1 text-lg font-semibold text-brand-chocolate">
             Commander en tant que client
           </h2>
@@ -54,7 +54,7 @@ export default async function CheckoutIdentificationPage() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-brand-chocolate/10 bg-white p-6">
+        <section className="rounded-xl bg-white shadow-gv-raised p-6">
           <h2 className="mb-1 text-lg font-semibold text-brand-chocolate">
             Commander en tant qu&apos;invité
           </h2>

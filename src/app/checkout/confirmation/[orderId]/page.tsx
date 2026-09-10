@@ -24,7 +24,7 @@ export default async function OrderConfirmationPage({
         Commande n°{order.display_id} — un email de confirmation a été envoyé à {order.email}.
       </p>
 
-      <div className="rounded-xl border border-brand-chocolate/10 bg-white p-6 text-left">
+      <div className="rounded-xl bg-white shadow-gv-raised p-6 text-left">
         <div className="flex flex-col gap-2">
           {order.items.map((item) => (
             <div key={item.id} className="flex items-center justify-between text-sm">

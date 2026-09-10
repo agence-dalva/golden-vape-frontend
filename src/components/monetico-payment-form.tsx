@@ -35,7 +35,7 @@ export default function MoneticoPaymentForm({ form }: { form: MoneticoForm }) {
         <iframe
           name={IFRAME_NAME}
           title="Paiement sécurisé Monetico"
-          className="h-[600px] w-full rounded-xl border border-brand-chocolate/10 bg-white"
+          className="h-[600px] w-full rounded-xl bg-white shadow-gv-raised"
         />
       ) : (
         <p className="text-center text-sm text-brand-chocolate/70">
