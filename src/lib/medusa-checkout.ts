@@ -79,7 +79,41 @@ export async function listShippingOptionsForCart(cartId: string): Promise<Medusa
   const { shipping_options } = await checkoutFetch<{ shipping_options: MedusaShippingOption[] }>(
     `/store/shipping-options?cart_id=${cartId}&fields=id,name,price_type,*calculated_price,data`
   );
-  return shipping_options;
+
+  // Une option a tarif calcule revient sans prix : la liste ne declenche pas le calcul,
+  // qui passe par une route dediee, une option a la fois. C'est elle qui interroge le
+  // transporteur — d'ou un appel par option, menes de front.
+  const aCalculer = shipping_options.filter((o) => o.price_type === "calculated");
+
+  if (aCalculer.length === 0) {
+    return shipping_options;
+  }
+
+  const prix = await Promise.all(
+    aCalculer.map(async (option) => {
+      try {
+        const { shipping_option } = await checkoutFetch<{
+          shipping_option: { calculated_price?: { calculated_amount: number } | null };
+        }>(`/store/shipping-options/${option.id}/calculate`, {
+          method: "POST",
+          body: JSON.stringify({ cart_id: cartId, data: {} }),
+        });
+        return { id: option.id, prix: shipping_option?.calculated_price ?? null };
+      } catch {
+        // Un service indisponible pour cette destination ou ce poids ne doit pas vider
+        // toute la liste : l'option s'affichera sans prix, les autres restent utilisables.
+        return { id: option.id, prix: null };
+      }
+    })
+  );
+
+  const parId = new Map(prix.map((p) => [p.id, p.prix]));
+
+  return shipping_options.map((option) =>
+    parId.has(option.id)
+      ? { ...option, calculated_price: parId.get(option.id) ?? null }
+      : option
+  );
 }
 
 /**
