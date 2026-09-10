@@ -183,7 +183,8 @@ export default function CheckoutForm({
       </h1>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
-      {/* Colonne gauche — adresse */}
+      {/* Colonne gauche — les trois etapes a completer, dans l'ordre */}
+      <div className="flex flex-col gap-6">
       <section className={cardClass}>
         <div className="mb-4 flex items-center justify-between gap-4">
           <h2 className="text-lg font-semibold text-brand-chocolate">
@@ -296,9 +297,7 @@ export default function CheckoutForm({
         )}
       </section>
 
-      {/* Colonne droite — transporteur et récapitulatif */}
-      <div className="flex flex-col gap-6 lg:sticky lg:top-6">
-        <section className={cardClass}>
+      <section className={cardClass}>
           <h2 className="mb-4 text-lg font-semibold text-brand-chocolate">2. Transporteur</h2>
           {!addressesSaved ? (
             <p className="text-sm text-brand-chocolate/60">
@@ -332,33 +331,35 @@ export default function CheckoutForm({
             </div>
           )}
 
-          {besoinPointRelais && addressesSaved && (
-            <div className="mt-5 border-t border-brand-chocolate/10 pt-5">
-              <h3 className="mb-1 text-sm font-semibold text-brand-chocolate">
-                Choisissez votre point relais
-              </h3>
-              {servicePoint ? (
-                <p className="mb-3 text-xs text-brand-chocolate/70">
-                  Retrait chez <span className="font-medium">{servicePoint.name}</span>.
-                </p>
-              ) : (
-                <p className="mb-3 text-xs text-brand-chocolate/60">
-                  Le paiement s&apos;ouvrira une fois le point sélectionné.
-                </p>
-              )}
-              <ServicePointPicker
-                carriers={transporteurs}
-                defaultPostalCode={shippingAddress.postal_code ?? undefined}
-                defaultCity={shippingAddress.city ?? undefined}
-                selected={servicePoint}
-                onSelect={handleSelectServicePoint}
-              />
-            </div>
-          )}
         </section>
 
+      {besoinPointRelais && addressesSaved && (
         <section className={cardClass}>
-          <h2 className="mb-4 text-lg font-semibold text-brand-chocolate">3. Récapitulatif</h2>
+          <h2 className="mb-1 text-lg font-semibold text-brand-chocolate">3. Point relais</h2>
+          {servicePoint ? (
+            <p className="mb-4 text-sm text-brand-chocolate/70">
+              Retrait chez <span className="font-medium">{servicePoint.name}</span>.
+            </p>
+          ) : (
+            <p className="mb-4 text-sm text-brand-chocolate/60">
+              Le paiement s&apos;ouvrira une fois le point sélectionné.
+            </p>
+          )}
+          <ServicePointPicker
+            carriers={transporteurs}
+            defaultPostalCode={shippingAddress.postal_code ?? undefined}
+            defaultCity={shippingAddress.city ?? undefined}
+            selected={servicePoint}
+            onSelect={handleSelectServicePoint}
+          />
+        </section>
+      )}
+      </div>
+
+      {/* Colonne droite — recapitulatif, qui suit le defilement */}
+      <div className="lg:sticky lg:top-6">
+        <section className={cardClass}>
+          <h2 className="mb-4 text-lg font-semibold text-brand-chocolate">Récapitulatif</h2>
           <div className="flex flex-col gap-2">
             {cart.items.map((item) => (
               <div key={item.id} className="flex items-start justify-between gap-3 text-sm">

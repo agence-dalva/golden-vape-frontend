@@ -149,20 +149,23 @@ export default function ServicePointPicker({
         </button>
       </form>
 
-      <ServicePointMap
-        points={points}
-        selectedKey={selected?.key ?? null}
-        center={center}
-        onSelect={onSelect}
-        onSearchArea={(bounds) => void lancer({ bounds })}
-      />
-
       {erreur && <p className="text-sm text-brand-chocolate/70">{erreur}</p>}
 
-      {chargement && points.length === 0 ? (
-        <p className="text-sm text-brand-chocolate/60">Recherche des points relais…</p>
-      ) : (
-        <ul className="flex max-h-[360px] flex-col gap-2 overflow-y-auto">
+      {/* Carte et liste cote a cote des que la place le permet : on lit une adresse tout
+          en la situant, sans faire defiler de l'une a l'autre. */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ServicePointMap
+          points={points}
+          selectedKey={selected?.key ?? null}
+          center={center}
+          onSelect={onSelect}
+          onSearchArea={(bounds) => void lancer({ bounds })}
+        />
+
+        {chargement && points.length === 0 ? (
+          <p className="text-sm text-brand-chocolate/60">Recherche des points relais…</p>
+        ) : (
+          <ul className="flex max-h-[320px] flex-col gap-2 overflow-y-auto pr-1 sm:max-h-[380px]">
           {points.map((point) => {
             const actif = point.key === selected?.key;
             const horaires = formatOpeningTimes(point.opening_times);
@@ -252,9 +255,10 @@ export default function ServicePointPicker({
                 </div>
               </li>
             );
-          })}
-        </ul>
-      )}
+            })}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
