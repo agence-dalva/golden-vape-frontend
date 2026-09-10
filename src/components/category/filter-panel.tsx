@@ -46,7 +46,7 @@ export default function FilterPanel({
 
     return (
       <div key={facet.type} className="border-t border-gv-border pt-4 first:border-t-0 first:pt-0">
-        <p className="mb-2.5 text-[13px] font-semibold text-gv-text">{facet.type}</p>
+        <p className="mb-2.5 text-[15px] font-semibold text-gv-text">{facet.type}</p>
 
         {/* Les valeurs cochées passent devant : le serveur classe par effectif décroissant, une
             sélection tombée à zéro se retrouverait sinon au fond d'une liste défilante. Le tri
@@ -71,7 +71,7 @@ export default function FilterPanel({
                     naviguer(toggleFilterHref(basePath, params, slug, value));
                   }}
                   aria-pressed={choisie}
-                  className={`flex min-h-9 items-center gap-2.5 rounded-[7px] px-2 py-1 text-[13px] transition-colors ${
+                  className={`flex min-h-9 items-center gap-2.5 rounded-[7px] px-2 py-1 text-[15px] transition-colors ${
                     choisie ? "bg-gv-800/[0.07] text-gv-text" : "text-gv-text-soft hover:bg-gv-card"
                   }`}
                 >
@@ -81,10 +81,10 @@ export default function FilterPanel({
                       choisie ? "border-gv-800 bg-gv-800 text-white" : "border-gv-border-strong bg-white"
                     }`}
                   >
-                    {choisie && <Check size={12} strokeWidth={3} />}
+                    {choisie && <Check size={14} strokeWidth={3} />}
                   </span>
                   <span className="min-w-0 flex-1 truncate">{value}</span>
-                  <span className="shrink-0 text-[12px] text-gv-text-muted">{count}</span>
+                  <span className="shrink-0 text-[13.5px] text-gv-text-muted">{count}</span>
                 </Link>
                 </li>
               );
@@ -97,8 +97,8 @@ export default function FilterPanel({
   const contenu = (
     <div className="flex flex-col gap-4 rounded-xl bg-gv-card p-4 shadow-gv-raised">
       <div className="flex items-center justify-between gap-3">
-        <p className="flex items-center gap-2 text-sm font-semibold text-gv-text">
-          <SlidersHorizontal size={16} aria-hidden className="text-gv-800" />
+        <p className="flex items-center gap-2 text-[15px] font-semibold text-gv-text">
+          <SlidersHorizontal size={19} aria-hidden className="text-gv-800" />
           Filtrer
         </p>
         {active > 0 && (
@@ -110,9 +110,9 @@ export default function FilterPanel({
               event.preventDefault();
               naviguer(clearFiltersHref(basePath, params));
             }}
-            className="inline-flex items-center gap-1 text-[12px] font-medium text-gv-text-soft transition-colors hover:text-gv-800"
+            className="inline-flex items-center gap-1 text-[13.5px] font-medium text-gv-text-soft transition-colors hover:text-gv-800"
           >
-            <X size={13} aria-hidden />
+            <X size={15} aria-hidden />
             Tout effacer
           </Link>
         )}
@@ -126,11 +126,11 @@ export default function FilterPanel({
       {/* Sous `lg`, le panneau se replie : déplié, il repousserait la grille sous la ligne de
           flottaison sur tous les téléphones. */}
       <details className="lg:hidden">
-        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl bg-gv-card px-4 text-sm font-semibold text-gv-text shadow-gv-raised">
-          <SlidersHorizontal size={16} aria-hidden className="text-gv-800" />
+        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl bg-gv-card px-4 text-[15px] font-semibold text-gv-text shadow-gv-raised">
+          <SlidersHorizontal size={19} aria-hidden className="text-gv-800" />
           Filtrer
           {active > 0 && (
-            <span className="ml-auto rounded-full bg-gv-800 px-2 py-0.5 text-[11px] font-bold text-white">
+            <span className="ml-auto rounded-full bg-gv-800 px-2 py-0.5 text-[12px] font-bold text-white">
               {active}
             </span>
           )}

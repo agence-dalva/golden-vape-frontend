@@ -150,7 +150,7 @@ export default async function BrandPage({
               <h1 className="font-display text-[26px] font-normal leading-[1.2] tracking-[0.01em] text-gv-text sm:text-[32px]">
                 {brand.value}
               </h1>
-              <p aria-live="polite" className="text-[13px] text-gv-text-soft">
+              <p aria-live="polite" className="text-[14.5px] text-gv-text-soft">
                 {count} produit{count > 1 ? "s" : ""}
               </p>
             </div>

@@ -226,7 +226,7 @@ export default async function CategoryPage({
               <h2 className="font-display text-[26px] font-normal leading-[1.2] tracking-[0.01em] text-gv-text sm:text-[32px]">
                 Notre sélection
               </h2>
-              <p aria-live="polite" className="text-[13px] text-gv-text-soft">
+              <p aria-live="polite" className="text-[14.5px] text-gv-text-soft">
                 {count} produit{count > 1 ? "s" : ""}
               </p>
             </div>
@@ -256,7 +256,7 @@ export default async function CategoryPage({
           */}
           {children.length > 0 && (
             <nav aria-label="Sous-catégories" className="mb-7 flex flex-wrap items-center gap-2">
-              <span className="mr-1 text-[13px] text-gv-text-soft">Affiner :</span>
+              <span className="mr-1 text-[15px] text-gv-text-soft">Affiner :</span>
               {children.map((child) => {
                 const dessin = categoryNavIcon(child.name);
                 const { Icon } = categoryVisual(child.name);
@@ -265,7 +265,7 @@ export default async function CategoryPage({
                   <Link
                     key={child.id}
                     href={`/categories/${child.handle}`}
-                    className="inline-flex min-h-11 items-center gap-2.5 rounded-[8px] bg-gv-card py-1.5 pl-2.5 pr-4 text-[13px] font-medium text-gv-text shadow-gv-raised transition-shadow hover:shadow-gv-raised-strong"
+                    className="inline-flex min-h-11 items-center gap-2.5 rounded-[8px] bg-gv-card py-1.5 pl-2.5 pr-4 text-[15px] font-medium text-gv-text shadow-gv-raised transition-shadow hover:shadow-gv-raised-strong"
                   >
                     {/* Même boîte normalisée que dans les menus : les dessins vont du flacon
                         étroit au kit large. */}
@@ -273,7 +273,7 @@ export default async function CategoryPage({
                       {dessin ? (
                         <Image src={dessin} alt="" fill sizes="24px" className="object-contain" />
                       ) : (
-                        <Icon size={17} strokeWidth={1.6} aria-hidden className="text-gv-800" />
+                        <Icon size={20} strokeWidth={1.6} aria-hidden className="text-gv-800" />
                       )}
                     </span>
                     {child.name}
