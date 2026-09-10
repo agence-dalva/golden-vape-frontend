@@ -21,6 +21,8 @@ export type MedusaShippingOption = {
     /** Nom commercial du service — « Chrono Shop2Shop », « Colissimo Home ». */
     product_name?: string | null;
     carrier_icon_url?: string | null;
+    /** Logotype en toutes lettres, bien plus lisible qu'une pastille carree. */
+    carrier_logo_url?: string | null;
   } | null;
   /** Libelle et description saisis a la creation de l'option, cote administration. */
   type?: { label?: string; description?: string } | null;
