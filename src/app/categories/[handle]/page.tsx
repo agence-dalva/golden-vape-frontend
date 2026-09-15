@@ -271,7 +271,7 @@ export default async function CategoryPage({
                         étroit au kit large. */}
                     <span className="relative flex h-6 w-6 shrink-0 items-center justify-center">
                       {dessin ? (
-                        <Image src={dessin} alt="" fill sizes="24px" className="object-contain" />
+                        <Image src={dessin} alt="" fill sizes="24px" unoptimized className="object-contain" />
                       ) : (
                         <Icon size={20} strokeWidth={1.6} aria-hidden className="text-gv-800" />
                       )}

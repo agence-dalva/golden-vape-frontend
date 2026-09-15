@@ -30,6 +30,7 @@ export default async function SiteFooter() {
             width={1167}
             height={220}
             sizes="200px"
+            unoptimized
             className="h-9 w-auto"
           />
           <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-gv-200">

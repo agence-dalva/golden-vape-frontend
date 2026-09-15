@@ -32,7 +32,7 @@ export default function CategoryTile({ category }: { category: MedusaCategory })
         className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-gv-50 text-gv-800"
       >
         {dessin ? (
-          <Image src={dessin} alt="" fill sizes="56px" className="object-contain p-1.5" />
+          <Image src={dessin} alt="" fill sizes="56px" unoptimized className="object-contain p-1.5" />
         ) : (
           <Icon size={30} strokeWidth={1.5} />
         )}

@@ -115,7 +115,7 @@ export default function MobileCategoryMenu({
                               flacon étroit au kit large. */}
                           <span className="relative flex h-7 w-7 shrink-0 items-center justify-center">
                             {dessin ? (
-                              <Image src={dessin} alt="" fill sizes="28px" className="object-contain" />
+                              <Image src={dessin} alt="" fill sizes="28px" unoptimized className="object-contain" />
                             ) : (
                               <Icon size={20} strokeWidth={1.6} aria-hidden className="text-gv-800" />
                             )}

@@ -105,6 +105,10 @@ const ILLUSTRATIONS: Record<string, string> = {
   plus grand côté. Sans cela, recadrés au plus juste, un dessin large remplissait la largeur de
   sa boîte et un dessin étroit sa hauteur : leurs tailles apparentes divergeaient d'une
   pastille à l'autre.
+
+  À 128 pixels et quelques kilo-octets, ils se rendent avec `unoptimized` : l'optimiseur
+  d'images n'aurait rien à leur retirer, et chaque variante qu'il produirait serait une
+  transformation Vercel facturée sur toutes les pages qui portent la navigation.
 */
 const NAV_ICONS: Record<string, string> = {
   accessoires: "/navigation/accessoires.webp",

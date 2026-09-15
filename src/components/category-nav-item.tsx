@@ -118,7 +118,7 @@ export default function CategoryNavItem({
                             ligne de base. */}
                         <span className="relative flex h-10 w-10 shrink-0 items-center justify-center">
                           {dessin ? (
-                            <Image src={dessin} alt="" fill sizes="40px" className="object-contain" />
+                            <Image src={dessin} alt="" fill sizes="40px" unoptimized className="object-contain" />
                           ) : (
                             <Icon size={26} strokeWidth={1.5} aria-hidden className="text-gv-800" />
                           )}

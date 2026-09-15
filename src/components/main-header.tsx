@@ -41,6 +41,9 @@ export default function MainHeader({
           le logotype deux fois trop petit. Recadrés sur le visuel et convertis en WebP, ils
           passent de 570 à 27 Ko. Leur fond est exactement celui de l'en-tête, le raccord ne
           se voit donc pas.
+
+          À ce poids, l'optimiseur d'images n'a plus rien à gagner : `unoptimized` sert le
+          fichier tel quel et évite de payer une transformation Vercel sur chaque page.
         */}
         <Link href="/" aria-label="Golden Vape, retour à l'accueil" className="justify-self-start">
           <Image
@@ -50,6 +53,7 @@ export default function MainHeader({
             height={320}
             sizes="90px"
             priority
+            unoptimized
             className="h-[62px] w-auto lg:hidden"
           />
           <Image
@@ -59,6 +63,7 @@ export default function MainHeader({
             height={220}
             sizes="260px"
             priority
+            unoptimized
             className="hidden h-11 w-auto lg:block"
           />
         </Link>
