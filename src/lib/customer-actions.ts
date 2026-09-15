@@ -111,7 +111,7 @@ export async function resetPasswordAction(
     await updatePasswordWithToken(token, password);
     return {};
   } catch {
-    // Jeton expiré, déjà utilisé ou altéré : Medusa répond 401 dans les trois cas.
+    // Jeton expiré (quinze minutes) ou altéré : Medusa répond 401 dans les deux cas.
     return { error: "Ce lien n'est plus valable. Demandez-en un nouveau." };
   }
 }

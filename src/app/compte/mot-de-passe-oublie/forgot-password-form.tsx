@@ -30,7 +30,7 @@ export default function ForgotPasswordForm() {
       <div className="flex flex-col gap-4 text-sm text-brand-chocolate/80">
         <p>
           Si un compte existe pour <strong className="text-brand-chocolate">{envoye}</strong>, un
-          email vient de partir avec un lien valable une heure. Pensez à vérifier vos courriers
+          email vient de partir avec un lien valable quinze minutes. Pensez à vérifier vos courriers
           indésirables.
         </p>
         <Link href="/compte/connexion" className="font-medium text-brand-gold-dark hover:underline">
