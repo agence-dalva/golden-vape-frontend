@@ -60,32 +60,35 @@ export default function ServicePointPicker({
   const [erreur, setErreur] = useState<string | null>(null);
 
   // Une frappe rapide ou un déplacement de carte peuvent enchaîner les requêtes : seule la
-  // dernière doit aboutir, sinon un résultat périmé écraserait le plus récent.
-  const enCours = useRef<AbortController | null>(null);
+  // dernière a le droit d'écrire l'état, sinon un résultat périmé écraserait le plus récent.
+  // Chaque recherche prend un numéro et vérifie à l'arrivée qu'elle est toujours la dernière.
+  //
+  // On n'interrompt pas la requête elle-même : Medusa a déjà appelé Sendcloud, la réponse
+  // rejoint le cache et servira au prochain aller-retour. Un `AbortController` ne
+  // ferait qu'ajouter un rejet que l'overlay de développement remonte comme une erreur.
+  const derniereRequete = useRef(0);
   const codesTransporteurs = carriers.join(",");
 
   const lancer = useCallback(
     async (query: Parameters<typeof searchServicePoints>[0]) => {
-      enCours.current?.abort();
-      const controleur = new AbortController();
-      enCours.current = controleur;
+      const numero = ++derniereRequete.current;
 
       setChargement(true);
       setErreur(null);
 
       try {
-        const resultat = await searchServicePoints(
-          { ...query, carriers: codesTransporteurs ? codesTransporteurs.split(",") : undefined },
-          controleur.signal
-        );
-        if (controleur.signal.aborted) return;
+        const resultat = await searchServicePoints({
+          ...query,
+          carriers: codesTransporteurs ? codesTransporteurs.split(",") : undefined,
+        });
+        if (numero !== derniereRequete.current) return;
         setPoints(resultat.points);
         if (resultat.points.length === 0) setErreur("Aucun point relais dans cette zone.");
       } catch (e) {
-        if ((e as Error).name === "AbortError") return;
+        if (numero !== derniereRequete.current) return;
         setErreur((e as Error).message);
       } finally {
-        if (!controleur.signal.aborted) setChargement(false);
+        if (numero === derniereRequete.current) setChargement(false);
       }
     },
     [codesTransporteurs]
@@ -99,31 +102,29 @@ export default function ServicePointPicker({
   useEffect(() => {
     if (!active || !defaultPostalCode) return;
 
-    const controleur = new AbortController();
-    enCours.current = controleur;
+    const numero = ++derniereRequete.current;
 
-    searchServicePoints(
-      {
-        postalCode: defaultPostalCode,
-        city: defaultCity,
-        carriers: codesTransporteurs ? codesTransporteurs.split(",") : undefined,
-      },
-      controleur.signal
-    )
+    searchServicePoints({
+      postalCode: defaultPostalCode,
+      city: defaultCity,
+      carriers: codesTransporteurs ? codesTransporteurs.split(",") : undefined,
+    })
       .then((resultat) => {
-        if (controleur.signal.aborted) return;
+        if (numero !== derniereRequete.current) return;
         setPoints(resultat.points);
         setErreur(resultat.points.length === 0 ? "Aucun point relais dans cette zone." : null);
       })
       .catch((e: Error) => {
-        if (e.name === "AbortError" || controleur.signal.aborted) return;
+        if (numero !== derniereRequete.current) return;
         setErreur(e.message);
       })
       .finally(() => {
-        if (!controleur.signal.aborted) setChargement(false);
+        if (numero === derniereRequete.current) setChargement(false);
       });
 
-    return () => controleur.abort();
+    // Pas de nettoyage : une adresse qui change relance l'effet, donc prend un nouveau
+    // numéro ; un sélecteur replié peut recevoir sa réponse sans gêne, elle sera à
+    // l'écran s'il se rouvre.
   }, [active, defaultPostalCode, defaultCity, codesTransporteurs]);
 
   const lieu = defaultCity ?? defaultPostalCode;

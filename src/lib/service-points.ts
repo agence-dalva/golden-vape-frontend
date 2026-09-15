@@ -62,6 +62,15 @@ export type ServicePointQuery = {
 const CACHE_MS = 5 * 60 * 1000;
 const cache = new Map<string, { at: number; valeur: ServicePointSearch }>();
 
+/**
+ * Requêtes parties et pas encore revenues, par clé de recherche.
+ *
+ * Deux demandes identiques qui se suivent de près — le double montage de React en
+ * développement, un aller-retour « relais / domicile » pendant le chargement — partagent
+ * la même promesse au lieu d'appeler Sendcloud deux fois.
+ */
+const enVol = new Map<string, Promise<ServicePointSearch>>();
+
 function cleDeCache(query: ServicePointQuery): string {
   return JSON.stringify({
     p: query.postalCode ?? null,
@@ -80,11 +89,13 @@ function cleDeCache(query: ServicePointQuery): string {
  *
  * Le front ne parle jamais à Sendcloud directement : la clé secrète resterait exposée à
  * tous les visiteurs. Medusa sert d'intermédiaire et ne rend que l'utile à l'affichage.
+ *
+ * Pas de signal d'annulation : dès que Medusa a reçu la requête, l'appel Sendcloud est
+ * parti et le quota consommé. Interrompre le `fetch` n'épargnerait rien, et la réponse,
+ * elle, a une valeur — elle rejoint le cache. C'est à l'appelant d'ignorer un résultat
+ * qu'une recherche plus récente a rendu caduc.
  */
-export async function searchServicePoints(
-  query: ServicePointQuery,
-  signal?: AbortSignal
-): Promise<ServicePointSearch> {
+export async function searchServicePoints(query: ServicePointQuery): Promise<ServicePointSearch> {
   const cle = cleDeCache(query);
   const enCache = cache.get(cle);
 
@@ -92,6 +103,22 @@ export async function searchServicePoints(
     return enCache.valeur;
   }
 
+  const deja = enVol.get(cle);
+  if (deja) return deja;
+
+  const requete = interroger(query).then((resultat) => {
+    cache.set(cle, { at: Date.now(), valeur: resultat });
+    return resultat;
+  });
+  enVol.set(cle, requete);
+  // Un échec revient à l'appelant par `requete` ; cette branche-ci ne fait que ranger, et
+  // ne doit pas le répéter en rejet non traité.
+  requete.catch(() => {}).finally(() => enVol.delete(cle));
+
+  return requete;
+}
+
+async function interroger(query: ServicePointQuery): Promise<ServicePointSearch> {
   const params = new URLSearchParams();
 
   if (query.countryCode) params.set("country_code", query.countryCode);
@@ -115,20 +142,14 @@ export async function searchServicePoints(
 
   const res = await fetch(
     `${MEDUSA_BACKEND_URL}/store/delivery/service-points?${params.toString()}`,
-    {
-      headers: { "x-publishable-api-key": MEDUSA_PUBLISHABLE_KEY },
-      signal,
-    }
+    { headers: { "x-publishable-api-key": MEDUSA_PUBLISHABLE_KEY } }
   );
 
   if (!res.ok) {
     throw new Error(`Recherche de points relais indisponible (${res.status}).`);
   }
 
-  const resultat: ServicePointSearch = await res.json();
-  cache.set(cle, { at: Date.now(), valeur: resultat });
-
-  return resultat;
+  return res.json();
 }
 
 const JOURS: [string, string][] = [
