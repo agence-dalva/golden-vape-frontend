@@ -11,6 +11,8 @@ import {
   loginCustomer,
   getCustomerByToken,
   attachCartToCustomer,
+  requestPasswordReset,
+  updatePasswordWithToken,
   type MedusaCustomer,
 } from "./medusa-customer";
 import {
@@ -84,6 +86,33 @@ export async function loginAction(email: string, password: string): Promise<{ er
     return {};
   } catch {
     return { error: "Email ou mot de passe incorrect" };
+  }
+}
+
+export async function requestPasswordResetAction(email: string): Promise<{ error?: string }> {
+  const adresse = email.trim().toLowerCase();
+  if (!adresse) return { error: "Indiquez votre adresse email" };
+
+  try {
+    await requestPasswordReset(adresse);
+    return {};
+  } catch {
+    return { error: "Impossible d'envoyer le lien pour le moment. Réessayez dans quelques minutes." };
+  }
+}
+
+export async function resetPasswordAction(
+  token: string,
+  password: string
+): Promise<{ error?: string }> {
+  if (password.length < 8) return { error: "Le mot de passe doit faire au moins 8 caractères" };
+
+  try {
+    await updatePasswordWithToken(token, password);
+    return {};
+  } catch {
+    // Jeton expiré, déjà utilisé ou altéré : Medusa répond 401 dans les trois cas.
+    return { error: "Ce lien n'est plus valable. Demandez-en un nouveau." };
   }
 }
 

@@ -74,6 +74,27 @@ export async function loginCustomer(email: string, password: string): Promise<st
   return token;
 }
 
+/**
+ * Demande un lien de réinitialisation : Medusa génère un jeton d'une heure et émet
+ * l'événement que le backend transforme en email. La réponse est la même que le compte
+ * existe ou non — c'est voulu, on ne révèle pas qui a un compte.
+ */
+export async function requestPasswordReset(email: string): Promise<void> {
+  await authFetch("/auth/customer/emailpass/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ identifier: email }),
+  });
+}
+
+/** Pose le nouveau mot de passe. Le jeton du lien identifie le compte, rien d'autre n'est requis. */
+export async function updatePasswordWithToken(token: string, password: string): Promise<void> {
+  await authFetch("/auth/customer/emailpass/update", {
+    method: "POST",
+    body: JSON.stringify({ password }),
+    token,
+  });
+}
+
 export async function getCustomerByToken(token: string): Promise<MedusaCustomer | null> {
   try {
     const { customer } = await authFetch<{ customer: MedusaCustomer }>(

@@ -46,9 +46,17 @@ export default function LoginForm({ redirectTo }: { redirectTo: string }) {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="password" className="text-sm font-medium text-brand-chocolate">
-          Mot de passe
-        </label>
+        <div className="flex items-baseline justify-between">
+          <label htmlFor="password" className="text-sm font-medium text-brand-chocolate">
+            Mot de passe
+          </label>
+          <Link
+            href="/compte/mot-de-passe-oublie"
+            className="text-xs text-brand-chocolate/60 hover:text-brand-gold-dark hover:underline"
+          >
+            Mot de passe oublié ?
+          </Link>
+        </div>
         <input
           id="password"
           name="password"
