@@ -31,6 +31,7 @@ export type MedusaShippingOption = {
 export type MedusaOrder = {
   id: string;
   display_id: number;
+  customer_id: string | null;
   email: string;
   currency_code: string;
   total: number;
@@ -48,7 +49,7 @@ const CART_FIELDS =
   "id,currency_code,region_id,customer_id,email,total,item_total,shipping_total,item_subtotal,shipping_subtotal,*items,*items.total,*items.subtotal,*items.thumbnail,*items.variant.images.url,*items.product.images.url,*shipping_address,*billing_address,*shipping_methods,*shipping_methods.shipping_option,payment_collection.id,*payment_collection.payment_sessions";
 
 const ORDER_FIELDS =
-  "id,display_id,email,currency_code,total,*items,*items.total,*shipping_address";
+  "id,display_id,customer_id,email,currency_code,total,*items,*items.total,*shipping_address";
 
 async function checkoutFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${MEDUSA_BACKEND_URL}${path}`, {

@@ -81,6 +81,7 @@
   --color-gv-border: var(--gv-border);
   --color-gv-border-strong: var(--gv-border-strong);
   --color-gv-danger: var(--gv-danger);
+  --color-gv-success: var(--gv-success);
 
   /* Alias hérités */
   --color-brand-chocolate: var(--brand-chocolate);

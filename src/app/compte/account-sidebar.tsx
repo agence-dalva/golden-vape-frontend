@@ -1,26 +1,29 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { LayoutGrid, Package, MapPin, UserRound } from "lucide-react";
 import LogoutButton from "./logout-button";
 
-// Les rubriques sans page dédiée pointent sur les ancres de la vue d'ensemble : mieux vaut
-// une navigation qui mène quelque part qu'un onglet mort.
+// Chaque rubrique est une page : on peut y revenir, la partager, et le bouton précédent
+// du navigateur fait ce qu'on attend. Le panneau, lui, reste en place d'une rubrique à
+// l'autre — seul le contenu change, en fondu.
 const ITEMS = [
-  { icon: LayoutGrid, label: "Vue d'ensemble", href: "#vue-ensemble" },
-  { icon: Package, label: "Mes commandes", href: "#commandes" },
-  { icon: MapPin, label: "Mes adresses", href: "#adresses" },
-  { icon: UserRound, label: "Mes informations", href: "#informations" },
+  { icon: LayoutGrid, label: "Vue d'ensemble", href: "/compte" },
+  { icon: Package, label: "Mes commandes", href: "/compte/commandes" },
+  { icon: MapPin, label: "Mes adresses", href: "/compte/adresses" },
+  { icon: UserRound, label: "Mes informations", href: "/compte/informations" },
 ];
 
-export default function AccountSidebar({
-  fullName,
-  initials,
-  active = "#vue-ensemble",
-}: {
-  fullName: string;
-  initials: string;
-  active?: string;
-}) {
+function estActive(href: string, pathname: string): boolean {
+  // La vue d'ensemble n'est active que sur elle-même : sinon elle s'allumerait partout.
+  if (href === "/compte") return pathname === "/compte";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+export default function AccountSidebar({ fullName, initials }: { fullName: string; initials: string }) {
+  const pathname = usePathname();
+
   return (
     <nav
       aria-label="Navigation du compte"
@@ -40,21 +43,21 @@ export default function AccountSidebar({
 
       <ul className="flex flex-col gap-0.5">
         {ITEMS.map(({ icon: Icon, label, href }) => {
-          const isActive = href === active;
+          const active = estActive(href, pathname);
           return (
             <li key={href}>
-              <a
+              <Link
                 href={href}
-                aria-current={isActive ? "true" : undefined}
+                aria-current={active ? "page" : undefined}
                 className={`flex min-h-12 items-center gap-3 rounded-[7px] px-3 text-sm font-medium transition-colors ${
-                  isActive
+                  active
                     ? "bg-gv-800 text-white shadow-[0_8px_18px_rgb(68_54_46/0.14)]"
                     : "text-gv-text hover:bg-gv-50 hover:text-gv-800"
                 }`}
               >
                 <Icon size={20} strokeWidth={1.6} aria-hidden />
                 {label}
-              </a>
+              </Link>
             </li>
           );
         })}

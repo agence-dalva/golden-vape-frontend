@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getOrder } from "@/lib/medusa-checkout";
+import { getCurrentCustomer } from "@/lib/customer-actions";
 import { formatPrice } from "@/lib/medusa";
 import PageTransition from "@/components/page-transition";
 
@@ -10,11 +11,15 @@ export default async function OrderConfirmationPage({
   params: Promise<{ orderId: string }>;
 }) {
   const { orderId } = await params;
-  const order = await getOrder(orderId);
+  const [order, customer] = await Promise.all([getOrder(orderId), getCurrentCustomer()]);
 
   if (!order) {
     notFound();
   }
+
+  // Le suivi vit dans l'espace client : on n'y envoie que ceux qui peuvent y entrer, et
+  // seulement vers leur propre commande.
+  const suivi = customer && order.customer_id === customer.id ? `/compte/commandes/${order.id}` : null;
 
   return (
     <PageTransition>
@@ -59,12 +64,26 @@ export default async function OrderConfirmationPage({
         )}
       </div>
 
-      <Link
-        href="/"
-        className="mt-8 inline-block rounded-lg bg-brand-chocolate px-6 py-3 text-sm font-medium text-brand-cream"
-      >
-        Retour à la boutique
-      </Link>
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        {suivi && (
+          <Link
+            href={suivi}
+            className="inline-block rounded-lg bg-brand-chocolate px-6 py-3 text-sm font-medium text-brand-cream"
+          >
+            Suivre ma commande
+          </Link>
+        )}
+        <Link
+          href="/"
+          className={
+            suivi
+              ? "inline-block rounded-lg border border-brand-chocolate/20 px-6 py-3 text-sm font-medium text-brand-chocolate"
+              : "inline-block rounded-lg bg-brand-chocolate px-6 py-3 text-sm font-medium text-brand-cream"
+          }
+        >
+          Retour à la boutique
+        </Link>
+      </div>
     </div>
     </PageTransition>
   );

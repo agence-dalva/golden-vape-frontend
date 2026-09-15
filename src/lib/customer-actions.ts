@@ -13,7 +13,12 @@ import {
   attachCartToCustomer,
   type MedusaCustomer,
 } from "./medusa-customer";
-import { listCustomerOrders, type MedusaOrderSummary } from "./medusa-orders";
+import {
+  getCustomerOrder,
+  listCustomerOrders,
+  type MedusaOrderDetail,
+  type MedusaOrderSummary,
+} from "./medusa-orders";
 import { getCurrentCart } from "./cart-actions";
 import type { MedusaAddress } from "./medusa-cart";
 
@@ -117,7 +122,7 @@ export async function saveAddressAction(
     } else {
       await createCustomerAddress(token, address);
     }
-    revalidatePath("/compte");
+    revalidatePath("/compte", "layout");
     return {};
   } catch {
     return { error: "Impossible d'enregistrer cette adresse" };
@@ -130,7 +135,7 @@ export async function deleteAddressAction(addressId: string): Promise<{ error?: 
 
   try {
     await deleteCustomerAddress(token, addressId);
-    revalidatePath("/compte");
+    revalidatePath("/compte", "layout");
     return {};
   } catch {
     return { error: "Impossible de supprimer cette adresse" };
@@ -151,7 +156,7 @@ export async function setDefaultAddressAction(addressId: string): Promise<{ erro
       is_default_shipping: true,
       is_default_billing: true,
     });
-    revalidatePath("/compte");
+    revalidatePath("/compte", "layout");
     return {};
   } catch {
     return { error: "Impossible de définir cette adresse par défaut" };
@@ -162,4 +167,15 @@ export async function getMyOrders(): Promise<MedusaOrderSummary[]> {
   const token = await getCurrentCustomerToken();
   if (!token) return [];
   return listCustomerOrders(token);
+}
+
+/** Une commande du client connecté ; `null` si elle n'est pas à lui ou n'existe pas. */
+export async function getMyOrder(orderId: string): Promise<MedusaOrderDetail | null> {
+  const token = await getCurrentCustomerToken();
+  if (!token) return null;
+
+  const customer = await getCustomerByToken(token);
+  if (!customer) return null;
+
+  return getCustomerOrder(token, customer.id, orderId);
 }
