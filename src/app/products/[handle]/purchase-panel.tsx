@@ -7,6 +7,7 @@ import { Minus, Plus, ShoppingBag, Loader2, ShieldCheck, Truck, Package } from "
 import type { MedusaProduct } from "@/lib/medusa";
 import { formatPrice, getDisplayAmount } from "@/lib/medusa";
 import { addToCartAction } from "@/lib/cart-actions";
+import { useVariantSelection } from "./variant-selection";
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -27,7 +28,8 @@ export default function PurchasePanel({
   cartVariantIds: string[];
 }) {
   const [isPending, startTransition] = useTransition();
-  const [selectedVariantId, setSelectedVariantId] = useState(product.variants[0]?.id ?? "");
+  // La déclinaison choisie est partagée avec la galerie, qui affiche son visuel.
+  const { variantId: selectedVariantId, selectVariant: setSelectedVariantId } = useVariantSelection();
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
 

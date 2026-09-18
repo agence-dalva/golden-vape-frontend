@@ -10,6 +10,7 @@ import SectionHeading from "@/components/section-heading";
 import ProductSlider from "@/components/product-slider";
 import Breadcrumbs, { type Crumb } from "@/components/breadcrumbs";
 import ProductGallery from "./product-gallery";
+import { VariantSelection } from "./variant-selection";
 import PurchasePanel from "./purchase-panel";
 import ProductDetails, { type Spec } from "./product-details";
 
@@ -84,15 +85,17 @@ export default async function ProductPage({
     <div className="gv-container pb-16">
       <Breadcrumbs trail={trail} />
 
-      <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1.12fr)_minmax(420px,0.88fr)] lg:gap-[60px]">
-        <ProductGallery product={product} origin={origin} />
-        <PurchasePanel
-          product={product}
-          brand={brand}
-          tagline={tagline}
-          cartVariantIds={cartVariantIds}
-        />
-      </div>
+      <VariantSelection initialVariantId={product.variants[0]?.id ?? ""}>
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1.12fr)_minmax(420px,0.88fr)] lg:gap-[60px]">
+          <ProductGallery product={product} origin={origin} />
+          <PurchasePanel
+            product={product}
+            brand={brand}
+            tagline={tagline}
+            cartVariantIds={cartVariantIds}
+          />
+        </div>
+      </VariantSelection>
 
       <ProductDetails
         title={product.title}

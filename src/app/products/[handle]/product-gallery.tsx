@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
 import type { MedusaProduct } from "@/lib/medusa";
+import { useVariantSelection } from "./variant-selection";
 
 const ARROW_CLASSES =
   "absolute top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/92 text-gv-text shadow-gv-raised transition-shadow hover:shadow-gv-raised-strong";
@@ -22,8 +23,26 @@ export default function ProductGallery({
     ...product.variants.flatMap((variant) => variant.images?.map((image) => image.url) ?? []),
   ].filter((url, index, all) => url && all.indexOf(url) === index);
 
-  const [activeIndex, setActiveIndex] = useState(0);
+  // Position du premier visuel propre à une déclinaison, ou -1 si elle n'en a pas.
+  const firstImageOf = (variantId: string) => {
+    const url = product.variants.find((variant) => variant.id === variantId)?.images?.[0]?.url;
+    return url ? images.indexOf(url) : -1;
+  };
+
+  const { variantId } = useVariantSelection();
+  const [activeIndex, setActiveIndex] = useState(() => Math.max(0, firstImageOf(variantId)));
   const active = images[activeIndex] ?? product.thumbnail;
+
+  // Choisir une déclinaison montre son visuel ; une déclinaison sans visuel propre laisse la
+  // photo en place plutôt que de revenir à la première. L'ajustement se fait pendant le
+  // rendu, à la manière recommandée par React pour réagir à une valeur qui change, plutôt
+  // que dans un effet qui ferait un rendu de plus avec l'ancienne photo.
+  const [seenVariantId, setSeenVariantId] = useState(variantId);
+  if (variantId !== seenVariantId) {
+    setSeenVariantId(variantId);
+    const index = firstImageOf(variantId);
+    if (index >= 0) setActiveIndex(index);
+  }
   const hasThumbnails = images.length > 1;
 
   // Les flèches font boucler la galerie : sur dix-huit visuels, s'arrêter aux extrémités
