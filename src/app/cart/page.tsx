@@ -1,14 +1,16 @@
 import Link from "next/link";
-import { ShoppingBag, Truck, ShieldCheck, Lock, ArrowRight } from "lucide-react";
+import { ShoppingBag, Truck, ShieldCheck, ArrowRight } from "lucide-react";
 import { getCurrentCart } from "@/lib/cart-actions";
 import { getCurrentCustomer } from "@/lib/customer-actions";
-import { formatPrice, listLatestProducts } from "@/lib/medusa";
+import { listLatestProducts } from "@/lib/medusa";
 import Breadcrumbs from "@/components/breadcrumbs";
 import CheckoutStepper from "@/components/checkout-stepper";
 import EmptyState from "@/components/empty-state";
 import SectionHeading from "@/components/section-heading";
 import ProductSlider from "@/components/product-slider";
 import CartItem from "./cart-item";
+import CartSummary from "./cart-summary";
+import { CartActivity } from "./cart-activity";
 import PromoCode from "./promo-code";
 import PageTransition from "@/components/page-transition";
 
@@ -78,6 +80,7 @@ export default async function CartPage() {
         </Link>
       </div>
 
+      <CartActivity>
       <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_370px]">
         <div>
           <ul className="flex flex-col gap-4">
@@ -107,60 +110,19 @@ export default async function CartPage() {
         </div>
 
         <div className="lg:sticky lg:top-6">
-          <section className="rounded-xl bg-gv-card p-6 shadow-gv-raised">
-            <h2 className="mb-6 text-lg font-semibold tracking-[-0.01em] text-gv-text">Récapitulatif</h2>
-
-            <dl className="flex flex-col gap-4 text-sm">
-              <div className="flex justify-between gap-5">
-                <dt className="text-gv-text-soft">Sous-total</dt>
-                <dd className="tabular-nums text-gv-text">{formatPrice(cart!.item_total, currency)}</dd>
-              </div>
-
-              {/* La ligne de remise n'apparaît qu'en présence d'une réduction réelle. */}
-              {cart!.discount_total > 0 && (
-                <div className="flex justify-between gap-5">
-                  <dt className="text-gv-text-soft">Réduction</dt>
-                  <dd className="tabular-nums text-[var(--gv-success)]">
-                    −{formatPrice(cart!.discount_total, currency)}
-                  </dd>
-                </div>
-              )}
-
-              <div className="flex justify-between gap-5">
-                <dt className="text-gv-text-soft">Livraison</dt>
-                <dd className="text-right text-gv-text-soft">
-                  {cart!.shipping_total > 0
-                    ? formatPrice(cart!.shipping_total, currency)
-                    : "Calculée à l'étape suivante"}
-                </dd>
-              </div>
-            </dl>
-
-            <div className="mt-6 flex items-baseline justify-between gap-4 border-t border-gv-border pt-5">
-              <span className="text-lg font-semibold tracking-[-0.01em] text-gv-text">Total</span>
-              <span className="text-[30px] font-semibold tabular-nums text-gv-text">
-                {formatPrice(cart!.total, currency)}
-              </span>
-            </div>
-            <p className="mt-1 text-right text-xs text-gv-text-soft">Taxes incluses</p>
-
-            <Link
-              href={checkoutHref}
-              transitionTypes={["nav-forward"]}
-              className="mt-6 flex min-h-[54px] items-center justify-center rounded-[7px] border border-gv-800 bg-gv-800 px-6 text-[15px] font-semibold text-white shadow-[0_9px_24px_rgb(68_54_46/0.16)] transition-all duration-200 hover:-translate-y-px hover:bg-gv-900"
-            >
-              Passer la commande
-            </Link>
-
-            <p className="mt-4 flex items-center justify-center gap-2 text-xs text-gv-text-soft">
-              <Lock size={14} aria-hidden />
-              Paiement 100 % sécurisé
-            </p>
-          </section>
+          <CartSummary
+            itemTotal={cart!.item_total}
+            discountTotal={cart!.discount_total}
+            shippingTotal={cart!.shipping_total}
+            total={cart!.total}
+            currencyCode={currency}
+            checkoutHref={checkoutHref}
+          />
 
           <PromoCode applied={cart!.promotions ?? []} />
         </div>
       </div>
+      </CartActivity>
     </div>
     </PageTransition>
   );
