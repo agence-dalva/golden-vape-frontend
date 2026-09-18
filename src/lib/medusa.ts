@@ -166,9 +166,9 @@ export function collectCategoryIds(category: MedusaCategoryNode): string[] {
   return [category.id, ...(category.category_children ?? []).flatMap(collectCategoryIds)]
 }
 
-// Le catalogue tolère une minute de retard, pas le stock : une fiche produit qui annonce
-// « en stock » alors que la dernière unité vient de partir fait échouer la commande. Les
-// appels qui portent une information transactionnelle passent donc en `fresh`.
+// Le catalogue tolère une minute de retard. Les appels qui portent une information
+// transactionnelle — le panier, la commande — passent en `fresh`, sans aucun cache ; ceux
+// qui veulent un compromis entre fraîcheur et charge donnent leur propre `revalidate`.
 //
 // Attention en développement : un rechargement forcé du navigateur envoie
 // `cache-control: no-cache`, ce qui fait ignorer `revalidate` par Next. Un problème de
@@ -176,7 +176,7 @@ export function collectCategoryIds(category: MedusaCategoryNode): string[] {
 async function medusaFetch<T>(
   path: string,
   searchParams: Record<string, string | string[]>,
-  { fresh = false }: { fresh?: boolean } = {}
+  { fresh = false, revalidate = 60 }: { fresh?: boolean; revalidate?: number } = {}
 ): Promise<T> {
   const url = new URL(`${MEDUSA_BACKEND_URL}${path}`)
   for (const [key, value] of Object.entries(searchParams)) {
@@ -192,7 +192,7 @@ async function medusaFetch<T>(
     headers: {
       "x-publishable-api-key": MEDUSA_PUBLISHABLE_KEY,
     },
-    ...(fresh ? { cache: "no-store" as const } : { next: { revalidate: 60 } }),
+    ...(fresh ? { cache: "no-store" as const } : { next: { revalidate } }),
   })
 
   if (!res.ok) {
@@ -323,8 +323,13 @@ export async function getProductByHandle(handle: string) {
       country_code: DEFAULT_COUNTRY_CODE,
       fields: PRODUCT_DETAIL_FIELDS,
     },
-    // La fiche produit affiche le stock et pilote le bouton d'ajout au panier.
-    { fresh: true }
+    // Trente secondes de cache plutôt qu'aucun. Sans cache, chaque vue de fiche coûtait un
+    // appel à Medusa, qui le sert en 50 ms sur un seul fil : mesuré à 18 vues par seconde,
+    // et 4 s d'attente à 100 visiteurs simultanés, quand les pages en cache en tenaient
+    // 450. Le prix : une fiche peut annoncer « en stock » jusqu'à trente secondes après le
+    // départ de la dernière unité — l'ajout au panier, lui, est toujours vérifié par
+    // Medusa, qui répond alors « stock insuffisant ».
+    { revalidate: 30 }
   )
   return products[0] ? withOrderedVariants(products[0]) : null
 }
