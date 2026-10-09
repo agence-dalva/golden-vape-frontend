@@ -196,7 +196,10 @@ export default function CheckoutForm({
         </p>
       </header>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(320px,0.95fr)] lg:items-start">
+      {/* Sur mobile, une colonne bornée à l'écran : sans elle, la grille prend la largeur
+          des descriptions de transporteurs, écrites sur une ligne, et la page défilait de
+          côté sur 200 px. */}
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(320px,0.95fr)] lg:items-start">
       {/* Colonne gauche — les etapes a completer, dans l'ordre */}
       <div className="flex flex-col gap-5">
       <section className={cardClass}>
