@@ -47,6 +47,14 @@
     rgb(35 28 24 / 0.3) 40%,
     rgb(35 28 24 / 0) 54%
   );
+  /* Tablette et mobile : le texte occupe toute la largeur, le voile la couvre — plus dense
+     à gauche où le texte commence, assez léger à droite pour qu'on devine la photo. */
+  --gv-hero-overlay-compact: linear-gradient(
+    90deg,
+    rgb(35 28 24 / 0.74) 0%,
+    rgb(35 28 24 / 0.6) 55%,
+    rgb(35 28 24 / 0.42) 100%
+  );
 
   /* Alias conservés : le reste du site les utilise encore, ils pointent sur la nouvelle palette. */
   --background: var(--gv-bg-page);
