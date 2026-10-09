@@ -23,9 +23,23 @@ export default function ProductGallery({
     ...product.variants.flatMap((variant) => variant.images?.map((image) => image.url) ?? []),
   ].filter((url, index, all) => url && all.indexOf(url) === index);
 
+  // Medusa place en tête de `variant.images` les visuels « généraux » du produit, ceux que le
+  // marchand n'a associés à aucune déclinaison : dès qu'une fiche en a un, il devient le
+  // premier visuel de toutes ses déclinaisons, et la galerie ne bougeait plus au clic. Un
+  // visuel présent dans toutes les déclinaisons n'est propre à aucune ; on l'écarte.
+  const sharedByAll = new Set(
+    product.variants.length > 1
+      ? (product.variants[0].images ?? [])
+          .map((image) => image.url)
+          .filter((url) => product.variants.every((variant) => variant.images?.some((image) => image.url === url)))
+      : []
+  );
+
   // Position du premier visuel propre à une déclinaison, ou -1 si elle n'en a pas.
   const firstImageOf = (variantId: string) => {
-    const url = product.variants.find((variant) => variant.id === variantId)?.images?.[0]?.url;
+    const url = product.variants
+      .find((variant) => variant.id === variantId)
+      ?.images?.find((image) => !sharedByAll.has(image.url))?.url;
     return url ? images.indexOf(url) : -1;
   };
 
