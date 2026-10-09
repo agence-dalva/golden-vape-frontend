@@ -32,18 +32,20 @@ function VariantButton({
       type="button"
       role="radio"
       aria-checked={isSelected}
-      // Une déclinaison en rupture reste visible : la masquer laisserait croire qu'elle
-      // n'existe pas.
-      disabled={unavailable}
+      // Une déclinaison en rupture reste visible et se choisit : la masquer laisserait
+      // croire qu'elle n'existe pas, et la choisir propose d'être prévenu de son retour.
+      data-indisponible={unavailable || undefined}
       onClick={() => onSelect(variant.id)}
       className={`min-h-[50px] cursor-pointer rounded-[7px] border px-2 text-sm font-semibold transition-all duration-200 ${
         isSelected
           ? "border-gv-800 bg-gv-800 text-white shadow-[0_7px_18px_rgb(68_54_46/0.16)]"
-          : "border-gv-border-strong bg-white text-gv-text hover:border-gv-800"
-      } ${unavailable ? "cursor-not-allowed line-through opacity-45" : ""}`}
+          : unavailable
+            ? "border-dashed border-gv-border-strong bg-white text-gv-text-muted hover:border-gv-800"
+            : "border-gv-border-strong bg-white text-gv-text hover:border-gv-800"
+      } ${unavailable ? "line-through" : ""}`}
     >
       {labelOf(variant)}
-      {unavailable && <span className="sr-only"> — indisponible</span>}
+      {unavailable && <span className="sr-only"> — épuisé</span>}
     </button>
   );
 }
@@ -142,7 +144,7 @@ function MoreVariants({
     if (!open) return;
     const target =
       panelRef.current?.querySelector<HTMLButtonElement>('[aria-checked="true"]') ??
-      panelRef.current?.querySelector<HTMLButtonElement>("button:not(:disabled)");
+      panelRef.current?.querySelector<HTMLButtonElement>("button:not([data-indisponible])");
     target?.focus({ preventScroll: true });
     target?.scrollIntoView({ block: "nearest" });
   }, [open]);

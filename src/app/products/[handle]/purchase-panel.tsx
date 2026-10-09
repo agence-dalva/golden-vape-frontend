@@ -9,6 +9,7 @@ import { formatPrice, getDisplayAmount } from "@/lib/medusa";
 import { addToCartAction } from "@/lib/cart-actions";
 import { useVariantSelection } from "./variant-selection";
 import VariantPicker from "./variant-picker";
+import StockAlertForm from "./stock-alert-form";
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -22,11 +23,14 @@ export default function PurchasePanel({
   brand,
   tagline,
   cartVariantIds,
+  customerEmail,
 }: {
   product: MedusaProduct;
   brand: string | null;
   tagline: string | null;
   cartVariantIds: string[];
+  /** Adresse du client connecté : l'alerte de retour en stock s'en sert sans rien demander. */
+  customerEmail: string | null;
 }) {
   const [isPending, startTransition] = useTransition();
   // La déclinaison choisie est partagée avec la galerie, qui affiche son visuel.
@@ -123,48 +127,60 @@ export default function PurchasePanel({
         />
       )}
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-[128px_minmax(0,1fr)]">
-        <div className="flex h-[52px] w-full items-center justify-between rounded-[7px] border border-gv-border-strong bg-white sm:w-32">
+      {/* Épuisée : rien à mettre au panier, on propose d'être prévenu du retour. */}
+      {soldOut && selected ? (
+        <div className="mt-6">
+          <StockAlertForm
+            key={selected.id}
+            variantId={selected.id}
+            variantLabel={variants.length > 1 ? (selected.options[0]?.value ?? selected.title) : null}
+            defaultEmail={customerEmail}
+          />
+        </div>
+      ) : (
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-[128px_minmax(0,1fr)]">
+          <div className="flex h-[52px] w-full items-center justify-between rounded-[7px] border border-gv-border-strong bg-white sm:w-32">
+            <button
+              onClick={() => setQuantity((current) => Math.max(1, current - 1))}
+              disabled={quantity <= 1}
+              aria-label="Diminuer la quantité"
+              className="flex h-full w-10 cursor-pointer items-center justify-center text-gv-text disabled:cursor-not-allowed disabled:text-gv-text-muted"
+            >
+              <Minus size={16} aria-hidden />
+            </button>
+            <span aria-live="polite" className="text-sm font-semibold tabular-nums text-gv-text">
+              {quantity}
+            </span>
+            <button
+              onClick={() => setQuantity((current) => Math.min(maxQuantity, current + 1))}
+              disabled={quantity >= maxQuantity}
+              aria-label="Augmenter la quantité"
+              className="flex h-full w-10 cursor-pointer items-center justify-center text-gv-text disabled:cursor-not-allowed disabled:text-gv-text-muted"
+            >
+              <Plus size={16} aria-hidden />
+            </button>
+          </div>
+
           <button
-            onClick={() => setQuantity((current) => Math.max(1, current - 1))}
-            disabled={quantity <= 1}
-            aria-label="Diminuer la quantité"
-            className="flex h-full w-10 cursor-pointer items-center justify-center text-gv-text disabled:cursor-not-allowed disabled:text-gv-text-muted"
+            onClick={handleAddToCart}
+            disabled={soldOut || isPending || !selected}
+            aria-label={`Ajouter ${product.title} au panier`}
+            className="flex min-h-[52px] cursor-pointer items-center justify-center gap-2.5 rounded-[7px] border border-gv-800 bg-gv-800 px-6 text-[15px] font-semibold text-white shadow-[0_9px_24px_rgb(68_54_46/0.16)] transition-all duration-200 hover:-translate-y-px hover:bg-gv-900 hover:shadow-[0_13px_30px_rgb(68_54_46/0.22)] disabled:cursor-not-allowed disabled:border-gv-border disabled:bg-gv-image disabled:text-gv-text-muted disabled:shadow-none disabled:hover:translate-y-0"
           >
-            <Minus size={16} aria-hidden />
-          </button>
-          <span aria-live="polite" className="text-sm font-semibold tabular-nums text-gv-text">
-            {quantity}
-          </span>
-          <button
-            onClick={() => setQuantity((current) => Math.min(maxQuantity, current + 1))}
-            disabled={quantity >= maxQuantity}
-            aria-label="Augmenter la quantité"
-            className="flex h-full w-10 cursor-pointer items-center justify-center text-gv-text disabled:cursor-not-allowed disabled:text-gv-text-muted"
-          >
-            <Plus size={16} aria-hidden />
+            {isPending ? (
+              <>
+                <Loader2 size={18} aria-hidden className="animate-spin" />
+                Ajout en cours…
+              </>
+            ) : (
+              <>
+                <ShoppingBag size={18} aria-hidden />
+                {soldOut ? "Produit indisponible" : justAdded ? "Ajouté au panier" : "Ajouter au panier"}
+              </>
+            )}
           </button>
         </div>
-
-        <button
-          onClick={handleAddToCart}
-          disabled={soldOut || isPending || !selected}
-          aria-label={`Ajouter ${product.title} au panier`}
-          className="flex min-h-[52px] cursor-pointer items-center justify-center gap-2.5 rounded-[7px] border border-gv-800 bg-gv-800 px-6 text-[15px] font-semibold text-white shadow-[0_9px_24px_rgb(68_54_46/0.16)] transition-all duration-200 hover:-translate-y-px hover:bg-gv-900 hover:shadow-[0_13px_30px_rgb(68_54_46/0.22)] disabled:cursor-not-allowed disabled:border-gv-border disabled:bg-gv-image disabled:text-gv-text-muted disabled:shadow-none disabled:hover:translate-y-0"
-        >
-          {isPending ? (
-            <>
-              <Loader2 size={18} aria-hidden className="animate-spin" />
-              Ajout en cours…
-            </>
-          ) : (
-            <>
-              <ShoppingBag size={18} aria-hidden />
-              {soldOut ? "Produit indisponible" : justAdded ? "Ajouté au panier" : "Ajouter au panier"}
-            </>
-          )}
-        </button>
-      </div>
+      )}
 
       {/* Un article déjà au panier reste achetable : simple rappel, pas de blocage. */}
       {alreadyInCart && (
@@ -176,10 +192,12 @@ export default function PurchasePanel({
         </p>
       )}
 
-      <p className="mt-3.5 flex items-center justify-center gap-2 text-[13px] text-gv-text-soft">
-        <Package size={16} aria-hidden />
-        Expédition sous 24/48h
-      </p>
+      {!soldOut && (
+        <p className="mt-3.5 flex items-center justify-center gap-2 text-[13px] text-gv-text-soft">
+          <Package size={16} aria-hidden />
+          Expédition sous 24/48h
+        </p>
+      )}
 
       <ul className="mt-6 grid grid-cols-3 border-t border-gv-border pt-[22px]">
         {BENEFITS.map(({ icon: Icon, label }, index) => (

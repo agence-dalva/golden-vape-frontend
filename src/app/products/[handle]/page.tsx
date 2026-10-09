@@ -6,6 +6,7 @@ import {
   groupAttributesByType,
 } from "@/lib/medusa";
 import { getCurrentCart } from "@/lib/cart-actions";
+import { getCurrentCustomer } from "@/lib/customer-actions";
 import SectionHeading from "@/components/section-heading";
 import ProductSlider from "@/components/product-slider";
 import Breadcrumbs, { type Crumb } from "@/components/breadcrumbs";
@@ -24,7 +25,13 @@ export default async function ProductPage({
   params: Promise<{ handle: string }>;
 }) {
   const { handle } = await params;
-  const [product, cart] = await Promise.all([getProductByHandle(handle), getCurrentCart()]);
+  // Le client connecté n'a pas à saisir son email pour une alerte de retour en stock. Sans
+  // session, aucun appel n'est fait.
+  const [product, cart, customer] = await Promise.all([
+    getProductByHandle(handle),
+    getCurrentCart(),
+    getCurrentCustomer(),
+  ]);
 
   if (!product) {
     notFound();
@@ -85,7 +92,16 @@ export default async function ProductPage({
     <div className="gv-container pb-16">
       <Breadcrumbs trail={trail} />
 
-      <VariantSelection initialVariantId={product.variants[0]?.id ?? ""}>
+      {/* La fiche s'ouvre sur la première déclinaison en stock : ouvrir sur une rupture
+          cacherait le bouton panier alors que d'autres déclinaisons sont achetables. */}
+      <VariantSelection
+        initialVariantId={
+          (
+            product.variants.find((v) => v.inventory_quantity === null || v.inventory_quantity > 0) ??
+            product.variants[0]
+          )?.id ?? ""
+        }
+      >
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1.12fr)_minmax(420px,0.88fr)] lg:gap-[60px]">
           <ProductGallery product={product} origin={origin} />
           <PurchasePanel
@@ -93,6 +109,7 @@ export default async function ProductPage({
             brand={brand}
             tagline={tagline}
             cartVariantIds={cartVariantIds}
+            customerEmail={customer?.email ?? null}
           />
         </div>
       </VariantSelection>
