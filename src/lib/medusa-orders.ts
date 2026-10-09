@@ -40,6 +40,8 @@ export type MedusaOrderSummary = {
   currency_code: string;
   created_at: string;
   items: { id: string; quantity: number }[];
+  /** L'option suffit à reconnaître un retrait en boutique (voir `retrait-boutique.ts`). */
+  shipping_methods?: { shipping_option_id?: string | null }[];
 };
 
 export type MedusaOrderLineItem = {
@@ -76,6 +78,7 @@ export type MedusaFulfillment = {
 export type MedusaOrderShippingMethod = {
   id: string;
   name: string;
+  shipping_option_id: string | null;
   total: number;
   /** Ce que le tunnel a posé au choix du mode : point relais, transporteur. */
   data: {
@@ -103,7 +106,8 @@ export type MedusaOrderDetail = Omit<MedusaOrderSummary, "items"> & {
 // `total` au seul port et `quantity` à rien. Mesuré sur la commande n°10 : 3,60 € au lieu
 // de 17,76 €.
 const ORDER_LIST_FIELDS =
-  "id,display_id,status,fulfillment_status,payment_status,total,currency_code,created_at,*items";
+  "id,display_id,status,fulfillment_status,payment_status,total,currency_code,created_at,*items," +
+  "shipping_methods.shipping_option_id";
 
 // Les vignettes viennent des images de la variante, puis du produit : `thumbnail` n'est
 // jamais renseigné sur ce catalogue, comme au panier.

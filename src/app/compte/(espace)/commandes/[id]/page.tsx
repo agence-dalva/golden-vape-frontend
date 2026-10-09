@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink, ImageOff, MapPin, Package, Truck } from "lucide-react";
+import { ArrowLeft, ExternalLink, ImageOff, MapPin, Package, Store, Truck } from "lucide-react";
 import { getMyOrder } from "@/lib/customer-actions";
 import { getOrderItemImage } from "@/lib/medusa-orders";
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/lib/order-status";
 import { formatPrice } from "@/lib/medusa";
 import PageTransition from "@/components/page-transition";
+import { adresseLieu, getOptionsRetrait, lieuDeCommande } from "@/lib/retrait-boutique";
 import OrderStatusBadge from "../../../order-status-badge";
 import OrderStepper from "../../../order-stepper";
 
@@ -28,13 +29,15 @@ const titreCarte = "mb-3 flex items-center gap-2 text-[15px] font-semibold text-
  */
 export default async function AccountOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const order = await getMyOrder(id);
+  const [order, optionsRetrait] = await Promise.all([getMyOrder(id), getOptionsRetrait()]);
 
   if (!order) {
     notFound();
   }
 
-  const etat = describeOrder(order);
+  // Retrait en boutique : d'autres jalons, et l'adresse du comptoir à la place de la sienne.
+  const lieu = lieuDeCommande(order.shipping_methods, optionsRetrait);
+  const etat = describeOrder(order, { retrait: lieu !== null });
   const paiement = describePayment(order.payment_status);
   const dates = stageDates(order);
   const expedition = activeFulfillment(order);
@@ -82,7 +85,7 @@ export default async function AccountOrderPage({ params }: { params: Promise<{ i
             </p>
           ) : (
             <>
-              <OrderStepper stage={etat.stage ?? "ordered"} dates={dates} />
+              <OrderStepper stage={etat.stage ?? "ordered"} dates={dates} retrait={lieu !== null} />
 
               {etat.shipmentCanceled && (
                 <p className="mt-5 rounded-lg bg-gv-50 px-4 py-3 text-[13.5px] text-gv-text-soft">
@@ -181,9 +184,13 @@ export default async function AccountOrderPage({ params }: { params: Promise<{ i
                 </div>
               )}
               <div className="flex justify-between py-1 text-gv-text-soft">
-                <dt>Livraison{livraison ? ` · ${livraison.name}` : ""}</dt>
+                <dt>{lieu ? "Retrait en boutique" : `Livraison${livraison ? ` · ${livraison.name}` : ""}`}</dt>
                 <dd className="tabular-nums">
-                  {Number(order.shipping_total) === 0 ? "Offerte" : formatPrice(order.shipping_total, order.currency_code)}
+                  {Number(order.shipping_total) === 0
+                    ? lieu
+                      ? "Gratuit"
+                      : "Offerte"
+                    : formatPrice(order.shipping_total, order.currency_code)}
                 </dd>
               </div>
               <div className="flex justify-between py-1 text-gv-text-soft">
@@ -198,13 +205,32 @@ export default async function AccountOrderPage({ params }: { params: Promise<{ i
           </section>
 
           <div className="flex flex-col gap-6">
-            {/* Livraison : le mode, puis le point relais ou l'adresse. */}
+            {lieu && (
+              <section className={`${carte} p-5 sm:p-6`}>
+                <h3 className={titreCarte}>
+                  <Store size={17} aria-hidden className="text-gv-800" />
+                  Retrait en boutique
+                </h3>
+                <p className="text-sm font-medium text-gv-text">{lieu.nom}</p>
+                <p className="mt-1 text-sm leading-relaxed text-gv-text-soft">{adresseLieu(lieu)}</p>
+                <p className="mt-3 text-[13px] leading-relaxed text-gv-text-soft">
+                  {etat.stage === "prepared"
+                    ? `Votre commande vous attend : donnez le numéro ${order.display_id} au comptoir.`
+                    : etat.stage === "delivered"
+                      ? "Vous avez récupéré cette commande."
+                      : "Nous vous prévenons par email dès qu'elle est prête."}
+                </p>
+              </section>
+            )}
+
+            {/* Livraison : le mode, puis le point relais ou l'adresse. Pour un retrait,
+                seulement les coordonnées du client. */}
             <section className={`${carte} p-5 sm:p-6`}>
               <h3 className={titreCarte}>
                 <MapPin size={17} aria-hidden className="text-gv-800" />
-                Livraison
+                {lieu ? "Vos coordonnées" : "Livraison"}
               </h3>
-              {livraison && <p className="text-sm font-medium text-gv-text">{livraison.name}</p>}
+              {livraison && !lieu && <p className="text-sm font-medium text-gv-text">{livraison.name}</p>}
 
               {pointRelais ? (
                 <p className="mt-1 text-sm leading-relaxed text-gv-text-soft">

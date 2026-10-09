@@ -1,8 +1,16 @@
 import { Check } from "lucide-react";
-import { ORDER_STAGES, STAGE_LABELS, formatShortDate, type OrderStage } from "@/lib/order-status";
+import {
+  ORDER_STAGES,
+  PICKUP_STAGES,
+  PICKUP_STAGE_LABELS,
+  STAGE_LABELS,
+  formatShortDate,
+  type OrderStage,
+} from "@/lib/order-status";
 
 /**
- * Jalons d'une commande : commandée, préparée, expédiée, livrée.
+ * Jalons d'une commande : commandée, préparée, expédiée, livrée — ou, pour un retrait en
+ * boutique, commandée, prête à retirer, retirée.
  *
  * Les jalons franchis portent une coche et leur date ; le jalon en cours est plein sans
  * coche ; les suivants restent en creux. Le trait entre deux jalons se remplit avec le
@@ -12,19 +20,23 @@ import { ORDER_STAGES, STAGE_LABELS, formatShortDate, type OrderStage } from "@/
 export default function OrderStepper({
   stage,
   dates,
+  retrait = false,
 }: {
   stage: OrderStage;
   dates: Partial<Record<OrderStage, string>>;
+  retrait?: boolean;
 }) {
-  const atteint = ORDER_STAGES.indexOf(stage);
+  const jalons = retrait ? PICKUP_STAGES : ORDER_STAGES;
+  const libelles = retrait ? PICKUP_STAGE_LABELS : STAGE_LABELS;
+  const atteint = jalons.indexOf(stage);
 
   return (
     <ol className="flex w-full items-start" aria-label="Avancement de la commande">
-      {ORDER_STAGES.map((jalon, index) => {
+      {jalons.map((jalon, index) => {
         const franchi = index < atteint;
         const enCours = index === atteint;
         const date = dates[jalon];
-        const dernier = index === ORDER_STAGES.length - 1;
+        const dernier = index === jalons.length - 1;
 
         return (
           <li key={jalon} className={dernier ? "flex flex-col items-center" : "flex flex-1 flex-col"}>
@@ -55,7 +67,7 @@ export default function OrderStepper({
                 franchi || enCours ? "font-semibold text-gv-text" : "text-gv-text-muted",
               ].join(" ")}
             >
-              {STAGE_LABELS[jalon]}
+              {libelles[jalon]}
               {enCours && <span className="sr-only"> (étape en cours)</span>}
             </span>
             {date && (franchi || enCours) && (

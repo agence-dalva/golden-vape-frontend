@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Home, Store, Truck } from "lucide-react";
+import { Home, MapPin, Store, Truck } from "lucide-react";
 import type { MedusaShippingOption } from "@/lib/medusa-checkout";
 import { formatPrice } from "@/lib/medusa";
 import type { ServicePoint } from "@/lib/service-points";
 import ServicePointPicker from "@/components/service-point-picker";
+import { adresseLieu, estRetrait, lieuDeOption } from "@/lib/retrait-boutique";
 
 type Props = {
   options: MedusaShippingOption[];
@@ -45,6 +46,11 @@ export default function DeliveryPicker({
 }: Props) {
   const optionChoisie = options.find((o) => o.id === selectedOptionId) ?? null;
   const besoinPointRelais = Boolean(optionChoisie?.data?.is_service_point_required);
+  const retraitChoisi = estRetrait(optionChoisie);
+
+  // Le retrait en boutique ferme la liste, sur toute la largeur : ce n'est pas un
+  // transporteur de plus, c'est l'autre façon de recevoir sa commande.
+  const ordonnees = [...options.filter((o) => !estRetrait(o)), ...options.filter(estRetrait)];
   const transporteurs = optionChoisie?.data?.carrier_code
     ? [optionChoisie.data.carrier_code]
     : [];
@@ -64,7 +70,8 @@ export default function DeliveryPicker({
 
   return (
     <>
-      {seuilTTC !== null && (
+      {/* La franchise de port ne dit rien à qui vient chercher sa commande. */}
+      {seuilTTC !== null && !retraitChoisi && (
         <div
           className={[
             "mb-4 rounded-lg border px-3.5 py-3",
@@ -112,15 +119,18 @@ export default function DeliveryPicker({
       )}
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2">
-        {options.map((option) => {
+        {ordonnees.map((option) => {
           const actif = selectedOptionId === option.id;
           const relais = Boolean(option.data?.is_service_point_required);
+          const retrait = estRetrait(option);
+          const Icone = retrait ? Store : relais ? MapPin : Home;
 
           return (
             <label
               key={option.id}
               className={[
                 "flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors",
+                retrait ? "sm:col-span-2" : "",
                 actif
                   ? "border-gv-800 bg-gv-800/[0.025]"
                   : "border-brand-chocolate/10 hover:border-brand-chocolate/25",
@@ -134,33 +144,42 @@ export default function DeliveryPicker({
                 disabled={disabled}
                 className="h-4 w-4 shrink-0 cursor-pointer accent-gv-800"
               />
-              {relais ? (
-                <Store size={19} className={actif ? "shrink-0 text-gv-800" : "shrink-0 text-gv-500"} />
-              ) : (
-                <Home size={19} className={actif ? "shrink-0 text-gv-800" : "shrink-0 text-gv-500"} />
-              )}
+              <Icone size={19} className={actif ? "shrink-0 text-gv-800" : "shrink-0 text-gv-500"} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[15px] font-medium text-gv-text">
                   {option.name}
                 </span>
-                {/* Le transporteur est identifie par son logotype : les tarifs different
-                    d'un reseau a l'autre, et c'est ce qui justifie l'ecart de prix d'une
-                    ligne a la suivante. Une pastille carree de 24 px n'y suffisait pas. */}
-                <span className="mt-1 flex min-w-0 items-center gap-2">
-                  <LogoTransporteur
-                    logoUrl={option.data?.carrier_logo_url}
-                    nom={option.data?.carrier_name}
-                  />
-                  {option.type?.description && (
-                    <span className="min-w-0 truncate text-[12.5px] text-gv-text-soft">
-                      {option.type.description}
-                    </span>
-                  )}
+                {retrait ? (
+                  // Pas de transporteur à montrer : l'adresse du comptoir en tient lieu.
+                  <span className="mt-1 block truncate text-[12.5px] text-gv-text-soft">
+                    {[lieuDeOption(option).nom, adresseLieu(lieuDeOption(option))]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </span>
+                ) : (
+                  // Le transporteur est identifie par son logotype : les tarifs different
+                  // d'un reseau a l'autre, et c'est ce qui justifie l'ecart de prix d'une
+                  // ligne a la suivante. Une pastille carree de 24 px n'y suffisait pas.
+                  <span className="mt-1 flex min-w-0 items-center gap-2">
+                    <LogoTransporteur
+                      logoUrl={option.data?.carrier_logo_url}
+                      nom={option.data?.carrier_name}
+                    />
+                    {option.type?.description && (
+                      <span className="min-w-0 truncate text-[12.5px] text-gv-text-soft">
+                        {option.type.description}
+                      </span>
+                    )}
+                  </span>
+                )}
+              </span>
+              {retrait && option.calculated_price?.calculated_amount === 0 ? (
+                <span className="shrink-0 text-[15px] font-medium text-emerald-700">Gratuit</span>
+              ) : (
+                <span className="shrink-0 text-[15px] font-medium text-gv-text">
+                  {prixTTC(option)}
                 </span>
-              </span>
-              <span className="shrink-0 text-[15px] font-medium text-gv-text">
-                {prixTTC(option)}
-              </span>
+              )}
             </label>
           );
         })}

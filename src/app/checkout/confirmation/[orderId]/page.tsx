@@ -4,6 +4,7 @@ import { getOrder } from "@/lib/medusa-checkout";
 import { getCurrentCustomer } from "@/lib/customer-actions";
 import { formatPrice } from "@/lib/medusa";
 import PageTransition from "@/components/page-transition";
+import { adresseLieu, getOptionsRetrait, lieuDeCommande } from "@/lib/retrait-boutique";
 
 export default async function OrderConfirmationPage({
   params,
@@ -11,7 +12,11 @@ export default async function OrderConfirmationPage({
   params: Promise<{ orderId: string }>;
 }) {
   const { orderId } = await params;
-  const [order, customer] = await Promise.all([getOrder(orderId), getCurrentCustomer()]);
+  const [order, customer, optionsRetrait] = await Promise.all([
+    getOrder(orderId),
+    getCurrentCustomer(),
+    getOptionsRetrait(),
+  ]);
 
   if (!order) {
     notFound();
@@ -20,6 +25,7 @@ export default async function OrderConfirmationPage({
   // Le suivi vit dans l'espace client : on n'y envoie que ceux qui peuvent y entrer, et
   // seulement vers leur propre commande.
   const suivi = customer && order.customer_id === customer.id ? `/compte/commandes/${order.id}` : null;
+  const lieu = lieuDeCommande(order.shipping_methods, optionsRetrait);
 
   return (
     <PageTransition>
@@ -49,7 +55,18 @@ export default async function OrderConfirmationPage({
           <span>{formatPrice(order.total, order.currency_code)}</span>
         </div>
 
-        {order.shipping_address && (
+        {/* Retrait en boutique : l'adresse utile est celle du comptoir, pas celle du client. */}
+        {lieu ? (
+          <div className="mt-4 border-t border-brand-chocolate/10 pt-4 text-sm text-brand-chocolate/70">
+            <p className="mb-1 font-medium text-brand-chocolate">À retirer en boutique</p>
+            <p>{lieu.nom}</p>
+            <p>{adresseLieu(lieu)}</p>
+            <p className="mt-2">
+              Votre commande est réglée. Nous vous prévenons par email dès qu&apos;elle est prête :
+              il suffira de donner le numéro {order.display_id} au comptoir.
+            </p>
+          </div>
+        ) : order.shipping_address && (
           <div className="mt-4 border-t border-brand-chocolate/10 pt-4 text-sm text-brand-chocolate/70">
             <p className="mb-1 font-medium text-brand-chocolate">Adresse de livraison</p>
             <p>

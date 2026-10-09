@@ -16,6 +16,18 @@ export const STAGE_LABELS: Record<OrderStage, string> = {
   delivered: "Livrée",
 };
 
+/**
+ * Les jalons d'un retrait en boutique : rien n'est expédié, la commande est préparée puis
+ * remise au comptoir. Medusa la dit « livrée » quand le marchand la marque retirée.
+ */
+export const PICKUP_STAGES: OrderStage[] = ["ordered", "prepared", "delivered"];
+
+export const PICKUP_STAGE_LABELS: Record<OrderStage, string> = {
+  ...STAGE_LABELS,
+  prepared: "Prête à retirer",
+  delivered: "Retirée",
+};
+
 export type OrderTone = "neutral" | "progress" | "success" | "danger";
 
 export type OrderOutlook = {
@@ -41,9 +53,27 @@ export type OrderOutlook = {
  * « à expédier », et le marchand en prépare une autre. Le client ne voit donc pas
  * « annulée » tant que la commande ne l'est pas vraiment.
  */
-export function describeOrder(order: Pick<MedusaOrderSummary, "status" | "fulfillment_status">): OrderOutlook {
+export function describeOrder(
+  order: Pick<MedusaOrderSummary, "status" | "fulfillment_status">,
+  { retrait = false }: { retrait?: boolean } = {}
+): OrderOutlook {
   if (order.status === "canceled") {
     return { label: "Annulée", tone: "danger", stage: null, canceled: true, shipmentCanceled: false };
+  }
+
+  // Retrait en boutique : préparer la commande la rend disponible au comptoir — c'est ce que
+  // le client attend de savoir — et la marquer livrée veut dire qu'il l'a récupérée.
+  if (retrait) {
+    switch (order.fulfillment_status) {
+      case "delivered":
+      case "partially_delivered":
+        return { label: "Retirée", tone: "success", stage: "delivered", canceled: false, shipmentCanceled: false };
+      case "fulfilled":
+      case "partially_fulfilled":
+      case "shipped":
+      case "partially_shipped":
+        return { label: "Prête à retirer", tone: "progress", stage: "prepared", canceled: false, shipmentCanceled: false };
+    }
   }
 
   switch (order.fulfillment_status) {

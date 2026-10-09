@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { ArrowRight, Check, Leaf, Lock, MapPin, Pencil, Truck } from "lucide-react";
+import { ArrowRight, Check, Leaf, Lock, MapPin, Pencil, Store, Truck } from "lucide-react";
 import {
   getLineItemImage,
   tauxToutesTaxes,
@@ -19,6 +19,7 @@ import MoneticoPaymentForm from "@/components/monetico-payment-form";
 import CheckoutStepper from "@/components/checkout-stepper";
 import DeliveryPicker from "@/components/delivery-picker";
 import type { ServicePoint } from "@/lib/service-points";
+import { adresseLieu, estRetrait, lieuDeOption } from "@/lib/retrait-boutique";
 
 const EMPTY_ADDRESS: MedusaAddress = {
   first_name: "",
@@ -93,6 +94,11 @@ export default function CheckoutForm({
 
   const selectedOption = shippingOptions.find((o) => o.id === selectedOptionId) ?? null;
   const besoinPointRelais = Boolean(selectedOption?.data?.is_service_point_required);
+  // Retrait en boutique : rien ne part, la rue du client ne sert plus — comme en point relais,
+  // seules ses coordonnées comptent.
+  const retrait = estRetrait(selectedOption);
+  const lieu = retrait && selectedOption ? lieuDeOption(selectedOption) : null;
+  const sansAdresseDeLivraison = besoinPointRelais || retrait;
   // Le repere de progression doit dire la verite : choisir un point relais est une etape
   // de plus, et la masquer promettrait un paiement immediat qui n'arrive pas.
   const etapes = besoinPointRelais
@@ -233,10 +239,10 @@ export default function CheckoutForm({
 
         Masquee, elle reste intacte sur le panier : rien n'est efface.
       */}
-      {!(besoinPointRelais && addressesSaved && !editingAddress) && (
+      {!(sansAdresseDeLivraison && addressesSaved && !editingAddress) && (
       <section className={cardClass}>
         <div className="mb-4 flex items-center justify-between gap-4">
-          <h2 className="text-[16px] font-semibold text-gv-text">{besoinPointRelais ? '2. Vos coordonnées' : '2. Adresse de livraison'}</h2>
+          <h2 className="text-[16px] font-semibold text-gv-text">{sansAdresseDeLivraison ? '2. Vos coordonnées' : '2. Adresse de livraison'}</h2>
           {addressesSaved && !editingAddress && (
             <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[12px] font-medium text-emerald-700">
               <Check size={12} strokeWidth={3} />
@@ -354,7 +360,7 @@ export default function CheckoutForm({
 
       {/* Rappel des coordonnees quand la carte est masquee : sans lui, une faute de frappe
           dans l'e-mail de confirmation deviendrait irrattrapable. */}
-      {besoinPointRelais && addressesSaved && !editingAddress && (
+      {sansAdresseDeLivraison && addressesSaved && !editingAddress && (
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1 px-1 text-[12.5px] text-gv-text-soft">
           <span>
             Commande au nom de{" "}
@@ -413,12 +419,12 @@ export default function CheckoutForm({
               {/* Le nom vient de l'option choisie : rien n'est ecrit en dur ici, et le
                   montant est celui que Medusa a pose sur le panier. */}
               <span>
-                Livraison
-                {selectedOption ? ` (${selectedOption.name})` : ""}
+                {retrait ? "Retrait en boutique" : "Livraison"}
+                {selectedOption && !retrait ? ` (${selectedOption.name})` : ""}
               </span>
               <span className="tabular-nums">
                 {shippingSelected && cart.shipping_total === 0 ? (
-                  <span className="font-medium text-emerald-700">Offerte</span>
+                  <span className="font-medium text-emerald-700">{retrait ? "Gratuit" : "Offerte"}</span>
                 ) : (
                   formatPrice(cart.shipping_total, cart.currency_code)
                 )}
@@ -439,6 +445,24 @@ export default function CheckoutForm({
                 <span className="block text-[11.5px] uppercase leading-snug text-gv-text-soft">
                   {servicePoint.address.house_number} {servicePoint.address.street},{" "}
                   {servicePoint.address.postal_code} {servicePoint.address.city}
+                </span>
+              </span>
+            </div>
+          )}
+
+          {lieu && (
+            <div className="mt-3 flex items-start gap-2.5 rounded-lg bg-gv-50/70 p-3">
+              <Store size={15} className="mt-0.5 shrink-0 text-gv-800" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[11.5px] text-gv-text-soft">À retirer en boutique</span>
+                <span className="block truncate text-[14px] font-semibold text-gv-text">
+                  {lieu.nom}
+                </span>
+                <span className="block text-[11.5px] leading-snug text-gv-text-soft">
+                  {adresseLieu(lieu)}
+                </span>
+                <span className="mt-1 block text-[11.5px] leading-snug text-gv-text-soft">
+                  Vous recevrez un email dès qu&apos;elle sera prête.
                 </span>
               </span>
             </div>

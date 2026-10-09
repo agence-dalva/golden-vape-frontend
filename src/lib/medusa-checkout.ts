@@ -26,6 +26,24 @@ export type MedusaShippingOption = {
   } | null;
   /** Libelle et description saisis a la creation de l'option, cote administration. */
   type?: { label?: string; description?: string } | null;
+  /**
+   * Ensemble d'expedition de l'option. Son type distingue le retrait en boutique
+   * (« pickup ») de la livraison ; son emplacement donne l'adresse du comptoir.
+   */
+  service_zone?: {
+    fulfillment_set?: {
+      type?: string;
+      location?: {
+        name?: string | null;
+        address?: {
+          address_1?: string | null;
+          address_2?: string | null;
+          postal_code?: string | null;
+          city?: string | null;
+        } | null;
+      } | null;
+    } | null;
+  } | null;
 };
 
 export type MedusaOrder = {
@@ -43,13 +61,14 @@ export type MedusaOrder = {
     total: number;
   }[];
   shipping_address: MedusaAddress | null;
+  shipping_methods?: { shipping_option_id?: string | null; name?: string }[];
 };
 
 const CART_FIELDS =
   "id,currency_code,region_id,customer_id,email,total,item_total,shipping_total,item_subtotal,shipping_subtotal,*items,*items.total,*items.subtotal,*items.thumbnail,*items.variant.images.url,*items.product.images.url,*shipping_address,*billing_address,*shipping_methods,*shipping_methods.shipping_option,payment_collection.id,*payment_collection.payment_sessions";
 
 const ORDER_FIELDS =
-  "id,display_id,customer_id,email,currency_code,total,*items,*items.total,*shipping_address";
+  "id,display_id,customer_id,email,currency_code,total,*items,*items.total,*shipping_address,*shipping_methods";
 
 async function checkoutFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${MEDUSA_BACKEND_URL}${path}`, {
@@ -88,7 +107,9 @@ export async function updateCartAddresses(
 
 export async function listShippingOptionsForCart(cartId: string): Promise<MedusaShippingOption[]> {
   const { shipping_options } = await checkoutFetch<{ shipping_options: MedusaShippingOption[] }>(
-    `/store/shipping-options?cart_id=${cartId}&fields=id,name,price_type,*calculated_price,data,*type`
+    `/store/shipping-options?cart_id=${cartId}&fields=id,name,price_type,*calculated_price,data,*type,` +
+      "service_zone.fulfillment_set.type,service_zone.fulfillment_set.location.name," +
+      "service_zone.fulfillment_set.location.address.*"
   );
 
   // Une option a tarif calcule revient sans prix : la liste ne declenche pas le calcul,

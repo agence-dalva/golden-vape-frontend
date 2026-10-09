@@ -3,11 +3,14 @@ import { ArrowRight } from "lucide-react";
 import type { MedusaOrderSummary } from "@/lib/medusa-orders";
 import { describeOrder, formatOrderDate } from "@/lib/order-status";
 import { formatPrice } from "@/lib/medusa";
+import { getOptionsRetrait, lieuDeCommande } from "@/lib/retrait-boutique";
 import OrderStatusBadge from "./order-status-badge";
 
 /** Une commande dans une liste : numéro, date, nombre d'articles, statut, total. */
-export default function OrderRow({ order }: { order: MedusaOrderSummary }) {
-  const etat = describeOrder(order);
+export default async function OrderRow({ order }: { order: MedusaOrderSummary }) {
+  // Liste mise en cache et partagée entre les lignes : un seul appel par page.
+  const retrait = lieuDeCommande(order.shipping_methods, await getOptionsRetrait()) !== null;
+  const etat = describeOrder(order, { retrait });
   const articles = (order.items ?? []).reduce((somme, item) => somme + Number(item.quantity ?? 0), 0);
 
   return (
