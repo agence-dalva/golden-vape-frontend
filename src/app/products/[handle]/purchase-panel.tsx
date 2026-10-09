@@ -8,6 +8,7 @@ import type { MedusaProduct } from "@/lib/medusa";
 import { formatPrice, getDisplayAmount } from "@/lib/medusa";
 import { addToCartAction } from "@/lib/cart-actions";
 import { useVariantSelection } from "./variant-selection";
+import VariantPicker from "./variant-picker";
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -114,42 +115,12 @@ export default function PurchasePanel({
       <hr className="mb-[22px] mt-6 border-gv-border" />
 
       {variants.length > 1 && (
-        <fieldset>
-          <legend className="mb-3 text-sm font-semibold text-gv-text">
-            Choisissez votre {optionTitle.toLowerCase()}
-          </legend>
-          <div
-            role="radiogroup"
-            aria-label={`Choisissez votre ${optionTitle.toLowerCase()}`}
-            className="grid grid-cols-2 gap-3 sm:grid-cols-4"
-          >
-            {variants.map((variant) => {
-              const isSelected = variant.id === selected?.id;
-              const unavailable =
-                variant.inventory_quantity !== null && variant.inventory_quantity <= 0;
-
-              return (
-                <button
-                  key={variant.id}
-                  role="radio"
-                  aria-checked={isSelected}
-                  // Une déclinaison en rupture reste visible : la masquer laisserait croire
-                  // qu'elle n'existe pas.
-                  disabled={unavailable}
-                  onClick={() => selectVariant(variant.id)}
-                  className={`min-h-[50px] cursor-pointer rounded-[7px] border px-2 text-sm font-semibold transition-all duration-200 ${
-                    isSelected
-                      ? "border-gv-800 bg-gv-800 text-white shadow-[0_7px_18px_rgb(68_54_46/0.16)]"
-                      : "border-gv-border-strong bg-white text-gv-text hover:border-gv-800"
-                  } ${unavailable ? "cursor-not-allowed line-through opacity-45" : ""}`}
-                >
-                  {variant.options[0]?.value ?? variant.title}
-                  {unavailable && <span className="sr-only"> — indisponible</span>}
-                </button>
-              );
-            })}
-          </div>
-        </fieldset>
+        <VariantPicker
+          variants={variants}
+          selectedId={selected?.id}
+          optionTitle={optionTitle}
+          onSelect={selectVariant}
+        />
       )}
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-[128px_minmax(0,1fr)]">
