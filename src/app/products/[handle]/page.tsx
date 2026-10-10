@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import {
   getProductByHandle,
+  listBrands,
   listProductAttributes,
   listProductsByCategory,
   groupAttributesByType,
@@ -13,10 +14,11 @@ import Breadcrumbs, { type Crumb } from "@/components/breadcrumbs";
 import ProductGallery from "./product-gallery";
 import { VariantSelection } from "./variant-selection";
 import PurchasePanel from "./purchase-panel";
-import ProductDetails, { type Spec } from "./product-details";
+import ProductDetails, { type BrandLink, type Spec } from "./product-details";
 
 // Caractéristiques déjà exposées ailleurs sur la fiche : les répéter dans le tableau ferait
-// doublon avec la marque du panneau d'achat et le sélecteur de déclinaison.
+// doublon avec le sélecteur de déclinaison. La marque, elle, y reste : c'est un lien vers sa
+// page, et on la cherche autant sous le titre que dans le tableau.
 const SPECS_SHOWN_ELSEWHERE = ["taux de nicotine"];
 
 export default async function ProductPage({
@@ -37,12 +39,25 @@ export default async function ProductPage({
     notFound();
   }
 
-  const attributes = await listProductAttributes(product.id).catch(() => []);
+  // La liste des marques donne le logo, et dit lesquelles ont une page : un nom qu'elle ne
+  // connaît pas reste du texte plutôt que de mener à une 404.
+  const [attributes, knownBrands] = await Promise.all([
+    listProductAttributes(product.id).catch(() => []),
+    listBrands().catch(() => []),
+  ]);
   const groups = groupAttributesByType(attributes);
-  const valueOf = (typeName: string) =>
-    groups.find((group) => group.typeName.toLowerCase() === typeName)?.values.join(", ") ?? null;
+  const valuesOf = (typeName: string) =>
+    groups.find((group) => group.typeName.toLowerCase() === typeName)?.values ?? [];
+  const valueOf = (typeName: string) => valuesOf(typeName).join(", ") || null;
 
-  const brand = valueOf("marque");
+  const brands: BrandLink[] = valuesOf("marque").map((value) => {
+    const known = knownBrands.find((b) => b.value === value);
+    return {
+      value,
+      href: known ? `/marques/${encodeURIComponent(value)}` : null,
+      logoUrl: known?.image_url || null,
+    };
+  });
   const origin = valueOf("origine");
   const contenance = valueOf("contenance");
   const ratio = valueOf("dosage pg/vg") ?? valueOf("pg/vg");
@@ -77,7 +92,11 @@ export default async function ProductPage({
     ...(category ? [{ label: "Catégorie", value: category.name }] : []),
     ...groups
       .filter((group) => !SPECS_SHOWN_ELSEWHERE.includes(group.typeName.toLowerCase()))
-      .map((group) => ({ label: group.typeName, value: group.values.join(" · ") })),
+      .map((group) =>
+        group.typeName.toLowerCase() === "marque"
+          ? { label: group.typeName, value: group.values.join(" · "), links: brands }
+          : { label: group.typeName, value: group.values.join(" · ") }
+      ),
   ];
 
   // L'accroche vient du sous-titre saisi à l'administration, seul texte écrit pour être lu
@@ -106,7 +125,7 @@ export default async function ProductPage({
           <ProductGallery product={product} origin={origin} />
           <PurchasePanel
             product={product}
-            brand={brand}
+            brands={brands}
             tagline={tagline}
             cartVariantIds={cartVariantIds}
             customerEmail={customer?.email ?? null}

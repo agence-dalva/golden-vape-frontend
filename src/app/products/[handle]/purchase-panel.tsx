@@ -3,8 +3,19 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Minus, Plus, ShoppingBag, Loader2, ShieldCheck, Truck, Package } from "lucide-react";
+import Image from "next/image";
+import {
+  Minus,
+  Plus,
+  ShoppingBag,
+  Loader2,
+  ShieldCheck,
+  Truck,
+  Package,
+  ChevronRight,
+} from "lucide-react";
 import type { MedusaProduct } from "@/lib/medusa";
+import type { BrandLink } from "./product-details";
 import { formatPrice, getDisplayAmount } from "@/lib/medusa";
 import { addToCartAction } from "@/lib/cart-actions";
 import { useVariantSelection } from "./variant-selection";
@@ -20,13 +31,13 @@ const BENEFITS = [
 
 export default function PurchasePanel({
   product,
-  brand,
+  brands,
   tagline,
   cartVariantIds,
   customerEmail,
 }: {
   product: MedusaProduct;
-  brand: string | null;
+  brands: BrandLink[];
   tagline: string | null;
   cartVariantIds: string[];
   /** Adresse du client connecté : l'alerte de retour en stock s'en sert sans rien demander. */
@@ -78,15 +89,23 @@ export default function PurchasePanel({
 
   return (
     <div className="flex flex-col">
-      {brand && (
-        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-gv-800">{brand}</p>
-      )}
-
-      <h1 className="gv-title-strong font-display text-[36px] font-normal leading-[1.2] tracking-[0.01em] text-gv-text lg:text-[46px]">
+      <h1 className="gv-title-strong font-display text-[32px] font-normal leading-[1.2] tracking-[0.01em] text-gv-text">
         {product.title}
       </h1>
 
-      {tagline && <p className="mt-2.5 text-sm leading-relaxed text-gv-text-soft">{tagline}</p>}
+      {/* La marque sous le titre, en pastille : la bordure et la flèche disent qu'elle mène
+          quelque part, sans attendre un survol que le mobile n'a pas. L'accroche se range sur
+          la même ligne pour ne pas allonger l'en-tête, et passe dessous si la place manque. */}
+      {(brands.length > 0 || tagline) && (
+        <div className="mt-3 flex flex-wrap items-center gap-x-3.5 gap-y-2">
+          {brands.map((brand) => (
+            <BrandChip key={brand.value} brand={brand} />
+          ))}
+          {tagline && (
+            <p className="text-sm leading-relaxed text-gv-text-soft">{tagline}</p>
+          )}
+        </div>
+      )}
 
       {price ? (
         <p className="mt-[22px] text-[32px] font-semibold leading-tight text-gv-text">
@@ -213,5 +232,47 @@ export default function PurchasePanel({
         ))}
       </ul>
     </div>
+  );
+}
+
+/**
+ * Pastille de marque : logo, nom, flèche. Sans page à ouvrir, la même pastille sans lien ni
+ * flèche, pour que rien n'ait l'air cliquable sans l'être.
+ */
+function BrandChip({ brand }: { brand: BrandLink }) {
+  const contenu = (
+    <>
+      {brand.logoUrl && (
+        // Les logos ont des fonds et des proportions de toutes sortes : un carré blanc,
+        // `contain`, les met tous à égalité sans en recadrer aucun.
+        <span className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full border border-gv-border bg-white">
+          <Image src={brand.logoUrl} alt="" fill sizes="28px" className="object-contain p-0.5" />
+        </span>
+      )}
+      <span className="text-[13px] font-semibold text-gv-text">{brand.value}</span>
+    </>
+  );
+
+  const forme = `inline-flex items-center gap-2 rounded-full border bg-white py-1 ${
+    brand.logoUrl ? "pl-1" : "pl-3.5"
+  }`;
+
+  if (!brand.href) {
+    return <span className={`${forme} border-gv-border pr-3.5`}>{contenu}</span>;
+  }
+
+  return (
+    <Link
+      href={brand.href}
+      aria-label={`Voir tous les produits ${brand.value}`}
+      className={`${forme} group border-gv-border-strong pr-2.5 transition-colors hover:border-gv-800 hover:bg-gv-800/[0.03] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gv-800`}
+    >
+      {contenu}
+      <ChevronRight
+        size={15}
+        aria-hidden
+        className="text-gv-800 transition-transform duration-200 group-hover:translate-x-0.5"
+      />
+    </Link>
   );
 }

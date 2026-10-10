@@ -1,7 +1,12 @@
-import { MapPin, Droplets, FlaskConical } from "lucide-react";
+import Link from "next/link";
+import { MapPin, Droplets, FlaskConical, ChevronRight } from "lucide-react";
 import CollapsibleText from "@/components/collapsible-text";
 
-export type Spec = { label: string; value: string };
+/** Une marque du produit, et sa page quand elle en a une. */
+export type BrandLink = { value: string; href: string | null; logoUrl: string | null };
+
+/** `links` remplace le texte de la valeur par des liens, un par élément. */
+export type Spec = { label: string; value: string; links?: BrandLink[] };
 
 export default function ProductDetails({
   title,
@@ -69,7 +74,31 @@ export default function ProductDetails({
                 }`}
               >
                 <dt className="text-[13px] text-gv-text-soft">{spec.label}</dt>
-                <dd className="text-right text-[13px] font-semibold text-gv-text">{spec.value}</dd>
+                <dd className="text-right text-[13px] font-semibold text-gv-text">
+                  {spec.links?.some((link) => link.href)
+                    ? spec.links.map((link, i) => (
+                        <span key={link.value}>
+                          {i > 0 && <span className="text-gv-text-muted"> · </span>}
+                          {link.href ? (
+                            // Souligné en permanence : sur mobile, aucun survol ne révèle le lien.
+                            <Link
+                              href={link.href}
+                              className="group inline-flex items-baseline gap-0.5 text-gv-800 underline decoration-gv-800/30 underline-offset-4 transition-colors hover:decoration-gv-800"
+                            >
+                              {link.value}
+                              <ChevronRight
+                                size={13}
+                                aria-hidden
+                                className="translate-y-0.5 transition-transform group-hover:translate-x-0.5"
+                              />
+                            </Link>
+                          ) : (
+                            link.value
+                          )}
+                        </span>
+                      ))
+                    : spec.value}
+                </dd>
               </div>
             ))}
           </dl>
