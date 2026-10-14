@@ -99,6 +99,18 @@ export default function CheckoutForm({
   const retrait = estRetrait(selectedOption);
   const lieu = retrait && selectedOption ? lieuDeOption(selectedOption) : null;
   const sansAdresseDeLivraison = besoinPointRelais || retrait;
+
+  // Le panier ne porte le mode choisi qu'une fois enregistré — en point relais, pas avant le
+  // choix du point. Entre-temps il garde l'ancien mode, souvent le retrait à 0 €, et afficher
+  // ce montant sous le nom du nouveau faisait lire « Offerte ». Tant que le panier n'a pas
+  // suivi, le récapitulatif annonce le prix du mode choisi, tel que l'affiche sa carte.
+  const panierAJour = cart.shipping_methods[0]?.shipping_option_id === selectedOptionId;
+  const prixAnnonce =
+    !panierAJour && selectedOption?.calculated_price
+      ? selectedOption.calculated_price.calculated_amount * tauxToutesTaxes(cart)
+      : null;
+  const fraisDeLivraison = prixAnnonce ?? cart.shipping_total;
+  const totalAffiche = cart.total - cart.shipping_total + fraisDeLivraison;
   // Le repere de progression doit dire la verite : choisir un point relais est une etape
   // de plus, et la masquer promettrait un paiement immediat qui n'arrive pas.
   const etapes = besoinPointRelais
@@ -423,10 +435,10 @@ export default function CheckoutForm({
                 {selectedOption && !retrait ? ` (${selectedOption.name})` : ""}
               </span>
               <span className="tabular-nums">
-                {shippingSelected && cart.shipping_total === 0 ? (
+                {shippingSelected && fraisDeLivraison === 0 ? (
                   <span className="font-medium text-emerald-700">{retrait ? "Gratuit" : "Offerte"}</span>
                 ) : (
-                  formatPrice(cart.shipping_total, cart.currency_code)
+                  formatPrice(fraisDeLivraison, cart.currency_code)
                 )}
               </span>
             </div>
@@ -472,7 +484,7 @@ export default function CheckoutForm({
             <span className="text-[18px] font-semibold text-gv-text">Total</span>
             <span className="text-right">
               <span className="block text-[21px] font-semibold tabular-nums text-gv-text">
-                {formatPrice(cart.total, cart.currency_code)}
+                {formatPrice(totalAffiche, cart.currency_code)}
               </span>
               <span className="block text-[11px] text-gv-text-soft">TTC</span>
             </span>
