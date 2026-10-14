@@ -19,7 +19,8 @@ import MoneticoPaymentForm from "@/components/monetico-payment-form";
 import CheckoutStepper from "@/components/checkout-stepper";
 import DeliveryPicker from "@/components/delivery-picker";
 import type { ServicePoint } from "@/lib/service-points";
-import { adresseLieu, estRetrait, lieuDeOption } from "@/lib/retrait-boutique";
+import { adresseLieu, estRetrait, lieuDeOption, type Horaire } from "@/lib/retrait-boutique";
+import HorairesRetrait from "@/components/horaires-retrait";
 
 const EMPTY_ADDRESS: MedusaAddress = {
   first_name: "",
@@ -47,10 +48,13 @@ export default function CheckoutForm({
   cart,
   customer,
   shippingOptions,
+  horairesRetrait,
 }: {
   cart: MedusaCart;
   customer: MedusaCustomer | null;
   shippingOptions: MedusaShippingOption[];
+  /** Horaires de la boutique, lus côté serveur : la liste des options ne les porte pas. */
+  horairesRetrait?: Horaire[];
 }) {
   const [isPending, startTransition] = useTransition();
   const [moneticoForm, setMoneticoForm] = useState<MoneticoForm | null>(null);
@@ -465,7 +469,7 @@ export default function CheckoutForm({
           {lieu && (
             <div className="mt-3 flex items-start gap-2.5 rounded-lg bg-gv-50/70 p-3">
               <Store size={15} className="mt-0.5 shrink-0 text-gv-800" />
-              <span className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1">
                 <span className="block text-[11.5px] text-gv-text-soft">À retirer en boutique</span>
                 <span className="block truncate text-[14px] font-semibold text-gv-text">
                   {lieu.nom}
@@ -473,10 +477,14 @@ export default function CheckoutForm({
                 <span className="block text-[11.5px] leading-snug text-gv-text-soft">
                   {adresseLieu(lieu)}
                 </span>
+                <HorairesRetrait
+                  horaires={horairesRetrait}
+                  className="mt-2 text-[11.5px] leading-snug text-gv-text-soft"
+                />
                 <span className="mt-1 block text-[11.5px] leading-snug text-gv-text-soft">
                   Vous recevrez un email dès qu&apos;elle sera prête.
                 </span>
-              </span>
+              </div>
             </div>
           )}
 

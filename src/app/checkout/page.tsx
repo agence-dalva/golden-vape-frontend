@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentCart } from "@/lib/cart-actions";
 import { getCurrentCustomer } from "@/lib/customer-actions";
 import { listShippingOptionsForCart } from "@/lib/medusa-checkout";
+import { getOptionsRetrait } from "@/lib/retrait-boutique";
 import CheckoutForm from "./checkout-form";
 import PageTransition from "@/components/page-transition";
 
@@ -28,12 +29,22 @@ export default async function CheckoutPage({
     redirect("/checkout/identification");
   }
 
-  const shippingOptions = await listShippingOptionsForCart(cart.id);
+  const [shippingOptions, optionsRetrait] = await Promise.all([
+    listShippingOptionsForCart(cart.id),
+    getOptionsRetrait(),
+  ]);
+  // Une seule boutique : ses horaires valent pour toute option de retrait.
+  const horairesRetrait = [...optionsRetrait.values()][0]?.horaires;
 
   return (
     <PageTransition>
     <div className="gv-container pb-20 pt-8">
-      <CheckoutForm cart={cart} customer={customer} shippingOptions={shippingOptions} />
+      <CheckoutForm
+        cart={cart}
+        customer={customer}
+        shippingOptions={shippingOptions}
+        horairesRetrait={horairesRetrait}
+      />
     </div>
     </PageTransition>
   );

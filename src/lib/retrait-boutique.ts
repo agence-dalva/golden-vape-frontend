@@ -10,12 +10,16 @@ import type { MedusaShippingOption } from "./medusa-checkout";
  * `/store/retrait-boutique`.
  */
 
+export type Horaire = { jours: string; heures: string };
+
 export type LieuRetrait = {
   nom: string | null;
   address_1: string | null;
   address_2?: string | null;
   postal_code: string | null;
   city: string | null;
+  /** Écrits dans le backend (`lib/retrait-boutique`), servis par `/store/retrait-boutique`. */
+  horaires?: Horaire[];
 };
 
 export function estRetrait(option: MedusaShippingOption | null | undefined): boolean {

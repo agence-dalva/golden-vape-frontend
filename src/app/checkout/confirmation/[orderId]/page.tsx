@@ -5,6 +5,7 @@ import { getCurrentCustomer } from "@/lib/customer-actions";
 import { formatPrice } from "@/lib/medusa";
 import PageTransition from "@/components/page-transition";
 import { adresseLieu, getOptionsRetrait, lieuDeCommande } from "@/lib/retrait-boutique";
+import HorairesRetrait from "@/components/horaires-retrait";
 
 export default async function OrderConfirmationPage({
   params,
@@ -61,6 +62,7 @@ export default async function OrderConfirmationPage({
             <p className="mb-1 font-medium text-brand-chocolate">À retirer en boutique</p>
             <p>{lieu.nom}</p>
             <p>{adresseLieu(lieu)}</p>
+            <HorairesRetrait horaires={lieu.horaires} className="mt-2" />
             <p className="mt-2">
               Votre commande est réglée. Nous vous prévenons par email dès qu&apos;elle est prête :
               il suffira de donner le numéro {order.display_id} au comptoir.

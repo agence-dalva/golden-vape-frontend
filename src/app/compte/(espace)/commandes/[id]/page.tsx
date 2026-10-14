@@ -14,6 +14,7 @@ import {
 import { formatPrice } from "@/lib/medusa";
 import PageTransition from "@/components/page-transition";
 import { adresseLieu, getOptionsRetrait, lieuDeCommande } from "@/lib/retrait-boutique";
+import HorairesRetrait from "@/components/horaires-retrait";
 import OrderStatusBadge from "../../../order-status-badge";
 import OrderStepper from "../../../order-stepper";
 
@@ -213,6 +214,12 @@ export default async function AccountOrderPage({ params }: { params: Promise<{ i
                 </h3>
                 <p className="text-sm font-medium text-gv-text">{lieu.nom}</p>
                 <p className="mt-1 text-sm leading-relaxed text-gv-text-soft">{adresseLieu(lieu)}</p>
+                {etat.stage !== "delivered" && (
+                  <HorairesRetrait
+                    horaires={lieu.horaires}
+                    className="mt-3 text-[13px] leading-relaxed text-gv-text-soft"
+                  />
+                )}
                 <p className="mt-3 text-[13px] leading-relaxed text-gv-text-soft">
                   {etat.stage === "prepared"
                     ? `Votre commande vous attend : donnez le numéro ${order.display_id} au comptoir.`
