@@ -4,15 +4,16 @@ import { Truck, ShieldCheck } from "lucide-react";
 import { listCategories } from "@/lib/medusa";
 import { adresseLieu, getOptionsRetrait } from "@/lib/retrait-boutique";
 import { GA_ID } from "@/lib/consentement";
+import { CGU_PDF, CGV_PDF } from "@/lib/documents-legaux";
 import HorairesRetrait from "@/components/horaires-retrait";
 import GererCookies from "@/components/gerer-cookies";
 
-// Les CGV et CGU sont les PDF du marchand (sources .odt dans docs/legal) : ils s'ouvrent dans
-// la visionneuse du navigateur, dans un nouvel onglet.
+// Les CGV et CGU sont des PDF : ils s'ouvrent dans la visionneuse du navigateur, dans un
+// nouvel onglet.
 const LIENS_LEGAUX = [
   { label: "Mentions légales", href: "/mentions-legales" },
-  { label: "CGV", href: "/legal/cgv-golden-vape.pdf", pdf: true },
-  { label: "CGU", href: "/legal/cgu-golden-vape.pdf", pdf: true },
+  { label: "CGV", href: CGV_PDF, pdf: true },
+  { label: "CGU", href: CGU_PDF, pdf: true },
   { label: "Confidentialité", href: "/confidentialite" },
   { label: "Cookies", href: "/cookies" },
 ];

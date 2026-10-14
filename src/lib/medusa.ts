@@ -405,6 +405,34 @@ export async function getCategoryByHandle(handle: string) {
   return product_categories[0] ?? null
 }
 
+type EntreeSitemap = { handle: string; updated_at?: string | null }
+
+// Pour le sitemap : tout le catalogue, réduit à l'adresse et à la date de modification.
+// Une heure de cache suffit, les moteurs ne relisent pas le sitemap plus souvent.
+export async function listProductHandles(): Promise<EntreeSitemap[]> {
+  const pageSize = 500
+  const entrees: EntreeSitemap[] = []
+  for (let offset = 0; ; offset += pageSize) {
+    const { products, count } = await medusaFetch<{ products: EntreeSitemap[]; count: number }>(
+      "/store/products",
+      { fields: "handle,updated_at", limit: String(pageSize), offset: String(offset) },
+      { revalidate: 3600 }
+    )
+    entrees.push(...products)
+    if (products.length < pageSize || entrees.length >= count) return entrees
+  }
+}
+
+export async function listCategoryHandles(): Promise<EntreeSitemap[]> {
+  const { product_categories } = await medusaFetch<{ product_categories: EntreeSitemap[] }>(
+    "/store/product-categories",
+    // Toutes les rubriques, sous-catégories comprises (pas de filtre sur le parent).
+    { fields: "handle,updated_at", limit: "1000" },
+    { revalidate: 3600 }
+  )
+  return product_categories
+}
+
 export async function listProductsByCategory(
   categoryIds: string | string[],
   { limit = 24, offset = 0, order }: { limit?: number; offset?: number; order?: string } = {}

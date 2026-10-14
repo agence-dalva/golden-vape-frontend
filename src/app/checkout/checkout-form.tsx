@@ -21,6 +21,7 @@ import DeliveryPicker from "@/components/delivery-picker";
 import type { ServicePoint } from "@/lib/service-points";
 import { adresseLieu, estRetrait, lieuDeOption, type Horaire } from "@/lib/retrait-boutique";
 import HorairesRetrait from "@/components/horaires-retrait";
+import { CGV_PDF } from "@/lib/documents-legaux";
 
 const EMPTY_ADDRESS: MedusaAddress = {
   first_name: "",
@@ -58,6 +59,8 @@ export default function CheckoutForm({
 }) {
   const [isPending, startTransition] = useTransition();
   const [moneticoForm, setMoneticoForm] = useState<MoneticoForm | null>(null);
+  const [cgvAcceptees, setCgvAcceptees] = useState(false);
+  const [majoriteConfirmee, setMajoriteConfirmee] = useState(false);
 
   const savedAddress =
     customer?.addresses?.find((a) => a.is_default_shipping) ?? customer?.addresses?.[0];
@@ -197,6 +200,9 @@ export default function CheckoutForm({
   };
 
   const canPay = addressesSaved && shippingSelected && (!besoinPointRelais || Boolean(servicePoint));
+  // Les deux engagements décrits à l'article 3.1 des CGV, cochés à chaque commande : ils
+  // sont la preuve que le client a accepté les CGV avant de payer.
+  const engagementsPris = cgvAcceptees && majoriteConfirmee;
 
   return (
     <>
@@ -503,14 +509,52 @@ export default function CheckoutForm({
               <MoneticoPaymentForm form={moneticoForm} />
             </div>
           ) : (
-            <button
-              onClick={handlePay}
-              disabled={!canPay || isPending}
-              className="mt-5 flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gv-800 text-[15px] font-medium text-white transition-colors hover:bg-gv-900 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isPending ? "Traitement…" : "Continuer vers le paiement"}
-              {!isPending && <ArrowRight size={16} />}
-            </button>
+            <>
+              <div className="mt-5 flex flex-col gap-2.5 text-[12.5px] leading-snug text-gv-text-soft">
+                <label className="flex cursor-pointer items-start gap-2.5">
+                  <input
+                    type="checkbox"
+                    checked={cgvAcceptees}
+                    onChange={(event) => setCgvAcceptees(event.target.checked)}
+                    className="mt-0.5 size-4 shrink-0 cursor-pointer accent-gv-800"
+                  />
+                  <span>
+                    J&apos;ai lu les{" "}
+                    <a
+                      href={CGV_PDF}
+                      target="_blank"
+                      rel="noopener"
+                      className="font-semibold text-gv-text underline underline-offset-2"
+                    >
+                      conditions générales de vente
+                    </a>{" "}
+                    et j&apos;y adhère sans réserve.
+                  </span>
+                </label>
+                <label className="flex cursor-pointer items-start gap-2.5">
+                  <input
+                    type="checkbox"
+                    checked={majoriteConfirmee}
+                    onChange={(event) => setMajoriteConfirmee(event.target.checked)}
+                    className="mt-0.5 size-4 shrink-0 cursor-pointer accent-gv-800"
+                  />
+                  <span>
+                    Je reconnais être majeur et autorisé par la législation de mon pays à acheter du
+                    matériel de vape et des produits contenant de la nicotine.
+                  </span>
+                </label>
+              </div>
+              {/* Le libellé dit que le clic engage à payer (art. L. 221-14 du Code de la
+                  consommation) : c'est ce clic qui conclut la vente, selon les CGV. */}
+              <button
+                onClick={handlePay}
+                disabled={!canPay || !engagementsPris || isPending}
+                className="mt-4 flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gv-800 text-[15px] font-medium text-white transition-colors hover:bg-gv-900 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isPending ? "Traitement…" : "Payer ma commande"}
+                {!isPending && <ArrowRight size={16} />}
+              </button>
+            </>
           )}
 
           {!customer && (
