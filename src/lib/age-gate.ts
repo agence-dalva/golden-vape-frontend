@@ -15,7 +15,7 @@ export const AGE_STORAGE_KEY = "gv-age-confirmed";
  * s'il les recouvrait aussi, le visiteur ne pourrait pas lire ce qu'on lui demande
  * d'accepter.
  */
-export const PAGES_SANS_PORTILLON = ["/mentions-legales"];
+export const PAGES_SANS_PORTILLON = ["/mentions-legales", "/confidentialite", "/cookies"];
 
 export function estPageSansPortillon(chemin: string | null): boolean {
   return chemin !== null && PAGES_SANS_PORTILLON.some((page) => chemin === page || chemin.startsWith(`${page}/`));

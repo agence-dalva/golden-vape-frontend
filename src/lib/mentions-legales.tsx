@@ -1,13 +1,10 @@
-import type { ReactNode } from "react";
+import type { SectionLegale } from "@/components/page-legale";
 
 /*
   Texte des mentions légales, affiché par la page `/mentions-legales` — celle vers laquelle
-  le portillon d'âge renvoie avant d'accepter. Les CGV et CGU suivront la même forme.
-
-  Les champs entre crochets sont à fournir par le marchand avant la mise en ligne.
+  le portillon d'âge renvoie avant d'accepter. Identité de la société reprise des CGU du
+  marchand (docs/legal) ; les CGV et CGU elles-mêmes sont servies en PDF (public/legal).
 */
-
-export type SectionLegale = { titre: string; contenu: ReactNode };
 
 type Hebergeur = { role: string; nom: string; adresse: string; site: string; detail?: string };
 
@@ -38,12 +35,14 @@ export const SECTIONS_MENTIONS: SectionLegale[] = [
     titre: "Éditeur du site",
     contenu: (
       <>
-        <p>[Raison sociale] — [forme juridique] au capital de [montant] €</p>
+        <p>Golden Vape — SARL au capital de 1 000 €</p>
         <p>Siège social : 18 Av. de la République, 70200 Lure</p>
-        <p>RCS : [ville et numéro] — SIRET : [numéro]</p>
-        <p>TVA intracommunautaire : [numéro]</p>
-        <p>Contact : goldenvap.lure@gmail.com — [téléphone]</p>
-        <p>Directeur de la publication : [nom et prénom]</p>
+        <p>RCS Vesoul 985 020 155 — SIRET : 985 020 155 00018</p>
+        <p>TVA intracommunautaire : FR00985020155</p>
+        <p>
+          Contact : <a href="mailto:goldenvap.lure@gmail.com">goldenvap.lure@gmail.com</a> — 09 86 24 79 64
+        </p>
+        <p>Directeur de la publication : Alexis Michel</p>
       </>
     ),
   },

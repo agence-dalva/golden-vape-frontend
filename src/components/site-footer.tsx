@@ -2,6 +2,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { Truck, ShieldCheck } from "lucide-react";
 import { listCategories } from "@/lib/medusa";
+import { adresseLieu, getOptionsRetrait } from "@/lib/retrait-boutique";
+import { GA_ID } from "@/lib/consentement";
+import HorairesRetrait from "@/components/horaires-retrait";
+import GererCookies from "@/components/gerer-cookies";
+
+// Les CGV et CGU sont les PDF du marchand (sources .odt dans docs/legal) : ils s'ouvrent dans
+// la visionneuse du navigateur, dans un nouvel onglet.
+const LIENS_LEGAUX = [
+  { label: "Mentions légales", href: "/mentions-legales" },
+  { label: "CGV", href: "/legal/cgv-golden-vape.pdf", pdf: true },
+  { label: "CGU", href: "/legal/cgu-golden-vape.pdf", pdf: true },
+  { label: "Confidentialité", href: "/confidentialite" },
+  { label: "Cookies", href: "/cookies" },
+];
 
 const ACCOUNT_LINKS = [
   { label: "Mon compte", href: "/compte" },
@@ -18,7 +32,12 @@ const SERVICES = [
 export default async function SiteFooter() {
   // Les catégories du pied de page viennent du catalogue : elles suivent l'admin, sans
   // seconde liste à maintenir.
-  const categories = await listCategories().catch(() => []);
+  const [categories, optionsRetrait] = await Promise.all([
+    listCategories().catch(() => []),
+    getOptionsRetrait(),
+  ]);
+  // La boutique de Lure : adresse et horaires viennent du backend, comme dans les emails.
+  const boutique = [...optionsRetrait.values()][0] ?? null;
 
   return (
     <footer className="mt-20 bg-gv-800">
@@ -115,10 +134,18 @@ export default async function SiteFooter() {
             </li>
           </ul>
 
-          {/*
-            Mention obligatoire pour la vente de produits du vapotage en France. Elle ne
-            remplace pas les pages légales, qui restent à créer.
-          */}
+          {boutique?.horaires?.length ? (
+            <div className="mt-8">
+              <h2 className="mb-3 text-[13px] font-semibold text-white">La boutique</h2>
+              <p className="text-[13px] leading-relaxed text-gv-200">{adresseLieu(boutique)}</p>
+              <HorairesRetrait
+                horaires={boutique.horaires}
+                className="mt-3 text-[12.5px] leading-relaxed text-gv-200 [&_dd]:text-white"
+              />
+            </div>
+          ) : null}
+
+          {/* Mention obligatoire pour la vente de produits du vapotage en France. */}
           <p className="mt-6 rounded-[7px] border border-white/15 bg-white/[0.06] px-3.5 py-3 text-[12px] leading-relaxed text-gv-200">
             La vente de produits du vapotage est interdite aux mineurs de moins de 18 ans.
           </p>
@@ -127,11 +154,26 @@ export default async function SiteFooter() {
 
       <div className="border-t border-white/10">
         <div className="gv-container flex flex-wrap items-center justify-between gap-3 py-5 text-[12px] text-gv-300">
-          <p>
-            © {new Date().getFullYear()} Golden Vape. Tous droits réservés. ·{" "}
-            <Link href="/mentions-legales" className="transition-colors hover:text-white">
-              Mentions légales
-            </Link>
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span>© {new Date().getFullYear()} Golden Vape. Tous droits réservés.</span>
+            {LIENS_LEGAUX.map((lien) =>
+              lien.pdf ? (
+                <a
+                  key={lien.href}
+                  href={lien.href}
+                  target="_blank"
+                  rel="noopener"
+                  className="transition-colors hover:text-white"
+                >
+                  {lien.label}
+                </a>
+              ) : (
+                <Link key={lien.href} href={lien.href} className="transition-colors hover:text-white">
+                  {lien.label}
+                </Link>
+              ),
+            )}
+            {GA_ID && <GererCookies className="transition-colors hover:text-white" />}
           </p>
           <p>Paiement sécurisé par Monetico — Crédit Mutuel</p>
         </div>

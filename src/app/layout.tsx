@@ -6,6 +6,8 @@ import MainHeader from "@/components/main-header";
 import CategoryNav from "@/components/category-nav";
 import SiteFooter from "@/components/site-footer";
 import AgeGate from "@/components/age-gate";
+import CookieBanner from "@/components/cookie-banner";
+import GoogleAnalytics from "@/components/google-analytics";
 import { AGE_STORAGE_KEY } from "@/lib/age-gate";
 import { listCategories, listBrands, listCategoryBrands } from "@/lib/medusa";
 import { getCurrentCart } from "@/lib/cart-actions";
@@ -101,6 +103,8 @@ export default async function RootLayout({
           }}
         />
         <AgeGate />
+        <CookieBanner />
+        <GoogleAnalytics />
       </body>
     </html>
   );
