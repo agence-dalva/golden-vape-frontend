@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { AGE_STORAGE_KEY } from "@/lib/age-gate";
+import { usePathname } from "next/navigation";
+import { AGE_STORAGE_KEY, estPageSansPortillon } from "@/lib/age-gate";
 
 /**
  * Doit rester aligné sur la durée de transition de `[data-leaving]` dans globals.css : le
@@ -14,9 +15,12 @@ type Phase = "asking" | "refused" | "leaving" | "gone";
 
 export default function AgeGate() {
   const [phase, setPhase] = useState<Phase>("asking");
+  // Demandé par le marchand : l'entrée dans la boutique vaut acceptation des mentions légales.
+  const [mentionsAcceptees, setMentionsAcceptees] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
-  const acceptRef = useRef<HTMLButtonElement>(null);
+  const mentionsRef = useRef<HTMLInputElement>(null);
   const backRef = useRef<HTMLButtonElement>(null);
+  const pageSansPortillon = estPageSansPortillon(usePathname());
 
   /*
     Le portillon est rendu par le serveur pour couvrir la page dès la première peinture :
@@ -27,9 +31,10 @@ export default function AgeGate() {
     le défilement. Le balisage reste dans le document, inerte — il n'y a que le focus à ne
     pas déplacer vers un bouton invisible.
   */
+  // Le focus va sur la case : le bouton d'accord reste désactivé tant qu'elle n'est pas cochée.
   useEffect(() => {
     if (document.documentElement.dataset.ageOk === "1") return;
-    acceptRef.current?.focus();
+    mentionsRef.current?.focus();
   }, []);
 
   // Le bouton cliqué disparaît avec la question : sans cela le focus retomberait sur le
@@ -58,7 +63,9 @@ export default function AgeGate() {
   const keepFocusInside = (event: React.KeyboardEvent) => {
     if (event.key !== "Tab") return;
 
-    const focusable = dialogRef.current?.querySelectorAll<HTMLElement>("button");
+    const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+      "button:not(:disabled), input, a[href]"
+    );
     if (!focusable?.length) return;
 
     const first = focusable[0];
@@ -73,7 +80,7 @@ export default function AgeGate() {
     }
   };
 
-  if (phase === "gone") return null;
+  if (phase === "gone" || pageSansPortillon) return null;
 
   const refused = phase === "refused";
 
@@ -136,10 +143,30 @@ export default function AgeGate() {
             </button>
           ) : (
             <div className="mt-7 flex flex-col gap-2.5">
+              <label className="mb-2 flex cursor-pointer items-start gap-3 text-[13px] leading-snug text-gv-100">
+                <input
+                  ref={mentionsRef}
+                  type="checkbox"
+                  checked={mentionsAcceptees}
+                  onChange={(event) => setMentionsAcceptees(event.target.checked)}
+                  className="mt-0.5 size-4 shrink-0 cursor-pointer accent-white"
+                />
+                <span>
+                  J&apos;ai lu et j&apos;accepte les{" "}
+                  <a
+                    href="/mentions-legales"
+                    target="_blank"
+                    rel="noopener"
+                    className="font-semibold text-white underline underline-offset-2 hover:text-gv-100"
+                  >
+                    mentions légales
+                  </a>
+                </span>
+              </label>
               <button
-                ref={acceptRef}
                 onClick={accept}
-                className="min-h-11 cursor-pointer rounded-[8px] bg-white px-4 text-[13px] font-semibold text-gv-900 transition-colors hover:bg-gv-50"
+                disabled={!mentionsAcceptees}
+                className="min-h-11 cursor-pointer rounded-[8px] bg-white px-4 text-[13px] font-semibold text-gv-900 transition-colors hover:bg-gv-50 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white"
               >
                 Oui, j&apos;ai 18 ans ou plus
               </button>

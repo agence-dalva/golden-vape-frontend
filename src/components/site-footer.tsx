@@ -127,7 +127,12 @@ export default async function SiteFooter() {
 
       <div className="border-t border-white/10">
         <div className="gv-container flex flex-wrap items-center justify-between gap-3 py-5 text-[12px] text-gv-300">
-          <p>© {new Date().getFullYear()} Golden Vape. Tous droits réservés.</p>
+          <p>
+            © {new Date().getFullYear()} Golden Vape. Tous droits réservés. ·{" "}
+            <Link href="/mentions-legales" className="transition-colors hover:text-white">
+              Mentions légales
+            </Link>
+          </p>
           <p>Paiement sécurisé par Monetico — Crédit Mutuel</p>
         </div>
       </div>

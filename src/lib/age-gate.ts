@@ -7,3 +7,16 @@
  * `undefined`, et le portillon reparaissait à chaque chargement.
  */
 export const AGE_STORAGE_KEY = "gv-age-confirmed";
+
+/**
+ * Pages lisibles sans avoir répondu à la question de l'âge.
+ *
+ * Le portillon demande d'accepter les mentions légales et les ouvre dans un nouvel onglet :
+ * s'il les recouvrait aussi, le visiteur ne pourrait pas lire ce qu'on lui demande
+ * d'accepter.
+ */
+export const PAGES_SANS_PORTILLON = ["/mentions-legales"];
+
+export function estPageSansPortillon(chemin: string | null): boolean {
+  return chemin !== null && PAGES_SANS_PORTILLON.some((page) => chemin === page || chemin.startsWith(`${page}/`));
+}

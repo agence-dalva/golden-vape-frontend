@@ -202,7 +202,9 @@ html[data-age-ok] #age-gate {
 
 /* Verrou de défilement en CSS et non en JavaScript, pour être actif dès la première
    peinture. Il est levé en posant `data-age-ok`, une fois le fondu de sortie terminé. */
-html:not([data-age-ok]) {
+/* Seulement quand le portillon est là : les mentions légales, qu'il ouvre dans un nouvel
+   onglet, se lisent sans réponse préalable et doivent pouvoir défiler. */
+html:not([data-age-ok]):has(#age-gate) {
   overflow: hidden;
 }
 
