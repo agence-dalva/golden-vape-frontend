@@ -39,10 +39,10 @@ export const SECTIONS_MENTIONS: SectionLegale[] = [
     contenu: (
       <>
         <p>[Raison sociale] — [forme juridique] au capital de [montant] €</p>
-        <p>Siège social : [adresse]</p>
+        <p>Siège social : 18 Av. de la République, 70200 Lure</p>
         <p>RCS : [ville et numéro] — SIRET : [numéro]</p>
         <p>TVA intracommunautaire : [numéro]</p>
-        <p>Contact : [email] — [téléphone]</p>
+        <p>Contact : goldenvap.lure@gmail.com — [téléphone]</p>
         <p>Directeur de la publication : [nom et prénom]</p>
       </>
     ),
