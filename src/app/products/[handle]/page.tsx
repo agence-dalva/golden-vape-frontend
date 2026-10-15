@@ -4,6 +4,7 @@ import {
   listBrands,
   listProductAttributes,
   listProductsByCategory,
+  listProductAttributesBulk,
   groupAttributesByType,
 } from "@/lib/medusa";
 import { getCurrentCart } from "@/lib/cart-actions";
@@ -73,6 +74,9 @@ export default async function ProductPage({
         .then(({ products }) => products.filter((item) => item.id !== product.id).slice(0, 12))
         .catch(() => [])
     : [];
+  const relatedAttributes = await listProductAttributesBulk(related.map((item) => item.id)).catch(
+    () => ({})
+  );
 
   const trail: Crumb[] = [
     { label: "Accueil", href: "/" },
@@ -150,7 +154,7 @@ export default async function ProductPage({
                 : undefined
             }
           />
-          <ProductSlider products={related} label="Produits similaires" />
+          <ProductSlider products={related} attributes={relatedAttributes} label="Produits similaires" />
         </section>
       )}
     </div>

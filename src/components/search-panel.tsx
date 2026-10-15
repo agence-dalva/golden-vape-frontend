@@ -36,6 +36,7 @@ export type RailItem = {
 export type ProductItem = {
   key: string;
   label: string;
+  brand: string | null;
   /** Mots-clés saisis à l'administration : ils expliquent pourquoi le produit répond au terme. */
   secondary: string | null;
   price: { from: boolean; label: string } | null;
@@ -121,6 +122,7 @@ export function toProductItems(products: SearchResultProduct[]): ProductItem[] {
   return products.map((product) => ({
     key: `product-${product.id}`,
     label: product.title,
+    brand: product.brand ?? null,
     // Une seule ligne secondaire : deux lignes grises de même graisse se liraient comme un
     // paragraphe. Les mots-clés priment, ce sont eux qui ont fait remonter le produit.
     secondary: product.subtitle?.trim() || variantsOf(product),
@@ -439,6 +441,11 @@ export default function SearchPanel({
                           {/* `min-w-0` : la ligne secondaire est tronquée, donc en `nowrap`,
                               et sa largeur minimale intrinsèque vaut sinon le texte entier. */}
                           <span className="flex min-w-0 flex-col px-2.5 pb-2.5 pt-2 text-left">
+                            {item.brand && (
+                              <span className="mb-0.5 truncate text-[9.5px] font-semibold uppercase tracking-[0.08em] text-gv-text-muted">
+                                {item.brand}
+                              </span>
+                            )}
                             <span className="line-clamp-2 text-[12.5px] font-semibold leading-[1.35] text-gv-text">
                               <Highlight text={item.label} words={words} />
                             </span>

@@ -3,13 +3,19 @@ import TrustBar from "@/components/trust-bar";
 import SectionHeading from "@/components/section-heading";
 import ProductCard from "@/components/product-card";
 import CategoryCard from "@/components/category-card";
-import { listLatestProducts, listDiscoveryCategories } from "@/lib/medusa";
+import { listLatestProducts, listDiscoveryCategories, listProductAttributesBulk, type ProductAttributeBrief } from "@/lib/medusa";
+import { extractProductFacts } from "@/lib/product-facts";
 
 export default async function Home() {
   const [latestProducts, universes] = await Promise.all([
     listLatestProducts(8),
     listDiscoveryCategories(3),
   ]);
+  // Marque et caractéristique des cartes, comme dans le catalogue. Une panne de cette route
+  // laisse les cartes avec leur seul titre plutôt que de faire tomber l'accueil.
+  const attributes: Record<string, ProductAttributeBrief[]> = await listProductAttributesBulk(
+    latestProducts.map((p) => p.id)
+  ).catch(() => ({}));
 
   return (
     <>
@@ -24,7 +30,12 @@ export default async function Home() {
         />
         <div id="nouveautes" className="grid grid-cols-1 gap-6 scroll-mt-24 sm:grid-cols-2 lg:grid-cols-4">
           {latestProducts.map((product, index) => (
-            <ProductCard key={product.id} product={product} priority={index === 0} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              priority={index === 0}
+              {...extractProductFacts(attributes[product.id])}
+            />
           ))}
         </div>
       </section>

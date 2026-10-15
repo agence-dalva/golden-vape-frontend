@@ -349,6 +349,8 @@ export type SearchResultProduct = {
   subtitle: string | null
   handle: string
   image_url: string | null
+  /** Marque enregistrée, affichée au-dessus du titre comme sur les cartes du catalogue. */
+  brand: string | null
   variants: SearchResultVariant[]
 }
 

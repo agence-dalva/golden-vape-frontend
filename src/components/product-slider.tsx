@@ -3,14 +3,18 @@
 import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { MedusaProduct } from "@/lib/medusa";
+import type { MedusaProduct, ProductAttributeBrief } from "@/lib/medusa";
+import { extractProductFacts } from "@/lib/product-facts";
 import ProductCard from "./product-card";
 
 export default function ProductSlider({
   products,
   label,
+  attributes = {},
 }: {
   products: MedusaProduct[];
+  /** Attributs par produit : marque et caractéristique, comme sur les cartes du catalogue. */
+  attributes?: Record<string, ProductAttributeBrief[]>;
   /** Nom accessible du carrousel, pour distinguer plusieurs sliders d'une même page. */
   label: string;
 }) {
@@ -54,7 +58,7 @@ export default function ProductSlider({
               key={product.id}
               className="min-w-0 flex-[0_0_78%] sm:flex-[0_0_46%] lg:flex-[0_0_calc(25%-18px)]"
             >
-              <ProductCard product={product} />
+              <ProductCard product={product} {...extractProductFacts(attributes[product.id])} />
             </div>
           ))}
         </div>

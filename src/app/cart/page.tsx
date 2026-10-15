@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ShoppingBag, Truck, ShieldCheck, ArrowRight } from "lucide-react";
 import { getCurrentCart } from "@/lib/cart-actions";
 import { getCurrentCustomer } from "@/lib/customer-actions";
-import { listLatestProducts } from "@/lib/medusa";
+import { listLatestProducts, listProductAttributesBulk } from "@/lib/medusa";
 import Breadcrumbs from "@/components/breadcrumbs";
 import CheckoutStepper from "@/components/checkout-stepper";
 import EmptyState from "@/components/empty-state";
@@ -26,6 +26,7 @@ export default async function CartPage() {
   if (items.length === 0) {
     // Le catalogue prend le relais d'un panier vide : une page presque blanche n'aide personne.
     const suggestions = await listLatestProducts(8).catch(() => []);
+    const attributes = await listProductAttributesBulk(suggestions.map((p) => p.id)).catch(() => ({}));
 
     return (
       <div className="gv-container pb-16">
@@ -44,7 +45,7 @@ export default async function CartPage() {
         {suggestions.length > 0 && (
           <section className="mt-14">
             <SectionHeading title="Nos dernières nouveautés" />
-            <ProductSlider products={suggestions} label="Nouveautés" />
+            <ProductSlider products={suggestions} attributes={attributes} label="Nouveautés" />
           </section>
         )}
       </div>
