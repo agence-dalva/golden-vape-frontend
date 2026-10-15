@@ -454,9 +454,11 @@ export default function SearchPanel({
                           {/* `min-w-0` : la ligne secondaire est tronquée, donc en `nowrap`,
                               et sa largeur minimale intrinsèque vaut sinon le texte entier. */}
                           <span className="flex min-w-0 flex-col px-2.5 pb-2.5 pt-2 text-left">
+                            {/* Surlignée elle aussi : pour un produit trouvé par sa seule marque,
+                                c'est elle qui explique sa présence dans les résultats. */}
                             {item.brand && (
                               <span className="mb-0.5 truncate text-[9.5px] font-semibold uppercase tracking-[0.08em] text-gv-text-muted">
-                                {item.brand}
+                                <Highlight text={item.brand} words={words} />
                               </span>
                             )}
                             <span className="line-clamp-2 text-[12.5px] font-semibold leading-[1.35] text-gv-text">
