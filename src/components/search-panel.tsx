@@ -170,7 +170,9 @@ function Highlight({ text, words }: { text: string; words: string[] }) {
   ranges.forEach(([start, end], index) => {
     if (start > cursor) parts.push(text.slice(cursor, start));
     parts.push(
-      <mark key={index} className="rounded-[3px] bg-gv-100 px-px text-gv-900">
+      // Le marron de la marque, presque plein et texte blanc : plus transparent, ce brun sombre
+      // et peu saturé virait au gris sur les cartes claires et ne ressortait plus.
+      <mark key={index} className="rounded-[3px] bg-gv-800/85 px-0.5 font-medium text-white">
         {text.slice(start, end)}
       </mark>
     );
