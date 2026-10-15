@@ -58,7 +58,18 @@ export default async function SiteFooter() {
             fiable au quotidien.
           </p>
 
-          <ul className="mt-5 flex flex-col gap-2">
+          {boutique?.horaires?.length ? (
+            <div className="mt-6 max-w-xs">
+              <h2 className="mb-2 text-[13px] font-semibold text-white">La boutique</h2>
+              <p className="text-[13px] leading-relaxed text-gv-200">{adresseLieu(boutique)}</p>
+              <HorairesRetrait
+                horaires={boutique.horaires}
+                className="mt-3 text-[12.5px] leading-relaxed text-gv-200 [&_dd]:text-white"
+              />
+            </div>
+          ) : null}
+
+          <ul className="mt-6 flex flex-col gap-2">
             {SERVICES.map(({ icon: Icon, label }) => (
               <li key={label} className="flex items-center gap-2 text-[13px] text-gv-200">
                 <Icon size={16} strokeWidth={1.6} aria-hidden className="shrink-0 text-gv-300" />
@@ -134,17 +145,6 @@ export default async function SiteFooter() {
               </Link>
             </li>
           </ul>
-
-          {boutique?.horaires?.length ? (
-            <div className="mt-8">
-              <h2 className="mb-3 text-[13px] font-semibold text-white">La boutique</h2>
-              <p className="text-[13px] leading-relaxed text-gv-200">{adresseLieu(boutique)}</p>
-              <HorairesRetrait
-                horaires={boutique.horaires}
-                className="mt-3 text-[12.5px] leading-relaxed text-gv-200 [&_dd]:text-white"
-              />
-            </div>
-          ) : null}
 
           {/* Mention obligatoire pour la vente de produits du vapotage en France. */}
           <p className="mt-6 rounded-[7px] border border-white/15 bg-white/[0.06] px-3.5 py-3 text-[12px] leading-relaxed text-gv-200">
