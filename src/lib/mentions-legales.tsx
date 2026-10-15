@@ -3,7 +3,7 @@ import type { SectionLegale } from "@/components/page-legale";
 /*
   Texte des mentions légales, affiché par la page `/mentions-legales` — celle vers laquelle
   le portillon d'âge renvoie avant d'accepter. Identité de la société reprise des CGU du
-  marchand (docs/legal) ; les CGV et CGU elles-mêmes sont servies en PDF (public/legal).
+  marchand ; les CGV et CGU elles-mêmes sont servies en PDF (public/legal).
 */
 
 type Hebergeur = { role: string; nom: string; adresse: string; site: string; detail?: string };
@@ -65,6 +65,20 @@ export const SECTIONS_MENTIONS: SectionLegale[] = [
           ))}
         </ul>
       </>
+    ),
+  },
+  {
+    titre: "Médiation de la consommation",
+    contenu: (
+      <p>
+        En cas de litige, après une réclamation écrite restée sans solution auprès de Golden Vape,
+        vous pouvez recourir gratuitement au médiateur de la consommation : CM2C, 49 rue de Ponthieu,
+        75008 Paris —{" "}
+        <a href="https://www.cm2c.net/declarer-un-litige.php" target="_blank" rel="noopener">
+          www.cm2c.net
+        </a>
+        .
+      </p>
     ),
   },
   {
