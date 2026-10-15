@@ -142,11 +142,24 @@ function matchedRanges(text: string, words: string[]): [number, number][] {
   const folded = fold(text);
   const found: [number, number][] = [];
 
+  // Le texte réduit à ses lettres et chiffres, avec la position de chacun dans l'original :
+  // « etasty » se retrouve ainsi dans « E-Tasty », tiret compris dans le surlignage.
+  const positions: number[] = [];
+  let compact = "";
+  for (let i = 0; i < folded.length; i++) {
+    if (/[a-z0-9]/.test(folded[i])) {
+      positions.push(i);
+      compact += folded[i];
+    }
+  }
+
   for (const word of words) {
-    let from = folded.indexOf(word);
+    // Un caractère seul surlignerait toute la carte : on ne le marque pas.
+    if (word.length < 2) continue;
+    let from = compact.indexOf(word);
     while (from !== -1) {
-      found.push([from, from + word.length]);
-      from = folded.indexOf(word, from + word.length);
+      found.push([positions[from], positions[from + word.length - 1] + 1]);
+      from = compact.indexOf(word, from + word.length);
     }
   }
 

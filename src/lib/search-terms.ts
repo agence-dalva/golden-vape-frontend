@@ -27,9 +27,36 @@ export function fold(value: string): string {
 
 /** Mots cherchés, repliés et débarrassés de la ponctuation. */
 export function searchWords(term: string): string[] {
-  return fold(term)
-    .split(/[^a-z0-9]+/)
-    .filter(Boolean)
+  return collerLettresIsolees(
+    fold(term)
+      .split(/[^a-z0-9]+/)
+      .filter(Boolean)
+  )
+}
+
+/**
+ * Une lettre seule n'est pas un mot : « e-tasty » découpé en « e » et « tasty » surlignait
+ * chaque « e » des cartes et laissait passer tout produit « tasty ». Elle est collée au mot
+ * suivant (au précédent si elle termine le terme) : « etasty », que la comparaison sans
+ * espaces retrouve dans « E-Tasty ». Les chiffres seuls restent des mots : « numbers 2 ».
+ * Même règle que la route `/store/search`.
+ */
+export function collerLettresIsolees(words: string[]): string[] {
+  const result: string[] = []
+  let enAttente = ""
+  for (const word of words) {
+    if (/^[a-z]$/.test(word)) {
+      enAttente += word
+      continue
+    }
+    result.push(enAttente + word)
+    enAttente = ""
+  }
+  if (enAttente) {
+    if (result.length) result[result.length - 1] += enAttente
+    else result.push(enAttente)
+  }
+  return result
 }
 
 /**
