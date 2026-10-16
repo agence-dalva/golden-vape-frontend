@@ -26,6 +26,7 @@ export default function StockAlertForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [email, setEmail] = useState(defaultEmail ?? "");
+  const [piege, setPiege] = useState("");
   const [etat, setEtat] = useState<"saisie" | "enregistree" | "disponible">("saisie");
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -34,7 +35,7 @@ export default function StockAlertForm({
     setErreur(null);
 
     startTransition(async () => {
-      const resultat = await subscribeStockAlertAction(variantId, email.trim());
+      const resultat = await subscribeStockAlertAction(variantId, email.trim(), piege);
       if (resultat.status === "erreur") {
         setErreur(resultat.message);
         return;
@@ -75,6 +76,21 @@ export default function StockAlertForm({
         {variantLabel ? <>« {variantLabel} » est épuisé pour le moment. </> : "Cet article est épuisé pour le moment. "}
         Laissez votre email : nous vous écrirons une seule fois, dès son retour.
       </p>
+
+      {/* Champ piège : hors écran, hors tabulation et ignoré des lecteurs d'écran. Un robot
+          qui remplit tous les champs le remplit aussi, et sa demande n'est pas enregistrée. */}
+      <div aria-hidden="true" className="absolute left-[-9999px] h-px w-px overflow-hidden">
+        <label htmlFor={`alerte-${variantId}-site`}>Site web</label>
+        <input
+          id={`alerte-${variantId}-site`}
+          type="text"
+          name="site_web"
+          tabIndex={-1}
+          autoComplete="off"
+          value={piege}
+          onChange={(event) => setPiege(event.target.value)}
+        />
+      </div>
 
       <div className="mt-3.5 flex flex-col gap-2.5 sm:flex-row">
         <label htmlFor={`alerte-${variantId}`} className="sr-only">

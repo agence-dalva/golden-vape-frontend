@@ -11,7 +11,16 @@ export type StockAlertResult =
  * « Prévenez-moi du retour en stock » : la demande part à Medusa, qui valide l'adresse et
  * n'enregistre qu'une demande par adresse et par déclinaison.
  */
-export async function subscribeStockAlertAction(variantId: string, email: string): Promise<StockAlertResult> {
+export async function subscribeStockAlertAction(
+  variantId: string,
+  email: string,
+  /** Champ piège, invisible pour un visiteur : seul un robot le remplit. */
+  piege = ""
+): Promise<StockAlertResult> {
+  // Un robot reçoit la même réponse qu'un client, sans que rien ne soit enregistré : il n'a
+  // aucun signal pour s'adapter.
+  if (piege.trim()) return { status: "enregistree" };
+
   try {
     const res = await fetch(`${MEDUSA_BACKEND_URL}/store/alertes-stock`, {
       method: "POST",
@@ -21,6 +30,12 @@ export async function subscribeStockAlertAction(variantId: string, email: string
     });
 
     if (res.status === 400) {
+      // Medusa répond 400 aussi bien pour une adresse invalide que pour un plafond atteint
+      // (« Trop de demandes… ») : seul le type d'erreur les distingue.
+      const corps = (await res.json().catch(() => ({}))) as { type?: string; message?: string };
+      if (corps.type === "not_allowed" && corps.message) {
+        return { status: "erreur", message: corps.message };
+      }
       return { status: "erreur", message: "Cette adresse email ne semble pas valide." };
     }
     if (!res.ok) {
