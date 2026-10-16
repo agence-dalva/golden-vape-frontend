@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShoppingBag, Truck, ShieldCheck, ArrowRight } from "lucide-react";
+import { ShoppingBag, Truck, ShieldCheck, Store, ArrowRight } from "lucide-react";
 import { getCurrentCart } from "@/lib/cart-actions";
 import { getCurrentCustomer } from "@/lib/customer-actions";
 import { listLatestProducts, listProductAttributesBulk } from "@/lib/medusa";
@@ -17,6 +17,9 @@ import PageTransition from "@/components/page-transition";
 const BENEFITS = [
   { icon: Truck, label: "Expédition sous 24/48h" },
   { icon: ShieldCheck, label: "Paiement sécurisé" },
+  // Le retrait en boutique est gratuit : l'avantage qui distingue la boutique de Lure d'un
+  // site seulement en ligne.
+  { icon: Store, label: "Retrait gratuit en boutique" },
 ];
 
 export default async function CartPage() {

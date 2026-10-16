@@ -68,15 +68,6 @@ export default async function SiteFooter() {
               />
             </div>
           ) : null}
-
-          <ul className="mt-6 flex flex-col gap-2">
-            {SERVICES.map(({ icon: Icon, label }) => (
-              <li key={label} className="flex items-center gap-2 text-[13px] text-gv-200">
-                <Icon size={16} strokeWidth={1.6} aria-hidden className="shrink-0 text-gv-300" />
-                {label}
-              </li>
-            ))}
-          </ul>
         </div>
 
         <nav aria-labelledby="footer-boutique">
@@ -150,6 +141,17 @@ export default async function SiteFooter() {
           <p className="mt-6 rounded-[7px] border border-white/15 bg-white/[0.06] px-3.5 py-3 text-[12px] leading-relaxed text-gv-200">
             La vente de produits du vapotage est interdite aux mineurs de moins de 18 ans.
           </p>
+
+          {/* Les engagements, sous la mention légale. Le logo du moyen de paiement viendra
+              s'ajouter ici. */}
+          <ul className="mt-5 flex flex-col gap-2">
+            {SERVICES.map(({ icon: Icon, label }) => (
+              <li key={label} className="flex items-center gap-2 text-[13px] text-gv-200">
+                <Icon size={16} strokeWidth={1.6} aria-hidden className="shrink-0 text-gv-300" />
+                {label}
+              </li>
+            ))}
+          </ul>
         </nav>
       </div>
 
