@@ -144,22 +144,24 @@ export default async function SiteFooter() {
 
           {/* Les engagements, sous la mention légale, puis la banque du paiement : un logo
               connu rassure davantage qu'une phrase. */}
-          <ul className="mt-5 flex flex-col gap-2">
-            {SERVICES.map(({ icon: Icon, label }) => (
-              <li key={label} className="flex items-center gap-2 text-[13px] text-gv-200">
-                <Icon size={16} strokeWidth={1.6} aria-hidden className="shrink-0 text-gv-300" />
-                {label}
-              </li>
-            ))}
-          </ul>
-          <Image
-            src="/paiements/cic-monetico.png"
-            alt="Paiement sécurisé par le CIC (Monetico)"
-            width={681}
-            height={293}
-            unoptimized
-            className="mt-4 h-7 w-auto rounded-[3px]"
-          />
+          <div className="mt-5 flex items-center justify-between gap-4">
+            <ul className="flex flex-col gap-2">
+              {SERVICES.map(({ icon: Icon, label }) => (
+                <li key={label} className="flex items-center gap-2 text-[13px] text-gv-200">
+                  <Icon size={16} strokeWidth={1.6} aria-hidden className="shrink-0 text-gv-300" />
+                  {label}
+                </li>
+              ))}
+            </ul>
+            <Image
+              src="/paiements/cic-monetico.png"
+              alt="Paiement sécurisé par le CIC (Monetico)"
+              width={681}
+              height={293}
+              unoptimized
+              className="h-7 w-auto shrink-0 rounded-[3px]"
+            />
+          </div>
         </nav>
       </div>
 
