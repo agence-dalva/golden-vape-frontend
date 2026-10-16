@@ -159,7 +159,7 @@ export default async function SiteFooter() {
               width={681}
               height={293}
               unoptimized
-              className="h-7 w-auto shrink-0 rounded-[3px]"
+              className="h-9 w-auto shrink-0 rounded-[3px]"
             />
           </div>
         </nav>
