@@ -1,12 +1,13 @@
+import { cheminInterne } from "@/lib/redirection";
 import RegisterForm from "./register-form";
 
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirect?: string }>;
+  searchParams: Promise<{ redirect?: string | string[] }>;
 }) {
   const { redirect } = await searchParams;
-  const redirectTo = redirect ?? "/";
+  const redirectTo = cheminInterne(redirect);
 
   return (
     <div className="mx-auto max-w-xl px-6 py-16">
