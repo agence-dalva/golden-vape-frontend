@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { toast } from "sonner";
 import { ArrowRight, Check, Leaf, Lock, MapPin, Pencil, Store, Truck } from "lucide-react";
 import {
@@ -554,6 +555,20 @@ export default function CheckoutForm({
                 {isPending ? "Traitement…" : "Payer ma commande"}
                 {!isPending && <ArrowRight size={16} />}
               </button>
+              {/* La banque, au moment du clic : c'est là que le client hésite, et elle annonce
+                  la page de paiement qui va suivre. */}
+              <p className="mt-2.5 flex items-center justify-center gap-2 text-[11.5px] text-gv-text-soft">
+                <Lock size={12} aria-hidden />
+                Paiement sécurisé par
+                <Image
+                  src="/paiements/cic-monetico.png"
+                  alt="CIC (Monetico)"
+                  width={681}
+                  height={293}
+                  unoptimized
+                  className="h-5 w-auto rounded-xs"
+                />
+              </p>
             </>
           )}
 
@@ -573,7 +588,9 @@ export default function CheckoutForm({
           {[
             { Icone: Leaf, l1: "Produits", l2: "de qualité" },
             { Icone: Truck, l1: "Livraison rapide", l2: "et suivie" },
-            { Icone: Lock, l1: "Paiement", l2: "100% sécurisé" },
+            // Le paiement sécurisé est annoncé sous le bouton, avec la banque : ici, l'autre
+            // avantage concret de la boutique.
+            { Icone: Store, l1: "Retrait gratuit", l2: "en boutique" },
           ].map(({ Icone, l1, l2 }) => (
             <div key={l1} className="flex flex-col items-center gap-1.5 text-center">
               <Icone size={17} className="text-gv-500" />
