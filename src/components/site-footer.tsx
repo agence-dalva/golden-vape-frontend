@@ -155,8 +155,8 @@ export default async function SiteFooter() {
 
       <div className="border-t border-white/10">
         <div className="gv-container flex flex-wrap items-center justify-between gap-3 py-5 text-[12px] text-gv-300">
-          <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span>© {new Date().getFullYear()} Golden Vape. Tous droits réservés.</span>
+          <p>© {new Date().getFullYear()} Golden Vape. Tous droits réservés.</p>
+          <nav aria-label="Informations légales" className="flex flex-wrap items-center gap-x-4 gap-y-1">
             {LIENS_LEGAUX.map((lien) =>
               lien.pdf ? (
                 <a
@@ -175,8 +175,7 @@ export default async function SiteFooter() {
               ),
             )}
             {GA_ID && <GererCookies className="transition-colors hover:text-white" />}
-          </p>
-          <p>Paiement sécurisé par Monetico — Crédit Mutuel</p>
+          </nav>
         </div>
       </div>
     </footer>
