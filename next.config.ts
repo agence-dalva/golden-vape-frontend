@@ -30,7 +30,16 @@ const nextConfig: NextConfig = {
   // Inutile d'annoncer le framework et sa version.
   poweredByHeader: false,
   async headers() {
-    return [{ source: "/:path*", headers: EN_TETES_SECURITE }];
+    return [
+      { source: "/:path*", headers: EN_TETES_SECURITE },
+      // Ces adresses portent un jeton ou un identifiant de commande : la page suivante ne
+      // doit pas les recevoir comme référent, qu'un outil de mesure relèverait. Placées
+      // après la règle générale, qu'elles remplacent pour cet en-tête.
+      ...["/compte/reinitialisation", "/checkout/confirmation/:path*"].map((source) => ({
+        source,
+        headers: [{ key: "Referrer-Policy", value: "no-referrer" }],
+      })),
+    ];
   },
   turbopack: {
     root: path.join(__dirname),

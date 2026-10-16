@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { finalizeMoneticoPaymentAction } from "@/lib/checkout-actions";
+import { suspendreMesure } from "@/lib/consentement";
 
 export default function MoneticoReturn() {
   const router = useRouter();
@@ -20,6 +21,9 @@ export default function MoneticoReturn() {
         setError(result.error);
         return;
       }
+      // La page de confirmation n'est jamais mesurée : couper l'envoi avant de changer
+      // d'adresse, sinon la page vue partirait avec l'identifiant de commande.
+      suspendreMesure();
       router.replace(`/checkout/confirmation/${result.orderId}`);
     });
   }, [router]);

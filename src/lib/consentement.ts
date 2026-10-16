@@ -17,6 +17,23 @@ const DUREE = { accepte: 13 * MOIS, refuse: 6 * MOIS } as const;
 
 export type Choix = keyof typeof DUREE;
 
+/*
+  Pages jamais mesurées, même après « Accepter ». Google recevrait l'adresse complète de la
+  page : le jeton de réinitialisation et l'email du lien envoyé au client, ou l'identifiant
+  d'une commande — qui suffit à afficher son nom, son adresse et ses articles. C'est contraire
+  aux conditions de Google et au RGPD.
+*/
+export const CHEMINS_SANS_MESURE = /^\/(compte\/reinitialisation|checkout\/confirmation)(\/|$)/;
+
+/**
+ * Coupe l'envoi à Google tout de suite (drapeau `ga-disable-<id>` prévu par Google). À
+ * appeler juste avant une navigation interne vers une page sans mesure : la page vue
+ * partirait sinon au changement d'adresse, avant que la page n'ait pu la bloquer.
+ */
+export function suspendreMesure() {
+  if (GA_ID) (window as unknown as Record<string, boolean>)[`ga-disable-${GA_ID}`] = true;
+}
+
 /** Événement que le lien « Gérer les cookies » envoie pour rouvrir le bandeau. */
 export const EVENEMENT_GERER = "gv:gerer-cookies";
 /** Événement émis à chaque nouveau choix, pour charger ou non Google Analytics. */
