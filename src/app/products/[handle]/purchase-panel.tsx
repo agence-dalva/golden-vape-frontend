@@ -89,7 +89,7 @@ export default function PurchasePanel({
 
   return (
     <div className="flex flex-col">
-      <h1 className="gv-title-strong font-display text-[32px] font-normal leading-[1.2] tracking-[0.01em] text-gv-text">
+      <h1 className="gv-title-strong font-display text-[24px] font-normal leading-[1.2] sm:text-[32px] tracking-[0.01em] text-gv-text">
         {product.title}
       </h1>
 
