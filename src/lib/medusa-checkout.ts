@@ -98,9 +98,22 @@ export async function updateCartAddresses(
   cartId: string,
   data: { email?: string; shipping_address: MedusaAddress; billing_address: MedusaAddress }
 ): Promise<MedusaCart> {
+  await checkoutFetch(`/store/carts/${cartId}`, { method: "POST", body: JSON.stringify(data) });
+  return calculateCartTaxes(cartId);
+}
+
+/**
+ * Recalcule la TVA de tout le panier.
+ *
+ * Medusa ne pose la TVA d'un article qu'à son ajout, et seulement si le panier a déjà une
+ * adresse ; poser l'adresse ensuite ne rattrape pas les articles déjà là. Sans ce calcul,
+ * le prix payé reste juste (prix TTC), mais la commande enregistre une TVA nulle sur ces
+ * articles, et la livraison s'affiche hors taxes tant qu'aucun mode n'est choisi.
+ */
+export async function calculateCartTaxes(cartId: string): Promise<MedusaCart> {
   const { cart } = await checkoutFetch<{ cart: MedusaCart }>(
-    withFields(`/store/carts/${cartId}`, CART_FIELDS),
-    { method: "POST", body: JSON.stringify(data) }
+    withFields(`/store/carts/${cartId}/taxes`, CART_FIELDS),
+    { method: "POST" }
   );
   return cart;
 }
@@ -186,9 +199,9 @@ export type MoneticoPaymentForm = {
  * suivante repart sur une référence neuve.
  */
 export async function createMoneticoPaymentSession(cartId: string): Promise<void> {
-  const { cart } = await checkoutFetch<{ cart: MedusaCart }>(
-    withFields(`/store/carts/${cartId}`, CART_FIELDS)
-  );
+  // Dernier filet avant le paiement : un panier dont l'adresse a été posée avant ce calcul
+  // (ou par un autre chemin) part quand même avec sa TVA.
+  const cart = await calculateCartTaxes(cartId);
 
   const collectionId =
     cart.payment_collection?.id ??
