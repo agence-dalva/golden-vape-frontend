@@ -39,6 +39,12 @@ async function authFetch<T>(
     throw new Error(`Medusa auth API a répondu ${res.status} sur ${path}: ${body}`);
   }
 
+  // Certaines routes ne renvoient pas de JSON : la demande de lien de réinitialisation répond
+  // « 201 Created » en texte brut. La lire comme du JSON ferait croire à un échec.
+  if (!res.headers.get("content-type")?.includes("application/json")) {
+    return undefined as T;
+  }
+
   return res.json();
 }
 
