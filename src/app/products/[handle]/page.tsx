@@ -27,7 +27,9 @@ export default async function ProductPage({
 }: {
   params: Promise<{ handle: string }>;
 }) {
-  const { handle } = await params;
+  // Next transmet le segment tel qu'il est dans l'URL : « guaporé » arrive en
+  // « guapor%C3%A9 », que Medusa ne connaît pas — la fiche tombait en 404.
+  const handle = decodeURIComponent((await params).handle);
   // Le client connecté n'a pas à saisir son email pour une alerte de retour en stock. Sans
   // session, aucun appel n'est fait.
   const [product, cart, customer] = await Promise.all([

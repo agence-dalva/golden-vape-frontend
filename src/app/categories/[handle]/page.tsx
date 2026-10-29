@@ -43,8 +43,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ handle: string }>;
 }): Promise<Metadata> {
-  const { handle } = await params;
-  const category = await getCategoryByHandle(handle).catch(() => null);
+  const category = await getCategoryByHandle(decodeURIComponent((await params).handle)).catch(() => null);
   if (!category) return { title: "Catégorie introuvable | Golden Vape" };
 
   return {
@@ -64,7 +63,8 @@ export default async function CategoryPage({
   searchParams: SearchParams;
 }) {
   const [{ handle }, query] = await Promise.all([params, searchParams]);
-  const category = await getCategoryByHandle(handle);
+  // Segment encodé tel qu'il est dans l'URL : un handle accentué tomberait en 404 sans cela.
+  const category = await getCategoryByHandle(decodeURIComponent(handle));
 
   if (!category) {
     notFound();
