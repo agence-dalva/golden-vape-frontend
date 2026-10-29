@@ -64,6 +64,8 @@ export default function FilterPanel({
               <li key={value}>
                 <Link
                   href={toggleFilterHref(basePath, params, slug, value)}
+                  // Les combinaisons de filtres sont sans fin pour un robot (voir robots.ts).
+                  rel="nofollow"
                   scroll={false}
                   onClick={(event) => {
                     if (!shouldIntercept(event)) return;
@@ -104,6 +106,7 @@ export default function FilterPanel({
         {active > 0 && (
           <Link
             href={clearFiltersHref(basePath, params)}
+            rel="nofollow"
             scroll={false}
             onClick={(event) => {
               if (!shouldIntercept(event)) return;
